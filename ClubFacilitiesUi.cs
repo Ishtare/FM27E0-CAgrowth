@@ -14,8 +14,14 @@ namespace Fm24Editor
         readonly Label[] facilityNotes=Enumerable.Range(0,5).Select(i=>new Label{Name="FacilityStatus"+i,AutoSize=true,MaximumSize=new Size(300,0),Padding=new Padding(5,5,0,0),ForeColor=UiMuted}).ToArray();
         Control BuildFacilityEditor(int index)
         {
-            var row=new FlowLayoutPanel{Name="FacilityEditor"+index,AutoSize=true,WrapContents=false,Margin=Padding.Empty,Dock=DockStyle.Top};
-            row.Controls.Add(numFacility[index]);row.Controls.Add(facilityNotes[index]);return row;
+            var row=new TableLayoutPanel{Name="FacilityEditor"+index,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,
+                ColumnCount=2,RowCount=1,Margin=Padding.Empty,Dock=DockStyle.Fill};
+            row.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
+            facilityNotes[index].Dock=DockStyle.Fill;
+            row.Controls.Add(numFacility[index],0,0);
+            row.Controls.Add(facilityNotes[index],1,0);
+            return row;
         }
         internal void BindFacilityEditors(ClubFacilitySnapshot snapshot,bool globallyWritable,string disabledReason)
         {

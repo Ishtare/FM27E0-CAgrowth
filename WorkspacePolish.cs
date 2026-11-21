@@ -38,10 +38,10 @@ namespace Fm24Editor
         }
         Control BuildPlayerAttributeToolbar()
         {
-            var bar=new FlowLayoutPanel{Name="PlayerAttributeToolbar",Dock=DockStyle.Top,Height=42,WrapContents=false,Padding=new Padding(0,4,0,0)};
-            bar.Controls.Add(new Label{Text="属性类别",AutoSize=true,Padding=new Padding(0,7,6,0),ForeColor=UiMuted});
+            var bar=WrappingBar("PlayerAttributeToolbar");
             playerAttributeCategory.Items.AddRange(new object[]{"全部属性","技术","精神","身体与惯用脚","门将","隐藏与性格"});playerAttributeCategory.SelectedIndex=0;
-            bar.Controls.Add(playerAttributeCategory);playerAttributeCategory.SelectedIndexChanged+=delegate{ApplyPlayerAttributeFilter();};return bar;
+            bar.Controls.Add(FieldGroup(FieldLabel("属性类别"),playerAttributeCategory));
+            playerAttributeCategory.SelectedIndexChanged+=delegate{ApplyPlayerAttributeFilter();};return bar;
         }
         static int PlayerAttributeGroup(int index)
         {
@@ -58,8 +58,8 @@ namespace Fm24Editor
         }
         Control BuildStaffAttributeToolbar()
         {
-            var bar=new FlowLayoutPanel{Name="StaffAttributeToolbar",Dock=DockStyle.Top,Height=42,WrapContents=false,Padding=new Padding(0,4,0,0)};
-            bar.Controls.Add(new Label{Text="筛选属性名称",AutoSize=true,Padding=new Padding(0,7,6,0),ForeColor=UiMuted});bar.Controls.Add(staffAttributeSearch);
+            var bar=WrappingBar("StaffAttributeToolbar");
+            bar.Controls.Add(FieldGroup(FieldLabel("筛选属性名称"),staffAttributeSearch));
             staffAttributeSearch.TextChanged+=delegate{ApplyStaffAttributeFilter();};return bar;
         }
         void ApplyStaffAttributeFilter()
@@ -67,10 +67,28 @@ namespace Fm24Editor
             if(gridStaff.Rows.Count==0)return;gridStaff.EndEdit();gridStaff.CurrentCell=null;string query=staffAttributeSearch.Text.Trim();
             foreach(DataGridViewRow row in gridStaff.Rows)row.Visible=query.Length==0 || Convert.ToString(row.Cells[0].Value).IndexOf(query,StringComparison.CurrentCultureIgnoreCase)>=0;
         }
-        static TableLayoutPanel ManagementForm()
+        static TableLayoutPanel ManagementForm(string name)
         {
-            var table=new TableLayoutPanel{Dock=DockStyle.Top,AutoSize=true,ColumnCount=2,Padding=new Padding(12),Margin=Padding.Empty};
-            table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,215));table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));return table;
+            var table=new TableLayoutPanel{Name=name,Dock=DockStyle.Top,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,
+                ColumnCount=2,Padding=new Padding(12),Margin=Padding.Empty};
+            table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,38));
+            table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,62));
+            return table;
+        }
+        static void AddManagementNote(TableLayoutPanel table,int row,Label note)
+        {
+            note.Dock=DockStyle.Fill;
+            table.Controls.Add(note,0,row);
+            table.SetColumnSpan(note,2);
+        }
+        static void MountManagementForm(TabPage page,TableLayoutPanel table)
+        {
+            foreach(Control input in table.Controls)
+            {
+                if(input is TextBox || input is NumericUpDown)input.Anchor=AnchorStyles.Left|AnchorStyles.Right;
+                else if(input is Label)input.Dock=DockStyle.Fill;
+            }
+            page.Controls.Add(table);
         }
         readonly Button btnApplyClub=new Button{Name="ApplyClubChanges",Text="应用俱乐部修改",Width=145,Enabled=false};
         readonly Button btnReloadClub=new Button{Name="ReloadClub",Text="重新加载",Width=96,Enabled=false};
@@ -83,16 +101,22 @@ namespace Fm24Editor
             split.Panel1.Controls.Add(lstClubs);split.Panel1.Controls.Add(txtClubSearch);split.Panel1.Controls.Add(new Label{Text="搜索俱乐部",Dock=DockStyle.Top,Height=26,ForeColor=UiMuted});
             var sections=new TabControl{Name="ClubManagementSections",Dock=DockStyle.Fill};
             var money=new TabPage("资金与预算"){AutoScroll=true};var facilities=new TabPage("设施与球场"){AutoScroll=true};var identity=new TabPage("资料与票务"){AutoScroll=true};sections.TabPages.AddRange(new[]{money,facilities,identity});
-            var finance=ManagementForm();AddCurRow(finance,0,"俱乐部结余（{C}）",txtBalance);AddCurRow(finance,1,"剩余转会预算（{C}）",txtTransfer);AddCurRow(finance,2,"下赛季转会预算（{C}）",txtTransferNext);AddCurRow(finance,3,"周薪预算（{C}）",txtWage);
-            AddRow(finance,4,"年薪预算参考",lblWageYear);AddRow(finance,5,"当前周薪总额",lblWageSpend);finance.Controls.Add(lblStoredPounds,1,6);
-            finance.Controls.Add(new Label{Text="金额按顶部显示货币换算。换算率可在“显示货币”中调整。",AutoSize=true,MaximumSize=new Size(440,0),ForeColor=UiMuted,Margin=new Padding(0,14,0,0)},1,7);money.Controls.Add(finance);
+            var finance=ManagementForm("ClubFinanceForm");AddCurRow(finance,0,"俱乐部结余（{C}）",txtBalance);AddCurRow(finance,1,"剩余转会预算（{C}）",txtTransfer);AddCurRow(finance,2,"下赛季转会预算（{C}）",txtTransferNext);AddCurRow(finance,3,"周薪预算（{C}）",txtWage);
+            AddRow(finance,4,"年薪预算参考",lblWageYear);AddRow(finance,5,"当前周薪总额",lblWageSpend);
+            AddManagementNote(finance,6,lblStoredPounds);
+            AddManagementNote(finance,7,new Label{Text="金额按顶部显示货币换算。换算率可在“显示货币”中调整。",AutoSize=true,ForeColor=UiMuted,Margin=new Padding(0,14,0,0)});
+            MountManagementForm(money,finance);
             foreach(var box in new[]{txtBalance,txtTransfer,txtTransferNext,txtWage,txtTicketPrice})box.TextAlign=HorizontalAlignment.Right;
-            var infrastructure=ManagementForm();for(int i=0;i<numFacility.Length;i++)AddRow(infrastructure,i,FacilityLayout.Titles[i]+"（1–20）",BuildFacilityEditor(i));
+            var infrastructure=ManagementForm("ClubFacilitiesForm");for(int i=0;i<numFacility.Length;i++)AddRow(infrastructure,i,FacilityLayout.Titles[i]+"（1–20）",BuildFacilityEditor(i));
             AddRow(infrastructure,5,"俱乐部声望",numReputation);AddRow(infrastructure,6,"球场容量",numCapacity);AddRow(infrastructure,7,"已用座位",numUsedCap);
-            infrastructure.Controls.Add(new Label{Name="FacilityScopeNote",Text="设施按当前俱乐部逐项核对。缺失、越界或归属不明的项目单独只读，不会自动改成 1。",AutoSize=true,MaximumSize=new Size(400,0),ForeColor=UiMuted,Margin=new Padding(0,12,0,0)},1,8);facilities.Controls.Add(infrastructure);
-            var details=ManagementForm();AddRow(details,0,"俱乐部全名",txtClubName);AddRow(details,1,"俱乐部简称",txtClubShort);AddRow(details,2,"季票持有者",numSeasonTickets);AddCurRow(details,3,"平均单场票价（{C}）",txtTicketPrice);
-            details.Controls.Add(new Label{Text="票价可从“未设置”状态录入。名称长度、票价及人数按当前资料检查。",AutoSize=true,MaximumSize=new Size(420,0),ForeColor=UiMuted,Margin=new Padding(0,14,0,0)},1,4);identity.Controls.Add(details);
-            lblClub.AutoSize=false;lblClub.Dock=DockStyle.Top;lblClub.Height=62;lblClub.Padding=new Padding(4,10,4,4);lblClub.ForeColor=UiInk;if(string.IsNullOrEmpty(lblClub.Text))lblClub.Text="选择俱乐部后查看和编辑资料";
+            AddManagementNote(infrastructure,8,new Label{Name="FacilityScopeNote",Text="设施按当前俱乐部逐项核对。缺失、越界或归属不明的项目单独只读，不会自动改成 1。",AutoSize=true,ForeColor=UiMuted,Margin=new Padding(0,12,0,0)});
+            MountManagementForm(facilities,infrastructure);
+            var details=ManagementForm("ClubTicketForm");AddRow(details,0,"俱乐部全名",txtClubName);AddRow(details,1,"俱乐部简称",txtClubShort);AddRow(details,2,"季票持有者",numSeasonTickets);AddCurRow(details,3,"平均单场票价（{C}）",txtTicketPrice);
+            AddManagementNote(details,4,new Label{Text="票价可从“未设置”状态录入。名称长度、票价及人数按当前资料检查。",AutoSize=true,ForeColor=UiMuted,Margin=new Padding(0,14,0,0)});
+            MountManagementForm(identity,details);
+            lblClub.Dock=DockStyle.Top;lblClub.Padding=new Padding(4,10,4,4);lblClub.ForeColor=UiInk;
+            WrapDockedLabel(lblClub);
+            if(string.IsNullOrEmpty(lblClub.Text))lblClub.Text="选择俱乐部后查看和编辑资料";
             var actions=new FlowLayoutPanel{Name="ClubActions",Dock=DockStyle.Bottom,AutoSize=true,WrapContents=true,Padding=new Padding(0,8,0,0)};
             foreach(var button in new[]{btnApplyClub,btnReloadClub,btnFreezeClub,btnClubSponsors}){StyleButton(button,button==btnApplyClub);actions.Controls.Add(button);}
             btnApplyClub.Click+=delegate{ApplyClub();};btnReloadClub.Click+=delegate{LoadClub(loadedClub);};
@@ -132,9 +156,8 @@ namespace Fm24Editor
         }
         void OrganizeFinderToolbar(FlowLayoutPanel bar,Button search)
         {
-            bar.BackColor=Color.FromArgb(247,249,252);bar.Padding=new Padding(10,8,10,8);bar.Margin=new Padding(0,0,0,8);bar.WrapContents=true;
-            foreach(Control item in bar.Controls){item.Margin=new Padding(3,5,3,5);var label=item as Label;if(label!=null)label.ForeColor=UiMuted;}
-            StyleButton(search,true);search.Text="搜索名单";search.Width=110;
+            bar.BackColor=Color.FromArgb(247,249,252);bar.Padding=new Padding(10,4,10,4);
+            StyleButton(search,true);search.Text="搜索名单";search.AutoSize=true;search.Width=110;
         }
     }
 }

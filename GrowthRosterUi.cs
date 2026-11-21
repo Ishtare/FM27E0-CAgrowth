@@ -17,9 +17,9 @@ namespace Fm24Editor
         bool growScopeFilling;
         Control BuildGrowthScopeBar()
         {
-            var bar=new FlowLayoutPanel{Name="GrowthScopeToolbar",Dock=DockStyle.Fill,WrapContents=false,Margin=Padding.Empty,Padding=new Padding(0,3,0,0)};
-            bar.Controls.Add(new Label{Text="队伍",AutoSize=true,Padding=new Padding(0,6,4,0)});bar.Controls.Add(growSquadFilter);
-            bar.Controls.Add(new Label{Text="租借",AutoSize=true,Padding=new Padding(8,6,4,0)});bar.Controls.Add(growLoanFilter);
+            var bar=WrappingBar("GrowthScopeToolbar");
+            bar.Controls.Add(FieldGroup(FieldLabel("队伍"),growSquadFilter));
+            bar.Controls.Add(FieldGroup(FieldLabel("租借"),growLoanFilter));
             StyleButton(btnRefreshGrowth);bar.Controls.Add(btnRefreshGrowth);
             btnRefreshGrowth.Click+=delegate{RefreshGrowthClubMenu();};
             growLoanFilter.Items.AddRange(new object[]{"全部状态","未租借","租入","租出","待确认"});growLoanFilter.SelectedIndex=0;

@@ -2028,17 +2028,21 @@ CurrentDateRva = 0x56237C8
             freezeTimer.Tick += delegate { FreezeTick(); GrowTick(); };
             freezeTimer.Start();
 
-            var foot = new Panel { Dock = DockStyle.Bottom, Height = 22 };
+            var foot = new TableLayoutPanel { Name="WorkspaceFooter", Dock=DockStyle.Bottom, ColumnCount=2, RowCount=1,
+                AutoSize=true, AutoSizeMode=AutoSizeMode.GrowAndShrink };
+            foot.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
+            foot.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             // the licence asks for the author's credit and the original download link, not for the donation link,
             // so the Ko-fi button the original window carried is not here
-            var credit = new LinkLabel { Text = "Original by Anze Alexander (sortitoutsi.net)", AutoSize = true, Dock = DockStyle.Right, Padding = new Padding(0, 4, 12, 0) };
+            var credit = new LinkLabel { Name="OriginalAuthorCredit", Text="Original by Anze Alexander (sortitoutsi.net)",
+                AutoSize=true, Anchor=AnchorStyles.Right, Padding=new Padding(0,4,12,0) };
             credit.LinkClicked += delegate { try { Process.Start(HomePage); } catch { } };
             foot.Controls.Add(new Label
             {
-                Dock = DockStyle.Fill, Padding = new Padding(6, 4, 0, 0),
+                Name="SaveReminder", AutoSize=true, Dock=DockStyle.Fill, Padding=new Padding(6,4,4,0),
                 Text = "修改随 FM 保存写入存档；部分信息需重新打开资料或推进日期后刷新。"
-            });
-            foot.Controls.Add(credit);
+            },0,0);
+            foot.Controls.Add(credit,1,0);
 
             Controls.Add(BuildWorkspace(tabs));
             Controls.Add(top);
@@ -2058,23 +2062,35 @@ CurrentDateRva = 0x56237C8
             FormClosed += delegate { SaveSettings(); };
             Load += delegate
             {
+                FitWindowToWorkArea(this,this);
                 SetHint(txtPlayerSearch, "中文 / 英文 / UID（如 #735216）");
                 SetHint(txtClubSearch, "俱乐部名称／UID…");
-                splitPlayers.SplitterDistance = 260;
-                splitClubs.SplitterDistance = 230;
-                splitStaff.SplitterDistance = 260;
+                SetInitialSplitter(splitPlayers,260);
+                SetInitialSplitter(splitClubs,230);
+                SetInitialSplitter(splitStaff,260);
                 SetHint(txtStaffSearch, "姓名 / 俱乐部 / UID…");
-                splitSquad.SplitterDistance = 230;
+                SetInitialSplitter(splitSquad,230);
                 SetHint(txtGrowClubSearch, "俱乐部名称／UID…");
                 SetHint(txtGrowPlayerSearch, "搜索球员姓名或 UID…");
-                splitGrow.SplitterDistance = 194;
+                SetInitialSplitter(splitGrow,194);
                 LayoutGrowthWorkspace();
-                splitPrize.SplitterDistance = 380;
+                SetInitialSplitter(splitPrize,380);
                 SetHint(txtSquadClubSearch, "俱乐部名称／UID…");
-                splitAttrs.SplitterDistance = Math.Max(200, splitAttrs.Width - 290);
+                SetInitialSplitter(splitAttrs,Math.Max(200,splitAttrs.Width-290),0.64);
                 Zh.Tree(this);
             };
         }
+
+        void SetInitialSplitter(SplitContainer split,int preferred,double maximumFraction=0.38)
+        {
+            int available=split.ClientSize.Width-split.SplitterWidth;
+            int upper=available-split.Panel2MinSize;
+            if(upper<split.Panel1MinSize)return;
+            int scaled=LayoutPixels(preferred);
+            split.SplitterDistance=Math.Max(split.Panel1MinSize,Math.Min(upper,
+                Math.Min(scaled,(int)(available*maximumFraction))));
+        }
+
         protected override void Dispose(bool disposing)
         {
             if(disposing && !closingEditor)
@@ -2130,6 +2146,7 @@ CurrentDateRva = 0x56237C8
 
             split.Panel2.Controls.Add(right);
             split.Panel2.Controls.Add(buttons);
+            WrapDockedLabel(lblPlayer);
             split.Panel2.Controls.Add(lblPlayer);
             page.Controls.Add(split);
 
@@ -2207,6 +2224,7 @@ CurrentDateRva = 0x56237C8
             btnRefreshSquad.Click+=delegate{RefreshLocalClub(lstSquadClubs.SelectedItem as Club);};
             split.Panel2.Controls.Add(lstSquad);
             split.Panel2.Controls.Add(buttons);
+            WrapDockedLabel(lblSquad);
             split.Panel2.Controls.Add(lblSquad);
             page.Controls.Add(split);
 
@@ -2336,6 +2354,7 @@ CurrentDateRva = 0x56237C8
             var note = new Label { Dock = DockStyle.Bottom, Height = 52, Padding = new Padding(4), ForeColor = Color.DimGray,
                 Text = "各名次（联赛）或各阶段名次（杯赛）的奖金，跟 FM 在赛事规则里显示的一致。" +
                        "改了会影响这项赛事里的所有俱乐部。金额用你设的货币显示，FM 内部按英镑存。" };
+            WrapDockedLabel(note);
             split.Panel2.Controls.Add(gridPrize); split.Panel2.Controls.Add(buttons); split.Panel2.Controls.Add(note);
             page.Controls.Add(split);
             txtPrizeSearch.TextChanged += delegate { FilterPrizes(); };
@@ -2421,22 +2440,24 @@ CurrentDateRva = 0x56237C8
         {
             var page = new TabPage("查找球员");
             fPos.Items.Add("不限"); fPos.Items.AddRange(FmLayout.Positions); fPos.SelectedIndex = 0;
-            var bar = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, WrapContents = true, Padding = new Padding(4) };
-            Func<string, Label> L = t => new Label { Text = t, AutoSize = true, Padding = new Padding(6, 6, 0, 0) };
-            bar.Controls.Add(L("姓名（中文／英文）")); bar.Controls.Add(fName);
-            bar.Controls.Add(L("年龄")); bar.Controls.Add(fAgeMin); bar.Controls.Add(L("到")); bar.Controls.Add(fAgeMax);
-            bar.Controls.Add(L("位置")); bar.Controls.Add(fPos);
-            bar.Controls.Add(L("CA 不低于")); bar.Controls.Add(fCa); bar.Controls.Add(L("PA 不低于")); bar.Controls.Add(fPa);
-            bar.Controls.Add(L("国籍")); bar.Controls.Add(fNation); bar.Controls.Add(L("俱乐部")); bar.Controls.Add(fClub);
-            bar.Controls.Add(L("合同在（年，0 为不限）")); bar.Controls.Add(fExpires);
-            bar.Controls.Add(fListed); bar.Controls.Add(fFree);
-            var btn = new Button { Text = "搜索", Width = 90 };
+            var bar=WrappingBar("PlayerFinderFilters");
+            bar.Controls.Add(FieldGroup(FieldLabel("姓名（中文／英文）"),fName));
+            bar.Controls.Add(FieldGroup(FieldLabel("年龄"),fAgeMin,FieldLabel("到"),fAgeMax));
+            bar.Controls.Add(FieldGroup(FieldLabel("位置"),fPos));
+            bar.Controls.Add(FieldGroup(FieldLabel("CA 不低于"),fCa));
+            bar.Controls.Add(FieldGroup(FieldLabel("PA 不低于"),fPa));
+            bar.Controls.Add(FieldGroup(FieldLabel("国籍"),fNation));
+            bar.Controls.Add(FieldGroup(FieldLabel("俱乐部"),fClub));
+            bar.Controls.Add(FieldGroup(FieldLabel("合同在（年，0 为不限）"),fExpires));
+            bar.Controls.Add(FieldGroup(fListed,fFree));
+            var btn = new Button { Name="SearchPlayers", Text="搜索", Width=90 };
             bar.Controls.Add(btn);
             foreach (var c in new[] { "姓名", "年龄", "俱乐部", "国籍", "位置", "CA", "PA", "合同到期", "年薪（" + Cur() + "／年）", "已挂牌" }) gridFind.Columns.Add(c, c);
             gridFind.ReadOnly = true; gridFind.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             gridFind.Columns[0].FillWeight = 170; gridFind.Columns[2].FillWeight = 140;
             gridFind.Columns[8].DefaultCellStyle.Format = "N0"; gridFind.Columns[8].DefaultCellStyle.FormatProvider = CultureInfo.InvariantCulture;
             lblFind.Text = "Set filters and click Search. Double-click a player to edit him. Up to 1,000 results, best potential first.";
+            WrapDockedLabel(lblFind);
             page.Controls.Add(gridFind); page.Controls.Add(lblFind); page.Controls.Add(bar);
             OrganizeFinderToolbar(bar,btn);
             btn.Click += delegate { RunFinder(btn); };
@@ -2535,20 +2556,21 @@ CurrentDateRva = 0x56237C8
             var names = FmLayout.StaffAttrs.Select(a => a.Split('|')[0]).ToArray();
             sfAttr1.Items.Add("（不限属性）"); sfAttr1.Items.AddRange(names); sfAttr1.SelectedIndex = 0;
             sfAttr2.Items.Add("（无）"); sfAttr2.Items.AddRange(names); sfAttr2.SelectedIndex = 0;
-            var bar = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, WrapContents = true, Padding = new Padding(4) };
-            Func<string, Label> L = t => new Label { Text = t, AutoSize = true, Padding = new Padding(6, 6, 0, 0) };
-            bar.Controls.Add(L("职务")); bar.Controls.Add(sfJob);
-            bar.Controls.Add(sfAttr1); bar.Controls.Add(L("不低于")); bar.Controls.Add(sfMin1);
-            bar.Controls.Add(L("和")); bar.Controls.Add(sfAttr2); bar.Controls.Add(L("不低于")); bar.Controls.Add(sfMin2);
-            bar.Controls.Add(L("年龄")); bar.Controls.Add(sfAgeMin); bar.Controls.Add(L("到")); bar.Controls.Add(sfAgeMax);
-            bar.Controls.Add(L("俱乐部")); bar.Controls.Add(sfClub); bar.Controls.Add(sfFree);
-            var btn = new Button { Text = "搜索", Width = 90 };
+            var bar=WrappingBar("StaffFinderFilters");
+            bar.Controls.Add(FieldGroup(FieldLabel("职务"),sfJob));
+            bar.Controls.Add(FieldGroup(sfAttr1,FieldLabel("不低于"),sfMin1));
+            bar.Controls.Add(FieldGroup(FieldLabel("和"),sfAttr2,FieldLabel("不低于"),sfMin2));
+            bar.Controls.Add(FieldGroup(FieldLabel("年龄"),sfAgeMin,FieldLabel("到"),sfAgeMax));
+            bar.Controls.Add(FieldGroup(FieldLabel("俱乐部"),sfClub));
+            bar.Controls.Add(sfFree);
+            var btn = new Button { Name="SearchStaff", Text="搜索", Width=90 };
             bar.Controls.Add(btn);
             foreach (var c in new[] { "姓名", "年龄", "俱乐部", "职务", "属性一", "属性二", "Determination", "年薪（" + Cur() + "／年）" }) gridStaffFind.Columns.Add(c, c);
             gridStaffFind.ReadOnly = true; gridStaffFind.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             gridStaffFind.Columns[0].FillWeight = 170; gridStaffFind.Columns[2].FillWeight = 140; gridStaffFind.Columns[3].FillWeight = 130;
             gridStaffFind.Columns[7].DefaultCellStyle.Format = "N0"; gridStaffFind.Columns[7].DefaultCellStyle.FormatProvider = CultureInfo.InvariantCulture;
             lblStaffFind.Text = "Set filters and click Search. Double-click someone to edit them on the Staff tab. Up to 1,000 results, best first.";
+            WrapDockedLabel(lblStaffFind);
             page.Controls.Add(gridStaffFind); page.Controls.Add(lblStaffFind); page.Controls.Add(bar);
             OrganizeFinderToolbar(bar,btn);
             btn.Click += delegate { RunStaffFinder(btn); };
@@ -4812,7 +4834,9 @@ CurrentDateRva = 0x56237C8
             gridStaff.Columns[0].ReadOnly = true; gridStaff.Columns[2].ReadOnly = true;
             gridStaff.Columns[0].FillWeight = 160; gridStaff.Columns[2].FillWeight = 70;
 
-            var buttons = new FlowLayoutPanel { Dock = DockStyle.Bottom, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, WrapContents = true, Padding = new Padding(4) };
+            var buttons = WrappingBar("StaffActions");
+            buttons.Dock=DockStyle.Bottom;
+            buttons.Padding=new Padding(4);
             var btnApply = new Button { Text = "应用修改", Width = 120 };
             var btnReload = new Button { Text = "重新加载", Width = 80 };
             var btnMax = new Button { Text = "所有属性拉到 20", Width = 140 };
@@ -4825,6 +4849,7 @@ CurrentDateRva = 0x56237C8
             split.Panel2.Controls.Add(gridStaff);
             split.Panel2.Controls.Add(BuildStaffAttributeToolbar());
             split.Panel2.Controls.Add(buttons);
+            WrapDockedLabel(lblStaff);
             split.Panel2.Controls.Add(lblStaff);
             page.Controls.Add(split);
 

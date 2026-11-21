@@ -23,11 +23,12 @@ namespace Fm24Editor
 
         void BuildLeagueEligibility(TabPage page,FmProcess attached,List<EligibilityCompetition> competitions,ulong team,Form dialog)
         {
-            var layout=new TableLayoutPanel {Dock=DockStyle.Fill,ColumnCount=1,RowCount=6,Padding=new Padding(8)};
+            var layout=new TableLayoutPanel {Name="LeagueEligibilityForm",AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,
+                ColumnCount=1,RowCount=5,Padding=new Padding(8)};
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
-            foreach(float height in new[]{72f,36f,44f})layout.RowStyles.Add(new RowStyle(SizeType.Absolute,height));
-            layout.RowStyles.Add(new RowStyle(SizeType.Percent,40));layout.RowStyles.Add(new RowStyle(SizeType.Percent,60));layout.RowStyles.Add(new RowStyle(SizeType.Absolute,42));
-            var note=new Label {Dock=DockStyle.Fill,Text="作用范围：所选赛事的所有球队。可调整非欧、外援、培养要求和报名总人数。\r\n球员当季认定和登记请切换到“球员当季资格”。工作许可和特殊条款分别判断。\r\n支持按中文、英文名称或 UID 查找已加载赛事。",UseMnemonic=false};
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            foreach(float height in new[]{36f,44f,110f,150f})layout.RowStyles.Add(new RowStyle(SizeType.Absolute,height));
+            var note=new Label {AutoSize=true,Dock=DockStyle.Fill,Text="作用范围：所选赛事的所有球队。可调整非欧、外援、培养要求和报名总人数。\r\n球员当季认定和登记请切换到“球员当季资格”。工作许可和特殊条款分别判断。\r\n支持按中文、英文名称或 UID 查找已加载赛事。",UseMnemonic=false};
             layout.Controls.Add(note,0,0);
             var selector=new TableLayoutPanel {Dock=DockStyle.Fill,ColumnCount=3,RowCount=1,Margin=Padding.Empty};
             selector.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,82));selector.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,145));selector.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
@@ -44,11 +45,10 @@ namespace Fm24Editor
             var overview=new TextBox {Name="LeagueRuleOverview",Dock=DockStyle.Fill,ReadOnly=true,Multiline=true,ScrollBars=ScrollBars.Vertical,BackColor=Color.FromArgb(245,248,252)};
             var status=new TextBox {Name="LeagueRulePreview",Dock=DockStyle.Fill,ReadOnly=true,Multiline=true,ScrollBars=ScrollBars.Vertical,BackColor=Color.White};
             layout.Controls.Add(overview,0,3);layout.Controls.Add(status,0,4);
-            var actions=new TableLayoutPanel {Dock=DockStyle.Fill,ColumnCount=2,RowCount=1,Margin=Padding.Empty};
-            actions.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,150));actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
-            var refresh=new Button {Text="重新读取赛事规则",Dock=DockStyle.Fill};
-            var apply=new Button {Name="ApplyLeagueRule",Text="应用所选报名规则",Dock=DockStyle.Fill,Enabled=false};
-            actions.Controls.Add(refresh,0,0);actions.Controls.Add(apply,1,0);layout.Controls.Add(actions,0,5);
+            var actions=WrappingBar("LeagueRuleActions");
+            var refresh=new Button {Text="重新读取赛事规则",AutoSize=true};StyleButton(refresh);
+            var apply=new Button {Name="ApplyLeagueRule",Text="应用所选报名规则",AutoSize=true,Enabled=false};StyleButton(apply,true);
+            actions.Controls.Add(refresh);actions.Controls.Add(apply);
             LeagueEligibilitySnapshot snapshot=null;bool changing=false;
             Action preview=()=>
             {
@@ -102,7 +102,7 @@ namespace Fm24Editor
                 if(before!=null && selected.Items.Contains(before))selected.SelectedItem=before;else if(selected.Items.Count>0)selected.SelectedIndex=0;
                 changing=false;reload();
             };
-            selected.Items.AddRange(competitions.Cast<object>().ToArray());page.Controls.Add(layout);
+            selected.Items.AddRange(competitions.Cast<object>().ToArray());page.Controls.Add(ScrollableForm(layout,actions));
             ulong current=team==0?0:attached.ReadPtr(team+0x50);var own=competitions.FirstOrDefault(c=>c.Address==current);
             if(own!=null)selected.SelectedItem=own;else if(selected.Items.Count>0)selected.SelectedIndex=0;else load();
         }

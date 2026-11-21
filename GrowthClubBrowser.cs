@@ -16,8 +16,8 @@ namespace Fm24Editor
         readonly CheckedListBox growthClubChecks=new CheckedListBox{Name="GrowthClubChecks",Dock=DockStyle.Fill,
             IntegralHeight=false,CheckOnClick=true,Visible=false,HorizontalScrollbar=true,BorderStyle=BorderStyle.FixedSingle};
         readonly Dictionary<long,Club> checkedGrowthClubs=new Dictionary<long,Club>();
-        readonly Label growthHint=new Label{Dock=DockStyle.Fill,TextAlign=ContentAlignment.MiddleLeft,ForeColor=UiMuted,AutoEllipsis=true};
-        TableLayoutPanel growthRosterLayout;
+        readonly Label growthHint=new Label{Dock=DockStyle.Bottom,TextAlign=ContentAlignment.MiddleLeft,ForeColor=UiMuted,Padding=new Padding(0,4,0,4)};
+        Control growthScopeToolbar;
         bool showGrowthQueue,switchingGrowthView,growthFilterReloadPosted;
         string browsePlayerQuery="",combinedGrowthScopeKey="";
         int combinedGrowthLoan;
@@ -45,7 +45,7 @@ namespace Fm24Editor
 
         Control BuildGrowthViewBar()
         {
-            var bar=new FlowLayoutPanel{Name="GrowthViews",Dock=DockStyle.Fill,WrapContents=false,Margin=Padding.Empty};
+            var bar=WrappingBar("GrowthViews");
             StyleButton(btnBrowseGrowthClubs,true);StyleButton(btnViewGrowthQueue);
             btnBrowseGrowthClubs.Click+=delegate{SwitchGrowthView(false);};
             btnViewGrowthQueue.Click+=delegate{SwitchGrowthView(true);};
@@ -83,8 +83,7 @@ namespace Fm24Editor
                 if(queue)browsePlayerQuery=txtGrowPlayerSearch.Text;
                 showGrowthQueue=queue;
                 splitGrow.Panel1Collapsed=queue;
-                growthRosterLayout.RowStyles[0].Height=queue?0:40;
-                growthRosterLayout.GetControlFromPosition(0,0).Visible=!queue;
+                growthScopeToolbar.Visible=!queue;
                 btnGrowAll.Visible=btnGrowNone.Visible=onlyGrowChecked.Visible=!queue;
                 btnRemoveGrowthPlayer.Visible=queue;
                 txtGrowPlayerSearch.Text=queue?"":browsePlayerQuery;

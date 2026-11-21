@@ -24,9 +24,13 @@ namespace Fm24Editor
         Panel registrationHost;
         internal Form BuildRegistrationDialog(bool preferPlayer)
         {
-            var dialog=new Form{Name="RegistrationCenter",Text="报名与资格",Font=Font,Width=1000,Height=760,MinimumSize=new Size(840,620),StartPosition=FormStartPosition.CenterParent};
+            var dialog=new Form{Name="RegistrationCenter",Text="报名与资格",Font=Font,AutoScaleMode=AutoScaleMode.Dpi,
+                Width=1000,Height=760,MinimumSize=new Size(540,400),StartPosition=FormStartPosition.CenterParent};
             dialog.Controls.Add(BuildRegistrationContent(dialog,preferPlayer));
-            var close=new Button{Text="关闭",Dock=DockStyle.Bottom,Height=36,DialogResult=DialogResult.Cancel};StyleButton(close);dialog.Controls.Add(close);dialog.CancelButton=close;PolishWorkspace(dialog);return dialog;
+            var close=new Button{Name="CloseRegistrationCenter",Text="关闭",Dock=DockStyle.Bottom,DialogResult=DialogResult.Cancel};
+            StyleButton(close);dialog.Controls.Add(close);dialog.CancelButton=close;
+            dialog.Load+=delegate{FitWindowToWorkArea(dialog,this);};
+            PolishWorkspace(dialog);return dialog;
         }
         void OpenRegistrationCenter(bool preferPlayer)
         {using(var dialog=BuildRegistrationDialog(preferPlayer))dialog.ShowDialog(this);}
@@ -35,7 +39,8 @@ namespace Fm24Editor
         {
             page.Controls.Clear();var tabs=new TabControl{Name="CompetitionWorkspaceSections",Dock=DockStyle.Fill};
             var registration=new TabPage("报名与资格");var prize=new TabPage("赛事奖金");prize.Controls.Add(prizeContent);tabs.TabPages.Add(registration);tabs.TabPages.Add(prize);
-            var bar=new FlowLayoutPanel{Dock=DockStyle.Top,Height=46,WrapContents=false,Padding=new Padding(4,4,4,0)};
+            var bar=WrappingBar("RegistrationActions");
+            bar.Padding=new Padding(4,4,4,0);
             var reload=new Button{Name="RegistrationReload",Text="读取报名资料",Width=130};var window=new Button{Name="LeagueRegistrationButton",Text="独立窗口…",Width=110};StyleButton(reload,true);StyleButton(window);bar.Controls.Add(reload);bar.Controls.Add(window);
             bar.Controls.Add(new Label{Text="球员当季资格与赛事名额在同一处管理",AutoSize=true,ForeColor=UiMuted,Padding=new Padding(8,8,0,0)});
             registrationHost=new Panel{Name="RegistrationWorkspace",Dock=DockStyle.Fill};registration.Controls.Add(registrationHost);registration.Controls.Add(bar);page.Controls.Add(tabs);
@@ -58,12 +63,17 @@ namespace Fm24Editor
                     if(!supported)unavailable="当前构建的报名数据尚未通过适配检查。本界面保持只读，其他功能按各自检查结果启用。";
                 }
                 catch(Exception ex){unavailable=ex.Message;}
-            var picker=new TableLayoutPanel{Name="RegistrationPlayerPicker",Dock=DockStyle.Top,Height=50,ColumnCount=4,Padding=new Padding(8,6,8,4)};
-            picker.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,70));picker.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,180));picker.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));picker.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,110));
-            picker.Controls.Add(new Label{Text="当前球员",Dock=DockStyle.Fill,TextAlign=ContentAlignment.MiddleLeft},0,0);
+            var picker=new TableLayoutPanel{Name="RegistrationPlayerPicker",Dock=DockStyle.Top,AutoSize=true,
+                AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=4,Padding=new Padding(8,6,8,4)};
+            picker.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            picker.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,35));
+            picker.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,65));
+            picker.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            picker.Controls.Add(new Label{Text="当前球员",AutoSize=true,Anchor=AnchorStyles.Left},0,0);
             var search=new TextBox{Name="RegistrationPlayerSearch",Dock=DockStyle.Fill,Enabled=supported};
             var playerChoice=new ComboBox{Name="RegistrationPlayer",Dock=DockStyle.Fill,DropDownStyle=ComboBoxStyle.DropDownList,Enabled=supported,DropDownWidth=500};
-            var read=new Button{Name="RegistrationPlayerReload",Text="重新读取",Dock=DockStyle.Fill,Enabled=supported};StyleButton(read);picker.Controls.Add(search,1,0);picker.Controls.Add(playerChoice,2,0);picker.Controls.Add(read,3,0);
+            var read=new Button{Name="RegistrationPlayerReload",Text="重新读取",AutoSize=true,Enabled=supported};
+            StyleButton(read);picker.Controls.Add(search,1,0);picker.Controls.Add(playerChoice,2,0);picker.Controls.Add(read,3,0);
             var tabs=new TabControl{Name="RegistrationScopeTabs",Dock=DockStyle.Fill};var personal=new TabPage("球员当季资格"){Name="PersonalEligibilityPage",Padding=new Padding(8)};var league=new TabPage("赛事名额与培养"){Name="CompetitionEligibilityPage",Padding=new Padding(8)};tabs.TabPages.Add(personal);tabs.TabPages.Add(league);
             root.Controls.Add(tabs);root.Controls.Add(picker);
             Action showEmpty=()=>
@@ -104,22 +114,29 @@ namespace Fm24Editor
             player=RefreshSelectedPlayer(player);
             var snapshot=PlayerEligibilitySnapshot.Capture(attached.Read,attached.Base,player);
             string club=attached.ReadLenString(attached.ReadPtr(snapshot.Club+0xC0))??("俱乐部 "+snapshot.ClubUid);
-            var layout=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=5,Padding=new Padding(4)};
+            var layout=new TableLayoutPanel{Name="PersonalEligibilityForm",AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,
+                ColumnCount=1,RowCount=4,Padding=new Padding(4)};
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute,64));layout.RowStyles.Add(new RowStyle(SizeType.Absolute,166));layout.RowStyles.Add(new RowStyle(SizeType.Absolute,112));layout.RowStyles.Add(new RowStyle(SizeType.Percent,100));layout.RowStyles.Add(new RowStyle(SizeType.Absolute,42));
-            layout.Controls.Add(new Label{Dock=DockStyle.Fill,UseMnemonic=false,Text="作用范围：仅所选球员  |  "+club+"  |  "+snapshot.Today.ToString("yyyy-MM-dd")+"\n"+RegistrationCountrySupport.PersonalScope(snapshot.NationUid),ForeColor=UiMuted},0,0);
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute,166));
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute,120));
+            layout.Controls.Add(new Label{AutoSize=true,Dock=DockStyle.Fill,UseMnemonic=false,Text="作用范围：仅所选球员  |  "+club+"  |  "+snapshot.Today.ToString("yyyy-MM-dd")+"\n"+RegistrationCountrySupport.PersonalScope(snapshot.NationUid),ForeColor=UiMuted},0,0);
             var overview=NewGrid();overview.Name="PersonalEligibilityOverview";overview.ReadOnly=true;overview.Columns.Add("item","项目");overview.Columns.Add("value","读取结果");overview.Columns.Add("scope","作用范围");overview.Columns[1].FillWeight=180;
             overview.Rows.Add("俱乐部国家",RegistrationCountrySupport.Country(snapshot.NationUid),"当前球员");
             overview.Rows.Add("当季历史非欧状态",snapshot.Italian?(snapshot.ItalyNonEu?"已标记":"未标记"):"该国独立历史标记尚未核实",snapshot.Italian?"已核实":"只读");
             overview.Rows.Add("国内赛事登记",(snapshot.Registered(8)?"已登记":"未登记")+"，取消登记记录 "+snapshot.Unregistrations(8),"当前球队");
             overview.Rows.Add("欧战登记",(snapshot.Registered(0)?"已登记":"未登记")+"，取消登记记录 "+snapshot.Unregistrations(0),"当前球队");layout.Controls.Add(overview,0,1);
-            var choices=new FlowLayoutPanel{Dock=DockStyle.Fill,FlowDirection=FlowDirection.TopDown,WrapContents=false,Margin=Padding.Empty};
+            var choices=new FlowLayoutPanel{Dock=DockStyle.Fill,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,
+                FlowDirection=FlowDirection.TopDown,WrapContents=false,Margin=Padding.Empty};
             var historical=new CheckBox{Name="ClearHistoricalNonEu",Text="清除该球员已核实的当季历史非欧认定",AutoSize=true,Enabled=snapshot.Italian && snapshot.ItalyNonEu,Checked=snapshot.Italian && snapshot.ItalyNonEu};
             var repair=new CheckBox{Name="RepairPlayerRegistration",Text="修复所选赛事类型的球员登记",AutoSize=true,Checked=!snapshot.Registered(8) || snapshot.Unregistrations(8)>0};
             var kind=new ComboBox{Name="PlayerRegistrationKind",DropDownStyle=ComboBoxStyle.DropDownList,Width=200};kind.Items.AddRange(new object[]{"国内赛事（各联赛）","欧战（UEFA）"});kind.SelectedIndex=0;
             var remove=new CheckBox{Text="清理所选赛事、当前球队的取消登记记录",AutoSize=true,Checked=true};choices.Controls.Add(historical);choices.Controls.Add(repair);choices.Controls.Add(kind);choices.Controls.Add(remove);layout.Controls.Add(choices,0,2);
             var preview=new TextBox{Name="EligibilityPreview",Dock=DockStyle.Fill,Multiline=true,ReadOnly=true,ScrollBars=ScrollBars.Vertical,BackColor=Color.FromArgb(247,249,252)};layout.Controls.Add(preview,0,3);
-            var apply=new Button{Name="ApplyPersonalEligibility",Text="应用当前球员的资格修复",Dock=DockStyle.Fill};StyleButton(apply,true);layout.Controls.Add(apply,0,4);
+            var apply=new Button{Name="ApplyPersonalEligibility",Text="应用当前球员的资格修复"};
+            StyleButton(apply,true);
+            var form=ScrollableForm(layout,apply);
             List<EligibilityEdit> pending=null;
             Action refresh=()=>
             {
@@ -140,12 +157,12 @@ namespace Fm24Editor
                     if(SaveEligibilityChanges(attached,snapshot.Reader,pending,player.DisplayName+"：球员当季资格"))
                     {
                         if(loadedPlayer!=null && loadedPlayer.Uid==player.Uid)LoadPlayer(player);
-                        page.Controls.Remove(layout);layout.Dispose();BuildPersonalEligibility(page,attached,player,owner);PolishWorkspace(page);
+                        page.Controls.Remove(form);form.Dispose();BuildPersonalEligibility(page,attached,player,owner);PolishWorkspace(page);
                     }
                 }
                 catch(Exception ex){ShowOperationMessage(FeedbackKind.Failed,ex.Message,"资格修复未完成");refresh();}
             };
-            page.Controls.Add(layout);refresh();
+            page.Controls.Add(form);refresh();
         }
     }
 }

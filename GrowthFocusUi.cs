@@ -128,14 +128,26 @@ namespace Fm24Editor
             try{player=RefreshSelectedPlayer(player);}
             catch(Exception ex){MessageBox.Show(ex.Message,"球员培养设置");return;}
             if(!growContent.Panel2Collapsed){BindGrowthEditor(growEditor,player);growEditor.Focus();return;}
-            using(var dialog=new Form{Text="球员培养设置",Font=Font,Width=430,Height=820,MinimumSize=new Size(400,650),StartPosition=FormStartPosition.CenterParent})
             using(var editor=new GrowthEditorPanel{Dock=DockStyle.Fill})
+            using(var dialog=BuildGrowthSettingsDialog(editor))
             {
                 ConnectGrowthEditor(editor);BindGrowthEditor(editor,player);
-                var close=new Button{Text="完成",Dock=DockStyle.Bottom,Height=36,DialogResult=DialogResult.OK};StyleButton(close,true);
-                dialog.Controls.Add(editor);dialog.Controls.Add(close);dialog.AcceptButton=close;dialog.ShowDialog(this);
+                dialog.ShowDialog(this);
             }
             BindGrowthEditor();
+        }
+
+        internal Form BuildGrowthSettingsDialog(GrowthEditorPanel editor)
+        {
+            var dialog=new Form{Name="GrowthSettingsDialog",Text="球员培养设置",Font=Font,
+                AutoScaleMode=AutoScaleMode.Dpi,Width=430,Height=820,MinimumSize=new Size(400,360),
+                StartPosition=FormStartPosition.CenterParent};
+            var close=new Button{Name="CloseGrowthSettings",Text="完成",Dock=DockStyle.Bottom,DialogResult=DialogResult.OK};
+            StyleButton(close,true);
+            dialog.Controls.Add(editor);dialog.Controls.Add(close);
+            dialog.AcceptButton=close;
+            dialog.Load+=delegate{FitWindowToWorkArea(dialog,this);};
+            return dialog;
         }
         bool ResetGrowthTarget(GrowTarget target)
         {

@@ -73,11 +73,11 @@ namespace Fm24Editor
                 list.ItemCheck+=(sender,args)=>OnAttributeCheck((CheckedListBox)sender,args);page.Controls.Add(list);AttributeTabs.TabPages.Add(page);
             }
             body.Controls.Add(AttributeTabs,0,5);
-            body.RowStyles[6].Height=112;
+            body.RowStyles[6].Height=126;
             var supportArea=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=3,Margin=Padding.Empty};
             supportArea.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
             supportArea.RowStyles.Add(new RowStyle(SizeType.Absolute,28));
-            supportArea.RowStyles.Add(new RowStyle(SizeType.Absolute,34));
+            supportArea.RowStyles.Add(new RowStyle(SizeType.Absolute,42));
             supportArea.RowStyles.Add(new RowStyle(SizeType.Percent,100));
             supportArea.Controls.Add(LimitUnselected,0,0);
             var supportBar=new FlowLayoutPanel{Dock=DockStyle.Fill,WrapContents=false,Margin=Padding.Empty};
@@ -89,8 +89,15 @@ namespace Fm24Editor
             actions.Controls.Add(Watch,0,0);actions.Controls.Add(Preview,1,0);actions.Controls.Add(ApplyChecked,0,1);actions.SetColumnSpan(ApplyChecked,2);body.Controls.Add(actions,0,7);
             foreach(var button in new[]{Speed,ClearAttributes,Watch,ApplyChecked,Preview})MainForm.StyleWorkspaceButton(button,button==Watch);
             MainForm.StyleWorkspaceButton(ConfigureSupport);
-            body.Height=686;Controls.Add(body);Resize+=delegate {body.Height=Math.Max(686,ClientSize.Height-Padding.Vertical);};
-            FontChanged+=delegate{playerName.Font=new Font(Font,FontStyle.Bold);body.GetControlFromPosition(0,0).Font=new Font(Font,FontStyle.Bold);};
+            Controls.Add(body);
+            Resize+=delegate{FitEditorHeight();};
+            FontChanged+=delegate
+            {
+                playerName.Font=new Font(Font,FontStyle.Bold);
+                body.GetControlFromPosition(0,0).Font=new Font(Font,FontStyle.Bold);
+                FitEditorHeight();
+            };
+            FitEditorHeight();
             Mode.SelectedIndexChanged+=delegate
             {
                 if(binding || uid==0 || running)return;
@@ -137,6 +144,14 @@ namespace Fm24Editor
             return 0;
         }
         void Emit(){if(OptionsChanged!=null)OptionsChanged(uid,options.Clone());}
+        void FitEditorHeight()
+        {
+            int fixedRows=(int)Math.Ceiling(body.RowStyles.Cast<RowStyle>().Where(row=>row.SizeType==SizeType.Absolute).Sum(row=>row.Height));
+            int minimum=fixedRows+Font.Height*12+body.Padding.Vertical;
+            int height=Math.Max(minimum,ClientSize.Height-Padding.Vertical);
+            if (body.Height!=height) body.Height=height;
+        }
+
         void OnAttributeCheck(CheckedListBox source,ItemCheckEventArgs args)
         {
             if(binding || uid==0 || running || !options.UsesAttributes)return;

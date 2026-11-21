@@ -68,9 +68,11 @@ namespace Fm24Editor
     {
         internal Form BuildCurrencyDialog()
         {
-            var dlg=new Form {Text="修改器显示货币",Width=650,Height=460,AutoScaleMode=AutoScaleMode.Dpi,StartPosition=FormStartPosition.CenterParent,FormBorderStyle=FormBorderStyle.FixedDialog,MaximizeBox=false,MinimizeBox=false};
-            var layout=new TableLayoutPanel {Dock=DockStyle.Fill,ColumnCount=2,Padding=new Padding(12),AutoScroll=true};
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,190));layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
+            var dlg=new Form {Text="修改器显示货币",Font=Font,Width=650,Height=460,
+                AutoScaleMode=AutoScaleMode.Dpi,StartPosition=FormStartPosition.CenterParent,FormBorderStyle=FormBorderStyle.FixedDialog,MaximizeBox=false,MinimizeBox=false};
+            var layout=new TableLayoutPanel {Name="CurrencyForm",AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,
+                ColumnCount=2,Padding=new Padding(12)};
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,35));layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,65));
             var intro=new Label {Text="选择修改器显示的货币，并填写与游戏一致的换算率。\n这项设置可以在挂接前保存；游戏内显示币种请在 FM 偏好设置中调整。",AutoSize=true,MaximumSize=new Size(590,0)};
             layout.Controls.Add(intro,0,0);layout.SetColumnSpan(intro,2);
             var symbols=new ComboBox {Name="CurrencySymbol",Width=260,DropDownStyle=ComboBoxStyle.DropDown};
@@ -89,6 +91,8 @@ namespace Fm24Editor
             layout.Controls.Add(quote,1,4);layout.Controls.Add(estimate,1,5);AddRow(layout,6,"用于校准的俱乐部",club);AddRow(layout,7,"FM 显示的总余额",balance);
             var note=new Label {AutoSize=true,MaximumSize=new Size(590,0),Text="换算率以你的 FM 设置为准，本程序不提供实时汇率。校准金额支持“1.5亿”“2000万”等写法。\n应用后会刷新已打开的人物、财务和奖金页；请先应用这些页面中的未保存修改。"};
             layout.Controls.Add(note,0,8);layout.SetColumnSpan(note,2);
+            foreach(Control field in new Control[]{symbols,rate,club,balance})field.Anchor=AnchorStyles.Left|AnchorStyles.Right;
+            foreach(Control field in layout.Controls)if(field is Label)field.Dock=DockStyle.Fill;
             Action update=()=>
             {
                 bool pounds=symbol()=="£";if(pounds){manual.Checked=true;rate.Text="1";}
@@ -125,7 +129,9 @@ namespace Fm24Editor
                 }
                 catch(Exception ex){MessageBox.Show(ex.Message,"显示货币设置未保存");}
             };
-            dlg.Controls.Add(layout);dlg.Controls.Add(apply);dlg.AcceptButton=apply;return dlg;
+            dlg.Controls.Add(ScrollableForm(layout,apply));dlg.AcceptButton=apply;
+            dlg.Load+=delegate{FitWindowToWorkArea(dlg,this);};
+            return dlg;
         }
         void Calibrate() {using(var dialog=BuildCurrencyDialog())dialog.ShowDialog(this);}
     }

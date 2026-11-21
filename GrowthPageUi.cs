@@ -46,38 +46,37 @@ namespace Fm24Editor
         TabPage BuildGrowTab()
         {
             var page=new TabPage("CA 成长"){Name="GrowthPage"};
-            var root=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=4,Margin=Padding.Empty};
-            root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
-            root.RowStyles.Add(new RowStyle(SizeType.Absolute,60));root.RowStyles.Add(new RowStyle(SizeType.Absolute,42));root.RowStyles.Add(new RowStyle(SizeType.Percent,100));root.RowStyles.Add(new RowStyle(SizeType.Absolute,28));
-            var header=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=2,RowCount=1,Margin=Padding.Empty};
-            header.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));header.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,625));
-            var title=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=2,Margin=Padding.Empty};
-            title.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
-            title.RowStyles.Add(new RowStyle(SizeType.Absolute,30));title.RowStyles.Add(new RowStyle(SizeType.Percent,100));
-            title.Controls.Add(new Label{Text="CA 成长",Font=new Font(Font.FontFamily,12,FontStyle.Bold),Dock=DockStyle.Fill,TextAlign=ContentAlignment.MiddleLeft},0,0);
-            lblGrow.Dock=DockStyle.Fill;lblGrow.Padding=Padding.Empty;lblGrow.AutoEllipsis=true;lblGrow.ForeColor=UiMuted;title.Controls.Add(lblGrow,0,1);header.Controls.Add(title,0,0);
-            growButtons=new FlowLayoutPanel{Dock=DockStyle.Fill,WrapContents=false,Padding=new Padding(0,9,0,0),Margin=Padding.Empty};
-            growButtons.Controls.Add(new Label{Text="速度",AutoSize=true,Padding=new Padding(0,8,0,0)});
+            var root=new Panel{Name="GrowthWorkspace",Dock=DockStyle.Fill};
+            var title=WrappingBar("GrowthHeading");
+            title.Controls.Add(new Label{Text="CA 成长",Font=new Font(Font.FontFamily,12,FontStyle.Bold),
+                AutoSize=true,Anchor=AnchorStyles.Left,Margin=new Padding(0,0,12,0)});
+            lblGrow.Dock=DockStyle.None;lblGrow.AutoSize=true;lblGrow.Anchor=AnchorStyles.Left;
+            lblGrow.Padding=Padding.Empty;lblGrow.ForeColor=UiMuted;title.Controls.Add(lblGrow);
+            growButtons=WrappingBar("GrowthActions");
             cmbGrowSpeed.Name="GrowthSpeed";cmbGrowSpeed.Width=90;cmbGrowSpeed.Margin=new Padding(3,4,8,4);
-            for(int g=2;g<=10;g++)cmbGrowSpeed.Items.Add(g+" 倍");cmbGrowSpeed.SelectedIndex=2;growButtons.Controls.Add(cmbGrowSpeed);
+            for(int g=2;g<=10;g++)cmbGrowSpeed.Items.Add(g+" 倍");cmbGrowSpeed.SelectedIndex=2;
+            growButtons.Controls.Add(FieldGroup(FieldLabel("速度"),cmbGrowSpeed));
             var fill=new Button{Name="GrowthFillToPa",Text="直接到 PA",Width=100};StyleButton(fill);StyleButton(btnGrowEdit);StyleButton(btnGrowToggle,true);btnGrowToggle.Width=144;btnGrowToggle.Name="GrowthStartStop";
-            StyleButton(btnGrowOptimize);growButtons.Controls.Add(btnGrowEdit);growButtons.Controls.Add(btnGrowOptimize);growButtons.Controls.Add(fill);growButtons.Controls.Add(btnGrowToggle);header.Controls.Add(growButtons,1,0);root.Controls.Add(header,0,0);
+            StyleButton(btnGrowOptimize);
+            foreach(var button in new[]{btnGrowEdit,btnGrowOptimize,fill,btnGrowToggle})
+            {
+                button.AutoSize=true;
+                growButtons.Controls.Add(button);
+            }
             splitGrow=new SplitContainer{Dock=DockStyle.Fill,Size=new Size(1100,500),SplitterWidth=5,FixedPanel=FixedPanel.Panel1,SplitterDistance=194};
             lstGrowClubs.BorderStyle=BorderStyle.FixedSingle;lstGrowClubs.HorizontalScrollbar=true;splitGrow.Panel1.Padding=new Padding(0,0,8,0);
             splitGrow.Panel1.Controls.Add(lstGrowClubs);splitGrow.Panel1.Controls.Add(growthClubChecks);
             splitGrow.Panel1.Controls.Add(growthMultiClub);splitGrow.Panel1.Controls.Add(txtGrowClubSearch);
             splitGrow.Panel1.Controls.Add(new Label{Text="选择俱乐部",Dock=DockStyle.Top,Height=26,ForeColor=UiMuted});
-            root.Controls.Add(BuildGrowthViewBar(),0,1);ConnectGrowthClubBrowser();
-            growContent=new SplitContainer{Name="GrowthContent",Dock=DockStyle.Fill,Size=new Size(900,500),SplitterWidth=5,FixedPanel=FixedPanel.Panel2,Panel2Collapsed=true};
-            var center=growthRosterLayout=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=3,Margin=Padding.Empty};
-            center.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
-            center.RowStyles.Add(new RowStyle(SizeType.Absolute,40));center.RowStyles.Add(new RowStyle(SizeType.Absolute,42));center.RowStyles.Add(new RowStyle(SizeType.Percent,100));
-            center.Controls.Add(BuildGrowthScopeBar(),0,0);
-            var toolbar=new FlowLayoutPanel{Name="GrowthRosterToolbar",Dock=DockStyle.Fill,WrapContents=false,Margin=Padding.Empty};
+            var views=BuildGrowthViewBar();ConnectGrowthClubBrowser();
+            growContent=new SplitContainer{Name="GrowthContent",Dock=DockStyle.Fill,Size=new Size(900,500),SplitterWidth=5,
+                FixedPanel=FixedPanel.Panel2,Panel1MinSize=0,Panel2MinSize=0,Panel2Collapsed=true};
+            var center=new Panel{Dock=DockStyle.Fill};
+            growthScopeToolbar=BuildGrowthScopeBar();
+            var toolbar=WrappingBar("GrowthRosterToolbar");
             txtGrowPlayerSearch.Font=Font;txtGrowPlayerSearch.Margin=new Padding(0,5,8,4);growDetailed.Margin=new Padding(0,8,2,0);
             StyleButton(btnGrowAll);StyleButton(btnGrowNone);StyleButton(btnRemoveGrowthPlayer);btnRemoveGrowthPlayer.Visible=false;
             toolbar.Controls.Add(txtGrowPlayerSearch);toolbar.Controls.Add(onlyGrowChecked);toolbar.Controls.Add(btnGrowAll);toolbar.Controls.Add(btnGrowNone);toolbar.Controls.Add(btnRemoveGrowthPlayer);toolbar.Controls.Add(growDetailed);
-            center.Controls.Add(toolbar,0,1);
             gridGrow.Name="GrowthRoster";gridGrow.EditMode=DataGridViewEditMode.EditOnEnter;gridGrow.SelectionMode=DataGridViewSelectionMode.FullRowSelect;gridGrow.MultiSelect=false;
             gridGrow.Columns.Add(new DataGridViewCheckBoxColumn{HeaderText="培养",Name="watch",FillWeight=34,MinimumWidth=38,SortMode=DataGridViewColumnSortMode.NotSortable});
             gridGrow.Columns[0].HeaderText="选";gridGrow.Columns[0].ToolTipText="勾选此球员参与培养";
@@ -96,8 +95,18 @@ namespace Fm24Editor
             var clubColumn=gridGrow.Columns[gridGrow.Columns.Add("GrowthPlayingClub","当前效力俱乐部")];
             clubColumn.ReadOnly=true;clubColumn.FillWeight=120;clubColumn.MinimumWidth=112;clubColumn.DisplayIndex=2;
             UpdateGrowthColumns();
-            center.Controls.Add(gridGrow,0,2);growContent.Panel1.Controls.Add(center);growEditor.Dock=DockStyle.Fill;growContent.Panel2.Controls.Add(growEditor);splitGrow.Panel2.Controls.Add(growContent);root.Controls.Add(splitGrow,0,2);
-            root.Controls.Add(growthHint,0,3);page.Controls.Add(root);
+            center.Controls.Add(gridGrow);
+            center.Controls.Add(toolbar);
+            center.Controls.Add(growthScopeToolbar);
+            growContent.Panel1.Controls.Add(center);growEditor.Dock=DockStyle.Fill;growContent.Panel2.Controls.Add(growEditor);
+            splitGrow.Panel2.Controls.Add(growContent);
+            WrapDockedLabel(growthHint);
+            root.Controls.Add(splitGrow);
+            root.Controls.Add(growthHint);
+            root.Controls.Add(views);
+            root.Controls.Add(growButtons);
+            root.Controls.Add(title);
+            page.Controls.Add(root);
             ConnectGrowthEditor(growEditor);
             txtGrowClubSearch.TextChanged+=delegate{if(growthMultiClub.Checked)PopulateGrowthClubList();else FilterGrowClubs();};
             lstGrowClubs.SelectedIndexChanged+=delegate{if(!growClubFilling && !growthMultiClub.Checked){RebuildGrowthScopes();LoadGrow();}};
@@ -125,16 +134,23 @@ namespace Fm24Editor
             {
                 int width=growContent.ClientSize.Width;
                 bool wasCollapsed=growContent.Panel2Collapsed;
-                if(width<1100 || growContent.Height<500)growContent.Panel2Collapsed=true;
+                int rosterMinimum=LayoutPixels(560);
+                int settingsWidth=Math.Max(LayoutPixels(350),growEditor.Font.Height*22);
+                bool roomForSettings=width>=rosterMinimum+settingsWidth+growContent.SplitterWidth &&
+                    growContent.ClientSize.Height>=LayoutPixels(340);
+                if(!roomForSettings)
+                {
+                    growContent.Panel1MinSize=0;growContent.Panel2MinSize=0;
+                    if(!wasCollapsed)growContent.Panel2Collapsed=true;
+                }
                 else
                 {
-                    growContent.Panel1MinSize=0;growContent.Panel2MinSize=0;growContent.Panel2Collapsed=false;
-                    growContent.SplitterDistance=Math.Max(760,width-330);growContent.Panel1MinSize=740;growContent.Panel2MinSize=310;
+                    if(wasCollapsed)growContent.Panel2Collapsed=false;
+                    growContent.SplitterDistance=width-settingsWidth-growContent.SplitterWidth;
                 }
-                // Keep the filter bar usable when the inspector opens.
-                txtGrowPlayerSearch.Width=Math.Max(110,Math.Min(190,growContent.Panel1.Width-400));
-                growSquadFilter.Width=Math.Max(120,Math.Min(240,growContent.Panel1.Width-352));
-                growDetailed.Visible=growContent.Panel1.Width>500;
+                int rosterWidth=growContent.Panel1.ClientSize.Width;
+                txtGrowPlayerSearch.Width=Math.Max(LayoutPixels(80),Math.Min(LayoutPixels(190),rosterWidth-LayoutPixels(12)));
+                growSquadFilter.Width=Math.Max(LayoutPixels(92),Math.Min(LayoutPixels(240),rosterWidth-LayoutPixels(62)));
                 if(wasCollapsed && !growContent.Panel2Collapsed)BindGrowthEditor();
             }
             finally{growLayoutBusy=false;}
