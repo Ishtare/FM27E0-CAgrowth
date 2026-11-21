@@ -47,7 +47,8 @@ namespace Fm24Editor
             if(fm!=attached || Safety.Off.ContainsKey("core") || !snapshot.Matches(attached.Read))
                 throw new InvalidOperationException("连接或预览数据已变化，请重新打开注册资格窗口。");
             string preview=string.Join("\r\n",plan.Select(w=>w.Label).Distinct().ToArray());
-            if(MessageBox.Show(preview+"\r\n\r\n确认应用以上修改？请先保留存档副本，修改后在 FM 中核对。",title,MessageBoxButtons.YesNo)!=DialogResult.Yes)return false;
+            if(MessageBox.Show(preview+"\r\n\r\n确认应用以上修改？请先保留存档副本，修改后在 FM 中核对。",title,MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question,MessageBoxDefaultButton.Button2)!=DialogResult.Yes)return false;
             Func<bool> guard=()=>fm==attached && !Safety.Off.ContainsKey("core") && snapshot.Matches(attached.Read,plan);
             string error;
             if(!EligibilityTransaction.Apply(attached.Read,attached.Write,plan,guard,out error))throw new InvalidOperationException(error);

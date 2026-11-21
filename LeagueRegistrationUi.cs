@@ -48,12 +48,12 @@ namespace Fm24Editor
             var number=new NumericUpDown {Name="LeagueRuleNumber",Minimum=0,Maximum=1000,Dock=DockStyle.Fill,Enabled=false};
             var relax=new Button {Name="RelaxLeagueRule",Text="放宽所选规则",Dock=DockStyle.Fill,Enabled=false};
             bar.Controls.Add(ruleType,0,0);bar.Controls.Add(number,1,0);bar.Controls.Add(relax,2,0);layout.Controls.Add(bar,0,2);
-            var overview=new TextBox {Name="LeagueRuleOverview",Dock=DockStyle.Fill,ReadOnly=true,Multiline=true,ScrollBars=ScrollBars.Vertical,BackColor=Color.FromArgb(245,248,252)};
+            var overview=new TextBox {Name="LeagueRuleOverview",Dock=DockStyle.Fill,ReadOnly=true,Multiline=true,ScrollBars=ScrollBars.Vertical,BackColor=UiInset};
             var status=new TextBox {Name="LeagueRulePreview",Dock=DockStyle.Fill,ReadOnly=true,Multiline=true,ScrollBars=ScrollBars.Vertical,BackColor=Color.White};
             layout.Controls.Add(overview,0,3);layout.Controls.Add(status,0,4);
             var actions=WrappingBar("LeagueRuleActions");
             var refresh=new Button {Text="重新读取赛事规则",AutoSize=true};StyleButton(refresh);
-            var apply=new Button {Name="ApplyLeagueRule",Text="应用所选报名规则",AutoSize=true,Enabled=false};StyleButton(apply,true);
+            var apply=new Button {Name="ApplyLeagueRule",Text="应用所选报名规则",AutoSize=true,Enabled=false};StyleButton(apply,WorkspaceButtonRole.Primary);
             actions.Controls.Add(refresh);actions.Controls.Add(apply);
             LeagueEligibilitySnapshot snapshot=null;bool changing=false;
             Action preview=()=>

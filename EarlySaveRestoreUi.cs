@@ -18,8 +18,8 @@ namespace Fm24Editor
         readonly Button apply=new Button{Name="ApplyEarlySaveRestore",Text="应用恢复",Width=125,Enabled=false};
         readonly CheckBox restoreCa=new CheckBox{Name="RestoreOriginalCA",Text="同时恢复来源 CA",AutoSize=true,Enabled=false};
         readonly CheckBox extra=new CheckBox{Name="RestoreHiddenAndFeet",Text="同时恢复惯用脚与隐藏属性",AutoSize=true,Enabled=false};
-        readonly Label status=new Label{Name="EarlySaveStatus",Dock=DockStyle.Top,Height=67,Padding=new Padding(10,5,10,0)};
-        readonly Label budget=new Label{Name="EarlySaveComparison",Dock=DockStyle.Bottom,Height=65,Padding=new Padding(10,4,10,0)};
+        readonly Label status=new Label{Name="EarlySaveStatus",Dock=DockStyle.Top,Height=67,Padding=new Padding(4,5,4,0)};
+        readonly Label budget=new Label{Name="EarlySaveComparison",Dock=DockStyle.Bottom,Height=65,Padding=new Padding(4,4,4,0)};
         readonly DataGridView grid=new WorkspaceGrid{Name="EarlySaveAttributes",Dock=DockStyle.Fill,ReadOnly=true,
             RowHeadersVisible=false,AllowUserToAddRows=false,AllowUserToDeleteRows=false,
             AutoSizeColumnsMode=DataGridViewAutoSizeColumnsMode.Fill,BackgroundColor=Color.White};
@@ -29,20 +29,19 @@ namespace Fm24Editor
         internal event Func<AttributeRestoreSource,bool,bool,bool> ApplyRequested;
         public EarlySaveRestoreDialog(Player player,GrowthStep frame,string engineFilePath=null)
         {
-            this.player=player; this.frame=frame; Text="恢复球员默认／开档属性";
-            Font=new Font("Microsoft YaHei UI",9.25F); Size=new Size(800,610); MinimumSize=new Size(710,490);
-            StartPosition=FormStartPosition.CenterParent;
-            var bar=new FlowLayoutPanel{Dock=DockStyle.Top,Height=44,Padding=new Padding(6)};
-            MainForm.StyleWorkspaceButton(readDatabase);bar.Controls.Add(readDatabase);
-            MainForm.StyleWorkspaceButton(choose);bar.Controls.Add(choose);
-            var options=new FlowLayoutPanel{Dock=DockStyle.Top,Height=30,Padding=new Padding(6,1,6,0)};
+            this.player=player;this.frame=frame;Name="EarlySaveRestoreDialog";
+            MainForm.StyleWorkspaceDialog(this,"恢复球员默认／开档属性");
+            Size=new Size(800,610);MinimumSize=new Size(710,490);
+            var bar=new FlowLayoutPanel{Dock=DockStyle.Top,Height=44,TabIndex=0};
+            MainForm.StyleButton(readDatabase);bar.Controls.Add(readDatabase);
+            MainForm.StyleButton(choose);bar.Controls.Add(choose);
+            var options=new FlowLayoutPanel{Dock=DockStyle.Top,Height=30,Padding=new Padding(4,1,0,0),TabIndex=1};
             options.Controls.Add(restoreCa);options.Controls.Add(extra);
-            var close=new Button{Text="关闭",Width=90,DialogResult=DialogResult.Cancel};
-            var footer=new FlowLayoutPanel{Dock=DockStyle.Bottom,Height=46,FlowDirection=FlowDirection.RightToLeft,Padding=new Padding(6)};
-            MainForm.StyleWorkspaceButton(close);MainForm.StyleWorkspaceButton(apply,true);
-            footer.Controls.Add(close);footer.Controls.Add(apply);CancelButton=close;
+            grid.TabIndex=2;
+            var footer=MainForm.DialogActions(this,MainForm.DialogDismiss("CloseEarlySaveRestore","关闭"),apply);
+            footer.TabIndex=3;
             foreach(string title in new[]{"属性","当前","来源值","恢复后"}) grid.Columns.Add(title,title);
-            MainForm.StyleWorkspaceGrid(grid,Font);
+            MainForm.StyleWorkspaceGrid(grid);
             Controls.Add(grid);Controls.Add(budget);Controls.Add(status);Controls.Add(options);Controls.Add(bar);Controls.Add(footer);
             status.Text=player.DisplayName+"  [UID "+player.Uid+"]\n"+
                 "游戏数据库提供原版默认值。要恢复本生涯开档时的实际值，请选当时另存的 .fm。";

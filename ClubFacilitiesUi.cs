@@ -32,7 +32,7 @@ namespace Fm24Editor
                 loadedFacility[i]=valid?field.Value:-1;numFacility[i].Visible=valid;numFacility[i].Enabled=valid && globallyWritable;
                 numFacility[i].Value=valid?field.Value:1;
                 facilityNotes[i].Text=!valid?(field==null?"设施资料尚未读取":field.Reason):globallyWritable?"已核对":disabledReason;
-                facilityNotes[i].ForeColor=valid && globallyWritable?UiMuted:Color.FromArgb(150,90,30);
+                facilityNotes[i].ForeColor=valid && globallyWritable?UiMuted:UiWarningInk;
             }
         }
         void LoadFacilities(Club club)

@@ -1864,7 +1864,7 @@ CurrentDateRva = 0x56237C8
         TextBox txtCur = new TextBox { Text = "$", Width = 30 };
         Button btnCalibrate = new Button { Text = "货币...", Width = 85 };
         Label lblMoney = new Label { AutoSize = true, Padding = new Padding(10, 5, 0, 0) };
-        Label lblStoredPounds = new Label { AutoSize = true, MaximumSize = new Size(470, 0), ForeColor = Color.DimGray };
+        Label lblStoredPounds = new Label { AutoSize = true, MaximumSize = new Size(470, 0), ForeColor = UiMuted };
         List<KeyValuePair<Label, string>> curLabels = new List<KeyValuePair<Label, string>>();
 
         TextBox txtPlayerSearch = NewSearchBox();
@@ -1984,11 +1984,7 @@ CurrentDateRva = 0x56237C8
                 Dock = DockStyle.Fill, AllowUserToAddRows = false, AllowUserToDeleteRows = false, RowHeadersVisible = false,
                 SelectionMode = DataGridViewSelectionMode.CellSelect
             };
-            g.BackgroundColor=Color.White;g.GridColor=Color.FromArgb(234,238,244);
-            g.EnableHeadersVisualStyles=false;g.ColumnHeadersHeight=34;g.RowTemplate.Height=29;
-            g.ColumnHeadersDefaultCellStyle.BackColor=Color.FromArgb(240,244,249);g.ColumnHeadersDefaultCellStyle.ForeColor=Color.FromArgb(70,84,104);
-            g.DefaultCellStyle.SelectionBackColor=Color.FromArgb(223,235,254);g.DefaultCellStyle.SelectionForeColor=Color.FromArgb(22,46,85);
-            g.AlternatingRowsDefaultCellStyle.BackColor=Color.FromArgb(249,251,254);
+            StyleWorkspaceGrid(g);
             return g;
         }
 
@@ -1998,12 +1994,12 @@ CurrentDateRva = 0x56237C8
             forceCalibrate = calibrate;
             Text = "FM27E0 汉化修改器 v" + Version;
             try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
-            Font=new Font("Microsoft YaHei UI",9.25F);
+            Font=UiFont;
             AutoScaleMode=AutoScaleMode.Dpi;
             var workArea=Screen.PrimaryScreen.WorkingArea;
             MinimumSize=new Size(Math.Min(1060,workArea.Width-24),Math.Min(690,workArea.Height-24));
             Size=new Size(Math.Min(1440,workArea.Width-32),Math.Min(900,workArea.Height-32));
-            BackColor=Color.FromArgb(244,247,251);ForeColor=UiInk;
+            BackColor=UiSurface;ForeColor=UiInk;
             StartPosition = FormStartPosition.CenterScreen;
 
             var top = BuildHeader();
@@ -2252,7 +2248,7 @@ CurrentDateRva = 0x56237C8
                 var squad = SquadPlayers();
                 if (squad.Count == 0) return;
                 if (MessageBox.Show("将全部 " + FmLayout.Attrs.Count(x => x.EndsWith("|V")) + " 项已验证属性拉到 20？涉及球员数：" + squad.Count + " 人。",
-                        "属性拉满", MessageBoxButtons.YesNo) != DialogResult.Yes) return;
+                        "属性拉满", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes) return;
                 int done = 0;
                 foreach (var p in squad) if (MaxAttributes(p)) done++;
                 lblStatus.Text = done + " 名球员属性已拉满，在 FM 中推进一天后查看。";
@@ -2353,9 +2349,10 @@ CurrentDateRva = 0x56237C8
             gridPrize.Columns[0].ReadOnly = true;
             var buttons = new FlowLayoutPanel { Dock = DockStyle.Bottom, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, Padding = new Padding(4) };
             var btnApply = new Button { Text = "应用修改", Width = 120 };
+            StyleButton(btnApply,WorkspaceButtonRole.Primary);
             var btnReload = new Button { Text = "重新加载", Width = 80 };
             buttons.Controls.Add(btnApply); buttons.Controls.Add(btnReload);
-            var note = new Label { Dock = DockStyle.Bottom, Height = 52, Padding = new Padding(4), ForeColor = Color.DimGray,
+            var note = new Label { Dock = DockStyle.Bottom, Height = 52, Padding = new Padding(4), ForeColor = UiMuted,
                 Text = "各名次（联赛）或各阶段名次（杯赛）的奖金，跟 FM 在赛事规则里显示的一致。" +
                        "改了会影响这项赛事里的所有俱乐部。金额用你设的货币显示，FM 内部按英镑存。" };
             WrapDockedLabel(note);
@@ -3226,8 +3223,9 @@ CurrentDateRva = 0x56237C8
             var oTraits = fm.Read(p.Person + FmLayout.Traits, 8);
             if (oTraits == null) return;
 
-            var dlg = new Form { Text = "详情与特质 - " + p.DisplayName, Width = 640, Height = 850, StartPosition = FormStartPosition.CenterParent };
-            var t = new TableLayoutPanel { Dock = DockStyle.Top, ColumnCount = 2, Height = 412, Padding = new Padding(8) };
+            var dlg = new Form { Width = 640, Height = 850 };
+            StyleWorkspaceDialog(dlg,"详情与特质 · "+p.DisplayName);
+            var t = new TableLayoutPanel { Dock = DockStyle.Top, ColumnCount = 2, Height = 412, TabIndex = 0 };
             Func<Dictionary<string, ulong>, string, TextBox> nameBox = (dict, cur) =>
             {
                 var tb = new TextBox { Width = 300, Text = cur ?? "", AutoCompleteMode = AutoCompleteMode.SuggestAppend, AutoCompleteSource = AutoCompleteSource.CustomSource };
@@ -3291,10 +3289,13 @@ CurrentDateRva = 0x56237C8
                 bits.Add(bit); traits.Items.Add(Zh.Z(nm), on);
             }
             var lbl = new Label { Dock = DockStyle.Top, Height = 22, Padding = new Padding(8, 4, 0, 0), Text = "球员特质（勾选添加，取消勾选移除）：" };
-            var ok = new Button { Text = "应用", Dock = DockStyle.Bottom, Height = 32 };
-            var note = new Label { Dock = DockStyle.Bottom, Height = 36, Padding = new Padding(8, 2, 8, 0), ForeColor = Color.DimGray,
+            var ok = new Button { Text = "应用" };
+            var note = new Label { Dock = DockStyle.Bottom, Height = 36, Padding = new Padding(8, 2, 8, 0), ForeColor = UiMuted,
                 Text = "姓名和城市须来自 FM 数据库，可输入文字查看建议。姓名立即显示；出生地在下一游戏日显示；外貌在 3D 比赛中显示。" };
-            dlg.Controls.Add(traits); dlg.Controls.Add(lbl); dlg.Controls.Add(t); dlg.Controls.Add(note); dlg.Controls.Add(ok);
+            traits.TabIndex=1;
+            var actions=DialogActions(dlg,DialogDismiss("CancelPlayerDetails","取消"),ok);
+            actions.TabIndex=2;
+            dlg.Controls.Add(traits); dlg.Controls.Add(lbl); dlg.Controls.Add(t); dlg.Controls.Add(note); dlg.Controls.Add(actions);
 
             ok.Click += delegate
             {
@@ -3484,7 +3485,7 @@ CurrentDateRva = 0x56237C8
             AddRow(t, r++, "潜在能力（1-200）", pa);
             AddRow(t, r++, "性格", pers);
             t.Controls.Add(fresh, 1, r++);
-            var info = new Label { AutoSize = true, MaximumSize = new Size(560, 0), ForeColor = Color.DimGray,
+            var info = new Label { AutoSize = true, MaximumSize = new Size(560, 0), ForeColor = UiMuted,
                 Text = "姓名须来自 FM 姓名库，可输入文字查看建议。原球员的历史履历会保留，建议选择履历较少的青年球员。" +
                        "之后可在「详情与特质」设置特质，修改可以从「变更记录」撤销。" };
             t.Controls.Add(info, 0, r++); t.SetColumnSpan(info, 2);
@@ -3585,15 +3586,19 @@ CurrentDateRva = 0x56237C8
         void SwapPlayerDialog()
         {
             var p = loadedPlayer; if (p == null || fm == null) return;
-            var f = new Form { Text = "交换 " + p.DisplayName + " 与另一名球员", Width = 520, Height = 520, StartPosition = FormStartPosition.CenterParent, MinimizeBox = false, MaximizeBox = false };
+            var f = new Form { Width = 520, Height = 520, MaximizeBox = false };
+            StyleWorkspaceDialog(f,"交换球员 · "+p.DisplayName);
             var search = new TextBox { Dock = DockStyle.Top };
             var list = new ListBox { Dock = DockStyle.Fill, IntegralHeight = false };
             var info = new Label { Dock = DockStyle.Bottom, Height = 64, Padding = new Padding(4),
                 Text = p.DisplayName + " (" + ClubNameOf(p.Club) + "）将与所选球员互换球队。" +
                        "双方保留原合同（工资、期限和条款）。修改可以从「变更记录」撤销。" };
-            var ok = new Button { Text = "交换球员", Dock = DockStyle.Bottom, Height = 30 };
-            f.Controls.Add(list); f.Controls.Add(SearchWithListSpacing(search)); f.Controls.Add(new Label { Text = "搜索球员（中文或英文，一字名须完整匹配）：", Dock = DockStyle.Top, Height = 20 });
-            f.Controls.Add(info); f.Controls.Add(ok);
+            var ok = new Button { Text = "交换球员" };
+            var searchArea=SearchWithListSpacing(search);searchArea.TabIndex=0;list.TabIndex=1;
+            var actions=DialogActions(f,DialogDismiss("CancelPlayerSwap","取消"),ok);
+            actions.TabIndex=2;
+            f.Controls.Add(list); f.Controls.Add(searchArea); f.Controls.Add(new Label { Text = "搜索球员（中文或英文，一字名须完整匹配）：", Dock = DockStyle.Top, Height = 22 });
+            f.Controls.Add(info); f.Controls.Add(actions);
             search.TextChanged += delegate
             {
                 list.BeginUpdate(); list.Items.Clear();
@@ -3643,7 +3648,7 @@ CurrentDateRva = 0x56237C8
             if (a.Team == b.Team) { MessageBox.Show(p1.Name + " 与 " + p2.Name + " 已在同一支球队效力。", "交换球员"); return false; }
             string ca = ClubNameOf(a.Club), cb = ClubNameOf(b.Club);
             if (MessageBox.Show("交换 " + p1.Name + " (" + ca + "）与 " + p2.Name + " (" + cb + "）立即交换球队？\n\n双方保留原合同和工资。联赛注册需在下一个注册窗口完成。请先备份存档。",
-                    "交换球员", MessageBoxButtons.YesNo) != DialogResult.Yes) return false;
+                    "交换球员", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes) return false;
 
             curGroup = ++lastGroup;
             try
@@ -3692,7 +3697,8 @@ CurrentDateRva = 0x56237C8
         void MovePlayerDialog()
         {
             var p = loadedPlayer; if (p == null || fm == null) return;
-            var f = new Form { Text = "转移 " + p.DisplayName + " 至另一家俱乐部", Width = 520, Height = 520, StartPosition = FormStartPosition.CenterParent, MinimizeBox = false, MaximizeBox = false };
+            var f = new Form { Width = 520, Height = 520, MaximizeBox = false };
+            StyleWorkspaceDialog(f,"转移球员 · "+p.DisplayName);
             var search = new TextBox { Dock = DockStyle.Top };
             var list = new ListBox { Dock = DockStyle.Fill, IntegralHeight = false };
             var teamBox = new ComboBox { Dock = DockStyle.Bottom, DropDownStyle = ComboBoxStyle.DropDownList };
@@ -3700,9 +3706,12 @@ CurrentDateRva = 0x56237C8
                 Text = "请选择俱乐部和球队。球员立即加盟并保留原合同。目标球队的" +
                        "球员名单须有空位：FM 在游戏内完成转会后会分配空位，刚读取存档时可能没有空位。" +
                        "没有空位时可使用「交换」功能。修改可以从「变更记录」撤销。" };
-            var ok = new Button { Text = "转移", Dock = DockStyle.Bottom, Height = 30 };
-            f.Controls.Add(list); f.Controls.Add(SearchWithListSpacing(search)); f.Controls.Add(new Label { Text = "搜索俱乐部（至少 2 个字符）：", Dock = DockStyle.Top, Height = 20 });
-            f.Controls.Add(teamBox); f.Controls.Add(info); f.Controls.Add(ok);
+            var ok = new Button { Text = "转移" };
+            var searchArea=SearchWithListSpacing(search);searchArea.TabIndex=0;list.TabIndex=1;teamBox.TabIndex=2;
+            var actions=DialogActions(f,DialogDismiss("CancelPlayerTransfer","取消"),ok);
+            actions.TabIndex=3;
+            f.Controls.Add(list); f.Controls.Add(searchArea); f.Controls.Add(new Label { Text = "搜索俱乐部（至少 2 个字符）：", Dock = DockStyle.Top, Height = 22 });
+            f.Controls.Add(teamBox); f.Controls.Add(info); f.Controls.Add(actions);
             search.TextChanged += delegate
             {
                 list.BeginUpdate(); list.Items.Clear();
@@ -3744,7 +3753,7 @@ CurrentDateRva = 0x56237C8
             if (de >= dc) { MessageBox.Show("目标球队的球员名单暂时没有空位。可等待游戏内转会后分配空位，或使用「交换」将 " + p.Name + " 与目标球队的球员交换。", "转移"); return false; }
             string to = dstClub.Name, from = ClubNameOf(s.Club);
             if (MessageBox.Show("转移 " + p.Name + "，从 " + from + " to " + to + "？\n\n球员保留原合同和工资，联赛注册需在下一个注册窗口完成。请先备份存档。",
-                    "转移", MessageBoxButtons.YesNo) != DialogResult.Yes) return false;
+                    "转移", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes) return false;
             ulong dstClubTeam = ClubTeamList(dstClub.Addr).DefaultIfEmpty(dst).First();   // contracts point at the club's first team
 
             curGroup = ++lastGroup;
@@ -3788,7 +3797,7 @@ CurrentDateRva = 0x56237C8
             if (!TeamVector(s.Team, out sb, out se, out sc)) { MessageBox.Show("球队数据异常，请重新「挂接并扫描」。", "解约"); return false; }
             string from = ClubNameOf(s.Club);
             if (MessageBox.Show("解约 " + p.Name + "，从 " + from + "？球员将终止合同并成为自由球员，包括本队在内的任何俱乐部都可签约。\n\n请先备份存档。",
-                    "解约", MessageBoxButtons.YesNo) != DialogResult.Yes) return false;
+                    "解约", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes) return false;
             curGroup = ++lastGroup;
             try
             {
@@ -3821,8 +3830,9 @@ CurrentDateRva = 0x56237C8
             var orig = end > begin ? fm.Read(begin, (int)(end - begin)) : new byte[0];
             double r = Rate();
 
-            var dlg = new Form { Text = "奖金与条款 - " + loadedPlayer.Name, Width = 720, Height = 420, StartPosition = FormStartPosition.CenterParent };
-            var grid = NewGrid();
+            var dlg = new Form { Width = 720, Height = 420 };
+            StyleWorkspaceDialog(dlg,"奖金与条款 · "+loadedPlayer.Name);
+            var grid = NewGrid();grid.TabIndex=0;
             var typeCol = new DataGridViewComboBoxColumn { HeaderText = "类型", FillWeight = 200 };
             foreach (var kv in ClauseNames.OrderBy(k => k.Value)) typeCol.Items.Add(kv.Value);
             grid.Columns.Add(typeCol);
@@ -3836,11 +3846,13 @@ CurrentDateRva = 0x56237C8
                 string name = ClauseName(ty); if (!typeCol.Items.Contains(name)) typeCol.Items.Add(name);
                 grid.Rows.Add(name, amt < 0 ? "" : Money(amt * r), val < 0 ? "" : val.ToString(), false);
             }
-            var info = new Label { Dock = DockStyle.Top, Height = 36, Padding = new Padding(6),
+            var info = new Label { Dock = DockStyle.Top, Height = 54, Padding = new Padding(4), ForeColor = UiMuted,
                 Text = "可修改金额、数值或类型，或勾选「移除」。金额使用当前显示货币（游戏内按英镑存储）。" +
                        "当前可容纳 " + ((cap - begin) / 8) + " 项条款。要添加解约金条款，可修改已有奖金项的类型。" };
-            var ok = new Button { Text = "应用", Dock = DockStyle.Bottom, Height = 32 };
-            dlg.Controls.Add(grid); dlg.Controls.Add(info); dlg.Controls.Add(ok);
+            var ok = new Button { Text = "应用" };
+            var actions=DialogActions(dlg,DialogDismiss("CancelContractClauses","取消"),ok);
+            actions.TabIndex=1;
+            dlg.Controls.Add(grid); dlg.Controls.Add(info); dlg.Controls.Add(actions);
             ok.Click += delegate
             {
                 var outp = new List<byte>(); var log = new List<string>();
@@ -4730,8 +4742,9 @@ CurrentDateRva = 0x56237C8
             var deals = SponsorDeals(fm, c.Addr).Select(a => new KeyValuePair<ulong, byte[]>(a, fm.Read(a, 0x18))).Where(x => x.Value != null && BitConverter.ToInt32(x.Value, 12) > 0).ToList();
             if (deals.Count == 0) { MessageBox.Show(c.Name + " 当前没有赞助合同。", "赞助合同"); return; }
             double r = Rate();
-            var f = new Form { Text = c.Name + "：赞助合同", Width = 760, Height = 360, StartPosition = FormStartPosition.CenterParent, MinimizeBox = false, MaximizeBox = false };
-            var grid = NewGrid(); grid.Dock = DockStyle.Fill;
+            var f = new Form { Width = 760, Height = 360, MaximizeBox = false };
+            StyleWorkspaceDialog(f,"赞助合同 · "+c.Name);
+            var grid = NewGrid();grid.TabIndex=0;
             foreach (var h in new[] { "类型", "到期日", "年数", "每赛季（" + Cur() + ")", "总额（" + Cur() + ")" }) grid.Columns.Add(h, h);
             for (int k = 0; k < 3; k++) grid.Columns[k].ReadOnly = true;
             foreach (var d in deals)
@@ -4747,10 +4760,12 @@ CurrentDateRva = 0x56237C8
                 if (e.ColumnIndex != 3) return; double v;
                 if (ParseMoney(Convert.ToString(grid.Rows[e.RowIndex].Cells[3].Value), out v)) grid.Rows[e.RowIndex].Cells[4].Value = Money(v * (int)grid.Rows[e.RowIndex].Cells[2].Value);
             };
-            var note = new Label { Dock = DockStyle.Bottom, Height = 40, Padding = new Padding(4), ForeColor = Color.DimGray,
+            var note = new Label { Dock = DockStyle.Bottom, Height = 40, Padding = new Padding(4), ForeColor = UiMuted,
                 Text = "新金额会立即显示在「财务 > 赞助及其他」中。FM 每年支付一次赞助费，修改会在下一次付款时生效。" };
-            var ok = new Button { Text = "应用", Dock = DockStyle.Bottom, Height = 30 };
-            f.Controls.Add(grid); f.Controls.Add(note); f.Controls.Add(ok);
+            var ok = new Button { Text = "应用" };
+            var actions=DialogActions(f,DialogDismiss("CancelSponsors","取消"),ok);
+            actions.TabIndex=1;
+            f.Controls.Add(grid); f.Controls.Add(note); f.Controls.Add(actions);
             ok.Click += delegate
             {
                 if(!Safety.On("sponsor") || !ClubCatalogReader.MatchesFullFinance(fm,c))
@@ -4845,6 +4860,7 @@ CurrentDateRva = 0x56237C8
             buttons.Dock=DockStyle.Bottom;
             buttons.Padding=new Padding(4);
             var btnApply = new Button { Text = "应用修改", Width = 120 };
+            StyleButton(btnApply,WorkspaceButtonRole.Primary);
             var btnReload = new Button { Text = "重新加载", Width = 80 };
             var btnMax = new Button { Text = "所有属性拉到 20", Width = 140 };
             buttons.Controls.Add(btnApply); buttons.Controls.Add(btnReload); buttons.Controls.Add(btnMax);
@@ -5282,7 +5298,7 @@ CurrentDateRva = 0x56237C8
             var open = changes.Where(c => !c.Undone).ToList();
             if (open.Count == 0 || fm == null) return;
             if (MessageBox.Show("撤销本次会话的全部 " + open.Count + " 项修改？" + (freezes.Count > 0 ? "同时将停止所有冻结。" : ""),
-                    "撤销修改", MessageBoxButtons.YesNo) != DialogResult.Yes) return;
+                    "撤销修改", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes) return;
             StopAllFreezes("因撤销修改而停止");
             StopGrow("因撤销修改而停止");
             Undo(open);
@@ -5296,7 +5312,7 @@ CurrentDateRva = 0x56237C8
             sel = sel.Union(changes.Where(c => !c.Undone && groups.Contains(c.Group))).ToList();
             if (fm == null) return;
             if (sel.Count == 0) { MessageBox.Show("请先选择一项或多项带时间的修改记录。标记为「已撤销」的项目已经恢复。", "撤销修改"); return; }
-            if (sel.Count > 1 && MessageBox.Show("撤销所选的 " + sel.Count + " 项修改？", "撤销修改", MessageBoxButtons.YesNo) != DialogResult.Yes) return;
+            if (sel.Count > 1 && MessageBox.Show("撤销所选的 " + sel.Count + " 项修改？", "撤销修改", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes) return;
             StopGrow("因撤销修改而停止");
             // a frozen value would be written straight back, so its freeze stops
             foreach (var f in freezes.ToList())

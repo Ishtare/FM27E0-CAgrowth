@@ -407,6 +407,7 @@ namespace Fm24Editor
                 Field<List<Staff>>(form,"staff").Add(finderStaff);
                 CheckFinderRoutes(check,tabs,6,1,finderStaff,Field<ListBox>(form,"lstStaff"),"SearchStaff","OpenStaffFinderResult");
                 CheckRegistrationNavigation(check,form,tabs);
+                WorkspaceThemeTests.Run(check,form);
             }
         }
     }

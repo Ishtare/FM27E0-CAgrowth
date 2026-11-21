@@ -54,7 +54,7 @@ namespace Fm24Editor
             lblGrow.Padding=Padding.Empty;lblGrow.ForeColor=UiMuted;title.Controls.Add(lblGrow);
             cmbGrowSpeed.Name="GrowthSpeed";cmbGrowSpeed.Width=90;cmbGrowSpeed.Margin=new Padding(3,4,8,4);
             for(int g=2;g<=10;g++)cmbGrowSpeed.Items.Add(g+" 倍");cmbGrowSpeed.SelectedIndex=2;
-            var fill=new Button{Name="GrowthFillToPa",Text="直接到 PA",Width=100};StyleButton(fill);StyleButton(btnGrowEdit);StyleButton(btnGrowToggle,true);btnGrowToggle.Width=144;btnGrowToggle.Name="GrowthStartStop";
+            var fill=new Button{Name="GrowthFillToPa",Text="直接到 PA",Width=100};StyleButton(fill);StyleButton(btnGrowEdit);StyleButton(btnGrowToggle,WorkspaceButtonRole.Primary);btnGrowToggle.Width=144;btnGrowToggle.Name="GrowthStartStop";
             StyleButton(btnGrowOptimize);
             foreach(var button in new[]{btnGrowEdit,btnGrowOptimize,fill,btnGrowToggle})button.AutoSize=true;
             var singleActions=FieldGroup(FieldLabel("单人设置"),btnGrowEdit,btnGrowOptimize);
@@ -498,7 +498,7 @@ namespace Fm24Editor
                 return;
             }
             string mode = growWatch.Values.Any(t => t.UseFocus) ? "同时按培养方向和估算预算提升关键属性；FM 后续训练仍可能调整。" : "属性由 FM 后续训练处理。";
-            if (MessageBox.Show("把 " + n + " 名球员的 CA 直接拉到 PA？" + mode + "修改记入变更记录并支持撤销。", "直接拉到 PA", MessageBoxButtons.YesNo) != DialogResult.Yes) return;
+            if (MessageBox.Show("把 " + n + " 名球员的 CA 直接拉到 PA？" + mode + "修改记入变更记录并支持撤销。", "直接拉到 PA", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes) return;
             long day=0;
             if(growWatch.Values.Any(t=>!t.Done && t.UseFocus))
             {

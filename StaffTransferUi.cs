@@ -16,20 +16,21 @@ namespace Fm24Editor
 
         public StaffTransferDialog(StaffTransferOrigin origin, Club source, IEnumerable<Club> clubs, bool changeJob)
         {
-            Text = "职员转会与职务";
+            Name = "StaffTransferDialog";
+            MainForm.StyleWorkspaceDialog(this, "职员转会与职务");
             ClientSize = new Size(560, 440);
             MinimumSize = new Size(500, 410);
-            StartPosition = FormStartPosition.CenterParent;
-            MinimizeBox = MaximizeBox = false;
-            BackColor = Color.White;
-            var table = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 7, Padding = new Padding(14) };
+            MaximizeBox = false;
+            var table = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 6, TabIndex = 0 };
             table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
             foreach (int height in new[] { 46, 23, 31 })
                 table.RowStyles.Add(new RowStyle(SizeType.Absolute, height));
             table.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-            foreach (int height in new[] { 23, 32, 42 })
+            foreach (int height in new[] { 23, 32 })
                 table.RowStyles.Add(new RowStyle(SizeType.Absolute, height));
-            Controls.Add(table);
+            Search.TabIndex = 0;
+            Targets.TabIndex = 1;
+            Roles.TabIndex = 2;
             table.Controls.Add(new Label { Dock = DockStyle.Fill, AutoEllipsis = true,
                 Text = origin.Person.DisplayName + "\r\n" + source.Name + " · " + StaffRole.Title(origin.Employment.Job) }, 0, 0);
             table.Controls.Add(new Label { Dock = DockStyle.Fill, Text = "目标俱乐部（可按名称或 UID 搜索）" }, 0, 1);
@@ -37,10 +38,10 @@ namespace Fm24Editor
             table.Controls.Add(Targets, 0, 3);
             table.Controls.Add(new Label { Dock = DockStyle.Fill, Text = "到任职务" }, 0, 4);
             table.Controls.Add(Roles, 0, 5);
-            table.Controls.Add(PreviewButton, 0, 6);
-            MainForm.StyleWorkspaceButton(PreviewButton, true);
-            PreviewButton.Anchor = AnchorStyles.Right;
-            PreviewButton.Height = 32;
+            var actions = MainForm.DialogActions(this, MainForm.DialogDismiss("CancelStaffTransfer", "取消"), PreviewButton);
+            actions.TabIndex = 1;
+            Controls.Add(table);
+            Controls.Add(actions);
             AcceptButton = PreviewButton;
 
             Roles.Items.Add("保留原职务（" + StaffRole.Title(origin.Employment.Job) + "）");

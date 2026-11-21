@@ -39,14 +39,21 @@ namespace Fm24Editor
     {
         readonly ComboBox playerAttributeCategory=new ComboBox{Name="PlayerAttributeCategory",DropDownStyle=ComboBoxStyle.DropDownList,Width=144};
         readonly TextBox staffAttributeSearch=new TextBox{Name="StaffAttributeSearch",Width=190};
-        internal static void StyleWorkspaceGrid(DataGridView grid,Font font)
+        static readonly Color UiGridHeader=Color.FromArgb(239,243,249),UiGridSelection=Color.FromArgb(224,235,254);
+        internal static void StyleWorkspaceGrid(DataGridView grid)
         {
             grid.EnableHeadersVisualStyles=false;grid.ColumnHeadersHeight=36;grid.ColumnHeadersHeightSizeMode=DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             grid.BackgroundColor=Color.White;grid.BorderStyle=BorderStyle.FixedSingle;grid.GridColor=UiLine;
             grid.AutoSizeColumnsMode=DataGridViewAutoSizeColumnsMode.Fill;
-            grid.ColumnHeadersDefaultCellStyle.BackColor=Color.FromArgb(239,243,249);grid.ColumnHeadersDefaultCellStyle.ForeColor=UiMuted;
-            grid.ColumnHeadersDefaultCellStyle.Font=new Font(font,FontStyle.Bold);grid.ColumnHeadersDefaultCellStyle.WrapMode=DataGridViewTriState.False;grid.RowTemplate.Height=30;
-            grid.DefaultCellStyle.Padding=new Padding(4,2,4,2);grid.DefaultCellStyle.SelectionBackColor=Color.FromArgb(224,235,254);grid.DefaultCellStyle.SelectionForeColor=UiInk;
+            var header=grid.ColumnHeadersDefaultCellStyle;
+            header.BackColor=header.SelectionBackColor=UiGridHeader;
+            header.ForeColor=header.SelectionForeColor=UiMuted;
+            header.Font=UiBoldFont;header.WrapMode=DataGridViewTriState.False;
+            grid.RowTemplate.Height=30;
+            var body=grid.DefaultCellStyle;
+            body.BackColor=Color.White;body.ForeColor=UiInk;body.Padding=new Padding(4,2,4,2);
+            body.SelectionBackColor=UiGridSelection;body.SelectionForeColor=UiInk;
+            grid.AlternatingRowsDefaultCellStyle.BackColor=UiInset;
         }
         void PolishWorkspace(Control root)
         {
@@ -55,10 +62,10 @@ namespace Fm24Editor
                 var grid=control as DataGridView;
                 if(grid!=null)
                 {
-                    StyleWorkspaceGrid(grid,Font);
+                    StyleWorkspaceGrid(grid);
                 }
                 var button=control as Button;
-                if(button!=null && button.FlatStyle!=FlatStyle.Flat)StyleButton(button,button.Text.StartsWith("应用") || button.Text.StartsWith("保存"));
+                if(button!=null && button.FlatStyle!=FlatStyle.Flat)StyleButton(button);
                 var list=control as ListBox;
                 if(list!=null){list.BackColor=Color.White;list.ForeColor=UiInk;list.IntegralHeight=false;list.HorizontalScrollbar=true;}
                 var tabs=control as TabControl;
@@ -148,7 +155,8 @@ namespace Fm24Editor
             WrapDockedLabel(lblClub);
             if(string.IsNullOrEmpty(lblClub.Text))lblClub.Text="选择俱乐部后查看和编辑资料";
             var actions=new FlowLayoutPanel{Name="ClubActions",Dock=DockStyle.Bottom,AutoSize=true,WrapContents=true,Padding=new Padding(0,8,0,0)};
-            foreach(var button in new[]{btnApplyClub,btnReloadClub,btnFreezeClub,btnClubSponsors}){StyleButton(button,button==btnApplyClub);actions.Controls.Add(button);}
+            StyleButton(btnApplyClub,WorkspaceButtonRole.Primary);
+            foreach(var button in new[]{btnApplyClub,btnReloadClub,btnFreezeClub,btnClubSponsors})actions.Controls.Add(button);
             btnApplyClub.Click+=delegate{ApplyClub();};btnReloadClub.Click+=delegate{LoadClub(loadedClub);};
             btnFreezeClub.Click+=delegate{if(loadedClub!=null)lblStatus.Text=FreezeMoney(loadedClub)+" 项资金已冻结，详情见冻结管理。";};
             btnClubSponsors.Click+=delegate{SponsorsDialog();};
@@ -159,12 +167,13 @@ namespace Fm24Editor
         {
             var page=new TabPage("变更记录");
             var heading=new Label{Text="变更记录\n选中记录查看详情。成长与属性方案按整组撤销；被游戏更新的数据会拒绝覆盖。",Dock=DockStyle.Top,Height=60,Padding=new Padding(4,8,4,4),ForeColor=UiMuted};
-            var detail=new TextBox{Name="ChangeDetails",Dock=DockStyle.Bottom,Height=110,Multiline=true,ReadOnly=true,ScrollBars=ScrollBars.Both,WordWrap=false,BackColor=Color.FromArgb(247,249,252),Font=new Font(FontFamily.GenericMonospace,9)};
+            var detail=new TextBox{Name="ChangeDetails",Dock=DockStyle.Bottom,Height=110,Multiline=true,ReadOnly=true,ScrollBars=ScrollBars.Both,WordWrap=false,BackColor=UiInset,Font=new Font(FontFamily.GenericMonospace,9)};
             lstLog.Font=Font;lstLog.FormattingEnabled=true;lstLog.Format+=(sender,e)=>{var change=e.ListItem as Change;if(change!=null)e.Value=(change.Undone?"[已撤销] ":"")+change.When.ToString("HH:mm:ss")+"  "+change.What;};
             lstLog.SelectedIndexChanged+=delegate{detail.Text=string.Join(Environment.NewLine,lstLog.SelectedItems.Cast<object>().Select(item=>item.ToString()).ToArray());};
             var actions=new FlowLayoutPanel{Name="ChangeActions",Dock=DockStyle.Bottom,AutoSize=true,WrapContents=true,Padding=new Padding(0,8,0,0)};
-            var selected=new Button{Text="撤销所选",Width=105};var all=new Button{Text="撤销本次全部",Width=125};var copy=new Button{Text="复制选中详情",Width=125};
-            foreach(var button in new[]{selected,all,copy}){StyleButton(button,button==selected);actions.Controls.Add(button);}
+            var selected=new Button{Name="UndoSelectedChanges",Text="撤销所选",Width=105};var all=new Button{Name="UndoAllChanges",Text="撤销本次全部",Width=125};var copy=new Button{Text="复制选中详情",Width=125};
+            StyleButton(selected,WorkspaceButtonRole.Undo);StyleButton(all,WorkspaceButtonRole.Undo);
+            foreach(var button in new[]{selected,all,copy})actions.Controls.Add(button);
             selected.Click+=delegate{UndoSelected();};all.Click+=delegate{UndoAll();};copy.Click+=delegate{if(detail.Text.Length>0)try{Clipboard.SetText(detail.Text);}catch(Exception ex){MessageBox.Show(ex.Message,"复制未完成");}};
             page.Controls.Add(lstLog);page.Controls.Add(detail);page.Controls.Add(actions);page.Controls.Add(heading);return page;
         }
@@ -172,22 +181,22 @@ namespace Fm24Editor
         {
             var page=new TabPage("冻结管理");lblFreeze.Height=66;lblFreeze.Padding=new Padding(4,8,4,4);lblFreeze.ForeColor=UiMuted;
             var actions=new FlowLayoutPanel{Name="FreezeActions",Dock=DockStyle.Bottom,AutoSize=true,WrapContents=true,Padding=new Padding(0,8,0,0)};
-            var selected=new Button{Text="停止所选冻结",Width=130};var all=new Button{Text="停止全部冻结",Width=130};StyleButton(selected,true);StyleButton(all);actions.Controls.Add(selected);actions.Controls.Add(all);
+            var selected=new Button{Text="停止所选冻结",Width=130};var all=new Button{Text="停止全部冻结",Width=130};StyleButton(selected,WorkspaceButtonRole.Primary);StyleButton(all);actions.Controls.Add(selected);actions.Controls.Add(all);
             selected.Click+=delegate{foreach(var item in lstFreeze.SelectedItems.Cast<Freeze>().ToList())StopFreeze(item,"已停止");RefreshFreezeList();};all.Click+=delegate{StopAllFreezes("已停止");};
             page.Controls.Add(lstFreeze);page.Controls.Add(actions);page.Controls.Add(lblFreeze);RefreshFreezeList();return page;
         }
         void BuildSquadActions(FlowLayoutPanel bar,Button heal,Button maximize,Button restore,Button freeze)
         {
             bar.Controls.Clear();bar.Padding=new Padding(0,8,0,0);heal.Text="治疗全队伤病";restore.Text="恢复全队状态";
-            StyleButton(restore,true);StyleButton(heal);bar.Controls.Add(restore);bar.Controls.Add(heal);
+            StyleButton(restore,WorkspaceButtonRole.Primary);StyleButton(heal);bar.Controls.Add(restore);bar.Controls.Add(heal);
             StyleButton(btnRefreshSquad);bar.Controls.Add(btnRefreshSquad);
             var more=new Button{Name="SquadMoreActions",Text="更多批量操作…",Width=145};StyleButton(more);bar.Controls.Add(more);
             var menu=new ContextMenuStrip();menu.Items.Add(MenuGroup("属性与冻结",maximize,freeze));menu.Opening+=delegate{RefreshCommandMenu(menu.Items);};more.Click+=delegate{menu.Show(more,new Point(0,more.Height));};more.ContextMenuStrip=menu;
         }
         void OrganizeFinderToolbar(FlowLayoutPanel bar,Button search)
         {
-            bar.BackColor=Color.FromArgb(247,249,252);bar.Padding=new Padding(10,4,10,4);
-            StyleButton(search,true);search.Text="搜索名单";search.AutoSize=true;search.Width=110;
+            bar.BackColor=UiInset;bar.Padding=new Padding(10,4,10,4);
+            StyleButton(search,WorkspaceButtonRole.Primary);search.Text="搜索名单";search.AutoSize=true;search.Width=110;
         }
 
         void AddFinderOpenButton<T>(FlowLayoutPanel bar,Button search,WorkspaceGrid results,string name,Action<T> open) where T:class

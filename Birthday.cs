@@ -1,6 +1,7 @@
 // Modified build v1.1.22, 2026-11-19. GPL-3.0-or-later with ADDITIONAL-TERMS.txt.
 // See CHANGELOG.md; GPL-3.0-or-later with ADDITIONAL-TERMS.txt.
 using System;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -40,6 +41,54 @@ namespace Fm24Editor
             return ((uint)born.Year<<16)|(old&0xFE00u)|(uint)born.DayOfYear;
         }
     }
+    sealed class BirthdayEditorDialog : Form
+    {
+        internal readonly NumericUpDown Age;
+        internal readonly DateTimePicker Birthday;
+        internal readonly Label Preview = new Label { Name = "BirthdayPreview", AutoSize = true, UseMnemonic = false };
+        internal readonly Button ApplyButton = new Button { Name = "ApplyBirthday", Text = "应用年龄修改", Enabled = false };
+
+        internal BirthdayEditorDialog(string displayName, DateTime today, DateTime original, int originalAge)
+        {
+            Name = "BirthdayEditorDialog";
+            MainForm.StyleWorkspaceDialog(this, "修改年龄／出生日期");
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false;
+            ClientSize = new Size(550, 265);
+
+            var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 6, TabIndex = 0 };
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            for(int row=0;row<layout.RowCount;row++) layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+            var name = new Label { Text = displayName, AutoSize = true, MaximumSize = new Size(514, 0), UseMnemonic = false };
+            layout.Controls.Add(name, 0, 0);
+            layout.SetColumnSpan(name, 2);
+            layout.Controls.Add(new Label { Text = "当前游戏日期", AutoSize = true }, 0, 1);
+            layout.Controls.Add(new Label { Text = today.ToString("yyyy-MM-dd"), AutoSize = true }, 1, 1);
+
+            Age = new NumericUpDown { Name = "BirthdayAge", Minimum = 1, Maximum = 120, Value = originalAge, Width = 95, TabIndex = 0 };
+            Birthday = new DateTimePicker { Name = "BirthdayDate", Format = DateTimePickerFormat.Custom, CustomFormat = "yyyy-MM-dd",
+                Width = 155, MinDate = new DateTime(Math.Max(1901,today.Year-121),1,1), MaxDate = today.AddYears(-1), Value = original, TabIndex = 1 };
+            layout.Controls.Add(new Label { Text = "年龄（岁）", AutoSize = true }, 0, 2);
+            layout.Controls.Add(Age, 1, 2);
+            layout.Controls.Add(new Label { Text = "出生日期", AutoSize = true }, 0, 3);
+            layout.Controls.Add(Birthday, 1, 3);
+            Preview.MaximumSize = new Size(514, 0);
+            layout.Controls.Add(Preview, 0, 4);
+            layout.SetColumnSpan(Preview, 2);
+
+            var note = new Label { Text = "调整年龄时尽量保留原生日月、日；目标年份没有 2 月 29 日时使用 2 月 28 日。修改可从「变更记录」撤销。",
+                AutoSize = true, MaximumSize = new Size(514, 0), UseMnemonic = false, ForeColor = MainForm.UiMuted };
+            layout.Controls.Add(note, 0, 5);
+            layout.SetColumnSpan(note, 2);
+
+            var actions = MainForm.DialogActions(this, MainForm.DialogDismiss("CancelBirthday", "取消"), ApplyButton);
+            actions.TabIndex = 1;
+            Controls.Add(layout);
+            Controls.Add(actions);
+        }
+    }
     partial class MainForm
     {
         Button btnPlayerAge=new Button {Text="年龄／出生日期…",AutoSize=true};
@@ -66,47 +115,42 @@ namespace Fm24Editor
                 if(old==null || identity==null)throw new InvalidOperationException("无法读取这名球员或职员，请重新扫描。");
                 uint oldPacked=BitConverter.ToUInt32(old,0);DateTime original=Birthdays.Decode(oldPacked);int originalAge=Birthdays.AgeOn(original,today);
                 if(originalAge<1 || originalAge>120)throw new InvalidOperationException("这名球员或职员的年龄不在已支持范围内，当前保持只读。");
-                var dialog=new Form {Text="修改年龄／出生日期",Width=575,Height=310,StartPosition=FormStartPosition.CenterParent,FormBorderStyle=FormBorderStyle.FixedDialog,MaximizeBox=false,MinimizeBox=false};
-                var layout=new TableLayoutPanel {Dock=DockStyle.Fill,ColumnCount=2,Padding=new Padding(14),RowCount=6};
-                layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,130));layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
-                var name=new Label {Text=displayName,AutoSize=true,MaximumSize=new System.Drawing.Size(505,0),UseMnemonic=false};layout.Controls.Add(name,0,0);layout.SetColumnSpan(name,2);
-                layout.Controls.Add(new Label {Text="当前游戏日期",AutoSize=true},0,1);layout.Controls.Add(new Label {Text=today.ToString("yyyy-MM-dd"),AutoSize=true},1,1);
-                var age=new NumericUpDown {Minimum=1,Maximum=120,Value=originalAge,Width=95};
-                var date=new DateTimePicker {Format=DateTimePickerFormat.Custom,CustomFormat="yyyy-MM-dd",Width=155,MinDate=new DateTime(Math.Max(1901,today.Year-121),1,1),MaxDate=today.AddYears(-1),Value=original};
-                layout.Controls.Add(new Label {Text="年龄（岁）",AutoSize=true},0,2);layout.Controls.Add(age,1,2);
-                layout.Controls.Add(new Label {Text="出生日期",AutoSize=true},0,3);layout.Controls.Add(date,1,3);
-                var preview=new Label {AutoSize=true,MaximumSize=new System.Drawing.Size(505,0),UseMnemonic=false};layout.Controls.Add(preview,0,4);layout.SetColumnSpan(preview,2);
-                var note=new Label {Text="调整年龄时尽量保留原生日月、日；目标年份没有 2 月 29 日时使用 2 月 28 日。修改可从「变更记录」撤销。",AutoSize=true,MaximumSize=new System.Drawing.Size(505,0),UseMnemonic=false};layout.Controls.Add(note,0,5);layout.SetColumnSpan(note,2);
-                var apply=new Button {Text="应用年龄修改",Dock=DockStyle.Bottom,Height=34};bool syncing=false;
-                Action update=()=>{int value=Birthdays.AgeOn(date.Value,today);preview.Text="出生日期："+original.ToString("yyyy-MM-dd")+" → "+date.Value.ToString("yyyy-MM-dd")+"；年龄："+originalAge+" → "+value+" 岁";apply.Enabled=value>=1 && value<=120 && date.Value.Date!=original.Date;};
-                age.ValueChanged+=delegate {if(syncing)return;syncing=true;date.Value=Birthdays.WithAge(original,today,(int)age.Value);syncing=false;update();};
-                date.ValueChanged+=delegate {if(syncing)return;syncing=true;int value=Birthdays.AgeOn(date.Value,today);if(value>=1 && value<=120)age.Value=value;syncing=false;update();};
-                apply.Click+=delegate
+                using(var dialog=new BirthdayEditorDialog(displayName,today,original,originalAge))
                 {
-                    try
+                    var age=dialog.Age;var date=dialog.Birthday;var preview=dialog.Preview;var apply=dialog.ApplyButton;
+                    bool syncing=false;
+                    Action update=()=>{int value=Birthdays.AgeOn(date.Value,today);preview.Text="出生日期："+original.ToString("yyyy-MM-dd")+" → "+date.Value.ToString("yyyy-MM-dd")+"；年龄："+originalAge+" → "+value+" 岁";apply.Enabled=value>=1 && value<=120 && date.Value.Date!=original.Date;};
+                    age.ValueChanged+=delegate {if(syncing)return;syncing=true;date.Value=Birthdays.WithAge(original,today,(int)age.Value);syncing=false;update();};
+                    date.ValueChanged+=delegate {if(syncing)return;syncing=true;int value=Birthdays.AgeOn(date.Value,today);if(value>=1 && value<=120)age.Value=value;syncing=false;update();};
+                    apply.Click+=delegate
                     {
-                        if(CurrentGameDay()!=today)throw new InvalidOperationException("游戏日期已经变化，请重新打开窗口，按当前日期换算年龄。");
-                        uint packed=Birthdays.Pack(oldPacked,date.Value,today);var data=BitConverter.GetBytes(packed);
-                        string what="出生日期 "+original.ToString("yyyy-MM-dd")+" → "+date.Value.ToString("yyyy-MM-dd")+"（"+originalAge+" → "+Birthdays.AgeOn(date.Value,today)+" 岁）";
-                        if(MessageBox.Show(displayName+"：\n"+what+"？","修改年龄",MessageBoxButtons.YesNo)!=DialogResult.Yes)return;
-                        Func<bool> guard=()=>{try{return fm==attached && Safety.On("core") && attached.Read(person,0x18).SequenceEqual(identity);}catch{return false;}};
-                        var write=new RetirementWrite {Address=address,Old=old,New=data,What=what};string error;
-                        Func<bool> writeGuard=()=>{try{return guard() && CurrentGameDay()==today;}catch{return false;}};
-                        if(!RetirementBatch.Apply(attached.Read,attached.Write,new System.Collections.Generic.List<RetirementWrite>{write},writeGuard,out error))throw new InvalidOperationException(error);
-                        var change=new Change {Addr=address,Old=(byte[])old.Clone(),New=(byte[])data.Clone(),What=displayName+"："+what,When=DateTime.Now,Guard=guard};
-                        changes.Add(change);lstLog.Items.Add(change);
-                        try { File.AppendAllText(logPath,change.When.ToString("yyyy-MM-dd HH:mm:ss")+"  "+change.What+"  @"+address.ToString("X")+" "+BitConverter.ToString(old)+" -> "+BitConverter.ToString(data)+Environment.NewLine); } catch { }
-                        personDetailsRevision++;
-                        foreach(var player in players.Where(p=>p.Person==person)) {player.Born=date.Value.Date;PlayerNames.RememberBirthday(player,AppDomain.CurrentDomain.BaseDirectory);}
-                        foreach(var staffMember in staff.Where(p=>p.Pers==person))staffMember.Born=date.Value.Date;
-                        lblStatus.Text=displayName+"：年龄已修改，按游戏日期计算为 "+Birthdays.AgeOn(date.Value,today)+" 岁。请重新打开游戏内资料查看。";
-                        dialog.Close();lstPlayers.Refresh();lstStaff.Refresh();
-                        if(loadedPlayer!=null && loadedPlayer.Person==person)LoadPlayer(loadedPlayer);
-                        if(loadedStaff!=null && loadedStaff.Pers==person)LoadStaff(loadedStaff);
-                    }
-                    catch(Exception ex){MessageBox.Show(ex.Message,"年龄修改");}
-                };
-                dialog.Controls.Add(layout);dialog.Controls.Add(apply);update();dialog.ShowDialog(this);
+                        try
+                        {
+                            if(CurrentGameDay()!=today)throw new InvalidOperationException("游戏日期已经变化，请重新打开窗口，按当前日期换算年龄。");
+                            uint packed=Birthdays.Pack(oldPacked,date.Value,today);var data=BitConverter.GetBytes(packed);
+                            string what="出生日期 "+original.ToString("yyyy-MM-dd")+" → "+date.Value.ToString("yyyy-MM-dd")+"（"+originalAge+" → "+Birthdays.AgeOn(date.Value,today)+" 岁）";
+                            if(MessageBox.Show(dialog,displayName+"：\n"+what+"？","修改年龄",MessageBoxButtons.YesNo,
+                                MessageBoxIcon.Question,MessageBoxDefaultButton.Button2)!=DialogResult.Yes)return;
+                            Func<bool> guard=()=>{try{return fm==attached && Safety.On("core") && attached.Read(person,0x18).SequenceEqual(identity);}catch{return false;}};
+                            var write=new RetirementWrite {Address=address,Old=old,New=data,What=what};string error;
+                            Func<bool> writeGuard=()=>{try{return guard() && CurrentGameDay()==today;}catch{return false;}};
+                            if(!RetirementBatch.Apply(attached.Read,attached.Write,new System.Collections.Generic.List<RetirementWrite>{write},writeGuard,out error))throw new InvalidOperationException(error);
+                            var change=new Change {Addr=address,Old=(byte[])old.Clone(),New=(byte[])data.Clone(),What=displayName+"："+what,When=DateTime.Now,Guard=guard};
+                            changes.Add(change);lstLog.Items.Add(change);
+                            try { File.AppendAllText(logPath,change.When.ToString("yyyy-MM-dd HH:mm:ss")+"  "+change.What+"  @"+address.ToString("X")+" "+BitConverter.ToString(old)+" -> "+BitConverter.ToString(data)+Environment.NewLine); } catch { }
+                            personDetailsRevision++;
+                            foreach(var player in players.Where(p=>p.Person==person)) {player.Born=date.Value.Date;PlayerNames.RememberBirthday(player,AppDomain.CurrentDomain.BaseDirectory);}
+                            foreach(var staffMember in staff.Where(p=>p.Pers==person))staffMember.Born=date.Value.Date;
+                            lblStatus.Text=displayName+"：年龄已修改，按游戏日期计算为 "+Birthdays.AgeOn(date.Value,today)+" 岁。请重新打开游戏内资料查看。";
+                            dialog.Close();lstPlayers.Refresh();lstStaff.Refresh();
+                            if(loadedPlayer!=null && loadedPlayer.Person==person)LoadPlayer(loadedPlayer);
+                            if(loadedStaff!=null && loadedStaff.Pers==person)LoadStaff(loadedStaff);
+                        }
+                        catch(Exception ex){MessageBox.Show(ex.Message,"年龄修改");}
+                    };
+                    update();
+                    dialog.ShowDialog(this);
+                }
             }
             catch(Exception ex){MessageBox.Show(ex.Message,"年龄／出生日期（只读）");}
         }

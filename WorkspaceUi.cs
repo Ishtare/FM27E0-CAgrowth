@@ -17,9 +17,18 @@ namespace Fm24Editor
             base.WndProc(ref message);
         }
     }
+    internal enum WorkspaceButtonRole { Secondary, Primary, Undo }
+
     partial class MainForm
     {
-        static readonly Color UiInk=Color.FromArgb(31,42,61),UiMuted=Color.FromArgb(101,115,135),UiLine=Color.FromArgb(224,230,238),UiAccent=Color.FromArgb(37,99,210);
+        static readonly Font UiFont=new Font("Microsoft YaHei UI",9.25F);
+        static readonly Font UiBoldFont=new Font(UiFont,FontStyle.Bold);
+        internal static readonly Color UiInk=Color.FromArgb(31,42,61),UiMuted=Color.FromArgb(77,89,109);
+        internal static readonly Color UiInset=Color.FromArgb(247,249,252);
+        internal static readonly Color UiSuccessInk=Color.FromArgb(25,100,65),UiWarningInk=Color.FromArgb(122,79,12),UiErrorInk=Color.FromArgb(156,35,34);
+        static readonly Color UiSurface=Color.FromArgb(244,247,251),UiStatus=Color.FromArgb(234,240,248);
+        static readonly Color UiLine=Color.FromArgb(224,230,238),UiAccent=Color.FromArgb(37,99,210);
+        static readonly Color UiUndo=Color.FromArgb(255,249,235),UiUndoLine=Color.FromArgb(226,205,165);
         static readonly Color UiDisabledButton=Color.FromArgb(235,239,244),UiDisabledText=Color.FromArgb(111,121,135);
         string lastScanReport="尚未连接游戏。先在 FM 中载入存档，再点击「挂接并扫描」。";
         enum FeedbackKind { Information, Success, Partial, ReadOnly, Failed }
@@ -29,37 +38,51 @@ namespace Fm24Editor
             TextAlign = ContentAlignment.MiddleLeft, UseMnemonic = false
         };
 
-        static void RefreshAccentButton(object sender,EventArgs e)
+        static void SetButtonColors(Button button,Color background,Color foreground,Color border)
         {
-            var button=(Button)sender;
-            button.FlatAppearance.BorderColor=button.Enabled?UiAccent:UiLine;
-            button.BackColor=button.Enabled?UiAccent:UiDisabledButton;
-            button.ForeColor=button.Enabled?Color.White:UiDisabledText;
+            button.FlatAppearance.BorderColor=button.Enabled?border:UiLine;
+            button.BackColor=button.Enabled?background:UiDisabledButton;
+            button.ForeColor=button.Enabled?foreground:UiDisabledText;
         }
 
-        static void SetButtonAccent(Button button,bool primary)
+        static void RefreshPrimaryButton(object sender,EventArgs e)
         {
-            button.EnabledChanged-=RefreshAccentButton;
-            if(primary)
+            SetButtonColors((Button)sender,UiAccent,Color.White,UiAccent);
+        }
+
+        static void RefreshUndoButton(object sender,EventArgs e)
+        {
+            SetButtonColors((Button)sender,UiUndo,UiWarningInk,UiUndoLine);
+        }
+
+        static void SetButtonRole(Button button,WorkspaceButtonRole role)
+        {
+            button.EnabledChanged-=RefreshPrimaryButton;
+            button.EnabledChanged-=RefreshUndoButton;
+            switch(role)
             {
-                button.EnabledChanged+=RefreshAccentButton;
-                RefreshAccentButton(button,EventArgs.Empty);
-            }
-            else
-            {
-                button.FlatAppearance.BorderColor=UiLine;
-                button.BackColor=Color.White;
-                button.ForeColor=UiInk;
+                case WorkspaceButtonRole.Primary:
+                    button.EnabledChanged+=RefreshPrimaryButton;
+                    RefreshPrimaryButton(button,EventArgs.Empty);
+                    break;
+                case WorkspaceButtonRole.Undo:
+                    button.EnabledChanged+=RefreshUndoButton;
+                    RefreshUndoButton(button,EventArgs.Empty);
+                    break;
+                default:
+                    button.FlatAppearance.BorderColor=UiLine;
+                    button.BackColor=Color.White;
+                    button.ForeColor=UiInk;
+                    break;
             }
         }
 
-        static void StyleButton(Button button,bool primary=false)
+        internal static void StyleButton(Button button,WorkspaceButtonRole role=WorkspaceButtonRole.Secondary)
         {
             button.FlatStyle=FlatStyle.Flat;
             button.Height=32;button.Margin=new Padding(4);button.Padding=new Padding(4,0,4,0);button.UseVisualStyleBackColor=false;
-            SetButtonAccent(button,primary);
+            SetButtonRole(button,role);
         }
-        internal static void StyleWorkspaceButton(Button button,bool primary=false){StyleButton(button,primary);}
 
         static FlowLayoutPanel WrappingBar(string name)
         {
@@ -167,7 +190,7 @@ namespace Fm24Editor
                 ForeColor=UiInk,Margin=Padding.Empty};
             var identity=FieldGroup(logo,brand);
             identity.Name="AppIdentity";
-            StyleButton(btnScan,true);
+            StyleButton(btnScan,WorkspaceButtonRole.Primary);
             btnScan.Name="AttachAndScan";btnScan.AutoSize=true;btnScan.Width=132;
             progress.Name="ScanProgress";progress.Size=new Size(110,16);
             progress.Margin=new Padding(4,0,8,0);
@@ -191,7 +214,7 @@ namespace Fm24Editor
         {
             tabs.Name="WorkspaceTabs";tabs.Appearance=TabAppearance.FlatButtons;tabs.SizeMode=TabSizeMode.Fixed;
             tabs.ItemSize=new Size(1,1);tabs.Multiline=true;
-            var area=new Panel {Name="Workspace",Dock=DockStyle.Fill,Padding=new Padding(0,10,12,8),BackColor=Color.FromArgb(244,247,251)};
+            var area=new Panel {Name="Workspace",Dock=DockStyle.Fill,Padding=new Padding(0,10,12,8),BackColor=UiSurface};
             var navigation=new FlowLayoutPanel {Name="WorkspaceNavigation",Dock=DockStyle.Left,Width=176,FlowDirection=FlowDirection.TopDown,WrapContents=false,AutoScroll=true,Padding=new Padding(10,4,10,8)};
             var buttons=new Dictionary<int,Button>();
             Action<string,int[],string[]> group=(heading,indices,labels)=>
@@ -212,7 +235,7 @@ namespace Fm24Editor
                 foreach(var item in buttons)
                 {
                     bool selected=item.Key==tabs.SelectedIndex;
-                    SetButtonAccent(item.Value,selected);
+                    SetButtonRole(item.Value,selected?WorkspaceButtonRole.Primary:WorkspaceButtonRole.Secondary);
                     if(!selected)item.Value.BackColor=Color.Transparent;
                 }
             };
@@ -230,7 +253,7 @@ namespace Fm24Editor
         {
             var bar=new TableLayoutPanel{Name="ScanStatusBar",Dock=DockStyle.Bottom,AutoSize=true,
                 AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=2,RowCount=2,
-                BackColor=Color.FromArgb(234,240,248),Padding=new Padding(14,2,12,4)};
+                BackColor=UiStatus,Padding=new Padding(14,2,12,4)};
             bar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
             bar.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             bar.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -271,10 +294,10 @@ namespace Fm24Editor
             Color color;
             switch(kind)
             {
-                case FeedbackKind.Success: title="成功"; color=Color.FromArgb(25,100,65); break;
-                case FeedbackKind.Partial: title="部分成功"; color=Color.FromArgb(122,79,12); break;
-                case FeedbackKind.ReadOnly: title="只读拦截"; color=Color.FromArgb(122,79,12); break;
-                case FeedbackKind.Failed: title="未完成"; color=Color.FromArgb(156,35,34); break;
+                case FeedbackKind.Success: title="成功"; color=UiSuccessInk; break;
+                case FeedbackKind.Partial: title="部分成功"; color=UiWarningInk; break;
+                case FeedbackKind.ReadOnly: title="只读拦截"; color=UiWarningInk; break;
+                case FeedbackKind.Failed: title="未完成"; color=UiErrorInk; break;
                 default: title=""; color=UiInk; break;
             }
             feedbackTitle.Text=title.Length==0?"操作反馈":"操作反馈 · "+title;
@@ -301,12 +324,16 @@ namespace Fm24Editor
 
         void ShowScanDetails()
         {
-            using(var dialog=new Form {Text="本次连接与诊断信息",Width=780,Height=560,StartPosition=FormStartPosition.CenterParent,MinimizeBox=false})
+            using(var dialog=new Form {Width=780,Height=560})
             {
-                var text=new TextBox {Multiline=true,ReadOnly=true,ScrollBars=ScrollBars.Both,WordWrap=false,Dock=DockStyle.Fill,Text=lastScanReport,BackColor=Color.White};
-                var copy=new Button {Text="复制本次诊断",Dock=DockStyle.Bottom,Height=36};
+                StyleWorkspaceDialog(dialog,"本次连接与诊断信息");
+                var text=new TextBox {Multiline=true,ReadOnly=true,ScrollBars=ScrollBars.Both,WordWrap=false,Dock=DockStyle.Fill,
+                    Text=lastScanReport,BackColor=Color.White,TabIndex=0};
+                var copy=new Button {Text="复制本次诊断"};
                 copy.Click+=delegate {try{Clipboard.SetText(lastScanReport);}catch(Exception ex){MessageBox.Show(ex.Message,"无法复制");}};
-                dialog.Controls.Add(text);dialog.Controls.Add(copy);dialog.ShowDialog(this);
+                var actions=DialogActions(dialog,DialogDismiss("CloseScanDetails","关闭"),copy);
+                actions.TabIndex=1;
+                dialog.Controls.Add(text);dialog.Controls.Add(actions);dialog.ShowDialog(this);
             }
         }
 
@@ -327,7 +354,8 @@ namespace Fm24Editor
         {
             bar.Name="PlayerActions";bar.Controls.Clear();bar.Padding=new Padding(0,10,0,0);bar.Margin=Padding.Empty;
             btnPlayerAge.Text="年龄 / 生日…";
-            foreach(var button in new[]{apply,reload,btnPlayerAge,btnRetirement,btnOptimizeAttributes}){StyleButton(button,button==apply);button.AutoSize=true;bar.Controls.Add(button);}
+            StyleButton(apply,WorkspaceButtonRole.Primary);
+            foreach(var button in new[]{apply,reload,btnPlayerAge,btnRetirement,btnOptimizeAttributes}){button.AutoSize=true;bar.Controls.Add(button);}
             btnOptimizeAttributes.Click+=delegate{OpenAttributeOptimizer(loadedPlayer);};
             var more=new Button {Name="MorePlayerActions",Text="更多操作 ▾",AutoSize=true};StyleButton(more);bar.Controls.Add(more);
             var menu=new ContextMenuStrip {Name="PlayerCommandMenu"};

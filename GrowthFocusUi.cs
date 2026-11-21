@@ -143,7 +143,7 @@ namespace Fm24Editor
                 AutoScaleMode=AutoScaleMode.Dpi,Width=430,Height=820,MinimumSize=new Size(400,360),
                 StartPosition=FormStartPosition.CenterParent};
             var close=new Button{Name="CloseGrowthSettings",Text="完成",Dock=DockStyle.Bottom,DialogResult=DialogResult.OK};
-            StyleButton(close,true);
+            StyleButton(close,WorkspaceButtonRole.Primary);
             dialog.Controls.Add(editor);dialog.Controls.Add(close);
             dialog.AcceptButton=close;
             dialog.Load+=delegate{FitWindowToWorkArea(dialog,this);};

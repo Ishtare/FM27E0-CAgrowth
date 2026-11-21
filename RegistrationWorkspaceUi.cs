@@ -41,7 +41,7 @@ namespace Fm24Editor
             var registration=new TabPage("报名与资格");var prize=new TabPage("赛事奖金");prize.Controls.Add(prizeContent);tabs.TabPages.Add(registration);tabs.TabPages.Add(prize);
             var bar=WrappingBar("RegistrationActions");
             bar.Padding=new Padding(4,4,4,0);
-            var reload=new Button{Name="RegistrationReload",Text="读取报名资料",Width=130};var window=new Button{Name="LeagueRegistrationButton",Text="独立窗口…",Width=110};StyleButton(reload,true);StyleButton(window);bar.Controls.Add(reload);bar.Controls.Add(window);
+            var reload=new Button{Name="RegistrationReload",Text="读取报名资料",Width=130};var window=new Button{Name="LeagueRegistrationButton",Text="独立窗口…",Width=110};StyleButton(reload,WorkspaceButtonRole.Primary);StyleButton(window);bar.Controls.Add(reload);bar.Controls.Add(window);
             bar.Controls.Add(new Label{Text="球员当季资格与赛事名额在同一处管理",AutoSize=true,ForeColor=UiMuted,Padding=new Padding(8,8,0,0)});
             registrationHost=new Panel{Name="RegistrationWorkspace",Dock=DockStyle.Fill};registration.Controls.Add(registrationHost);registration.Controls.Add(bar);page.Controls.Add(tabs);
             reload.Click+=delegate{RefreshRegistrationWorkspace();};
@@ -149,9 +149,9 @@ namespace Fm24Editor
             var repair=new CheckBox{Name="RepairPlayerRegistration",Text="修复所选赛事类型的球员登记",AutoSize=true,Checked=!snapshot.Registered(8) || snapshot.Unregistrations(8)>0};
             var kind=new ComboBox{Name="PlayerRegistrationKind",DropDownStyle=ComboBoxStyle.DropDownList,Width=200};kind.Items.AddRange(new object[]{"国内赛事（各联赛）","欧战（UEFA）"});kind.SelectedIndex=0;
             var remove=new CheckBox{Text="清理所选赛事、当前球队的取消登记记录",AutoSize=true,Checked=true};choices.Controls.Add(historical);choices.Controls.Add(repair);choices.Controls.Add(kind);choices.Controls.Add(remove);layout.Controls.Add(choices,0,2);
-            var preview=new TextBox{Name="EligibilityPreview",Dock=DockStyle.Fill,Multiline=true,ReadOnly=true,ScrollBars=ScrollBars.Vertical,BackColor=Color.FromArgb(247,249,252)};layout.Controls.Add(preview,0,3);
+            var preview=new TextBox{Name="EligibilityPreview",Dock=DockStyle.Fill,Multiline=true,ReadOnly=true,ScrollBars=ScrollBars.Vertical,BackColor=UiInset};layout.Controls.Add(preview,0,3);
             var apply=new Button{Name="ApplyPersonalEligibility",Text="应用当前球员的资格修复"};
-            StyleButton(apply,true);
+            StyleButton(apply,WorkspaceButtonRole.Primary);
             var form=ScrollableForm(layout,apply);
             List<EligibilityEdit> pending=null;
             Action refresh=()=>

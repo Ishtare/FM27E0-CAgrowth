@@ -22,8 +22,8 @@ namespace Fm24Editor
             InPosition.Items.Add("按主要位置");InPosition.Items.AddRange(GrowthProfile.Groups.Cast<object>().ToArray());
             OutPosition.Items.AddRange(new object[]{"不使用无球方案","按主要位置"});OutPosition.Items.AddRange(GrowthProfile.Groups.Cast<object>().ToArray());
             var root=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=2,Margin=Padding.Empty};root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));root.RowStyles.Add(new RowStyle(SizeType.Percent,100));root.RowStyles.Add(new RowStyle(SizeType.Absolute,32));
-            var tabs=new TabControl{Name=prefix+"RolePhaseTabs",Dock=DockStyle.Fill};tabs.TabPages.Add(Page("有球位置／角色",InPosition,InRole));tabs.TabPages.Add(Page("无球位置／角色",OutPosition,OutRole));root.Controls.Add(tabs,0,0);
-            var bar=new FlowLayoutPanel{Dock=DockStyle.Fill,WrapContents=false,Margin=Padding.Empty};bar.Controls.Add(new Label{Text="有球权重 %",AutoSize=true,Padding=new Padding(0,6,0,0)});
+            var tabs=new TabControl{Name=prefix+"RolePhaseTabs",Dock=DockStyle.Fill,TabIndex=0};tabs.TabPages.Add(Page("有球位置／角色",InPosition,InRole));tabs.TabPages.Add(Page("无球位置／角色",OutPosition,OutRole));root.Controls.Add(tabs,0,0);
+            var bar=new FlowLayoutPanel{Dock=DockStyle.Fill,WrapContents=false,Margin=Padding.Empty,TabIndex=1};bar.Controls.Add(new Label{Text="有球权重 %",AutoSize=true,Padding=new Padding(0,6,0,0)});
             Weight=new NumericUpDown{Name=prefix+"PossessionWeight",Minimum=0,Maximum=100,Value=50,Width=58};bar.Controls.Add(Weight);weightLabel=new Label{AutoSize=true,Padding=new Padding(2,6,0,0)};bar.Controls.Add(weightLabel);root.Controls.Add(bar,0,1);Controls.Add(root);
             InPosition.SelectedIndexChanged+=delegate{if(binding)return;options.Profile=InPosition.SelectedIndex<=0?-1:Array.FindIndex(GrowthProfile.All,p=>p.Group==GrowthProfile.Groups[InPosition.SelectedIndex-1] && p.Phase=="基本");RefreshChoices();Emit();};
             OutPosition.SelectedIndexChanged+=delegate{if(binding)return;options.DefendingProfile=OutPosition.SelectedIndex==0?-2:OutPosition.SelectedIndex==1?-1:Array.FindIndex(GrowthProfile.All,p=>p.Group==GrowthProfile.Groups[OutPosition.SelectedIndex-2] && p.Phase=="基本");RefreshChoices();Emit();};
@@ -35,6 +35,7 @@ namespace Fm24Editor
         static TabPage Page(string name,Control position,Control role)
         {
             var page=new TabPage(name){Padding=new Padding(4)};var table=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=2,RowCount=2,Margin=Padding.Empty};table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,44));table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
+            position.TabIndex=0;role.TabIndex=1;
             for(int i=0;i<2;i++)table.RowStyles.Add(new RowStyle(SizeType.Percent,50));table.Controls.Add(new Label{Text="位置",Dock=DockStyle.Fill,TextAlign=ContentAlignment.MiddleLeft},0,0);table.Controls.Add(position,1,0);table.Controls.Add(new Label{Text="角色",Dock=DockStyle.Fill,TextAlign=ContentAlignment.MiddleLeft},0,1);table.Controls.Add(role,1,1);page.Controls.Add(table);return page;
         }
         GrowthProfile Context(int index){try{return GrowthProfile.Resolve(positions,index);}catch{return index>=0 && index<GrowthProfile.All.Length?GrowthProfile.All[index]:GrowthProfile.All[8];}}

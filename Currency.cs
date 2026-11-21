@@ -104,7 +104,8 @@ namespace Fm24Editor
             string previous=symbol();
             symbols.TextChanged+=delegate {string current=symbol();if(current!=previous){rate.Text=current=="£"?"1":"";previous=current;}update();};
             manual.CheckedChanged+=delegate {update();};estimate.CheckedChanged+=delegate {update();};update();
-            var apply=new Button {Name="SaveCurrency",Text="保存显示设置",Dock=DockStyle.Bottom,Height=38};
+            var apply=new Button {Name="SaveCurrency",Text="保存显示设置",Dock=DockStyle.Bottom};
+            StyleButton(apply,WorkspaceButtonRole.Primary);apply.Height=38;
             apply.Click+=delegate
             {
                 try

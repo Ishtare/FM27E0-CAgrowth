@@ -205,9 +205,10 @@ namespace Fm24Editor
                 if(!Safety.On("date") || !rawToday.HasValue)throw new InvalidOperationException("无法安全读取游戏日期，退役计划保持只读。");
                 DateTime today=RetirementSnapshot.Decode(rawToday.Value);
                 if(snapshot.Record!=null && snapshot.Record.Date<=today)throw new InvalidOperationException("退役日期已到，不能使用此功能让已经退役的球员复出。");
-                var dialog=new Form {Text=repair?"修复取消退役后的残留状态":"取消或推迟已宣布的退役",Width=620,Height=295,StartPosition=FormStartPosition.CenterParent,FormBorderStyle=FormBorderStyle.FixedDialog,MaximizeBox=false,MinimizeBox=false};
-                var info=new Label {Text=player.DisplayName+"  [UID "+player.Uid+"]\n当前游戏日期："+today.ToString("yyyy-MM-dd")+"\n"+(repair?"计划记录已移除，但球员身上仍保留已宣布退役标记。":"计划退役日期："+snapshot.Record.Date.ToString("yyyy-MM-dd")),Dock=DockStyle.Top,Height=94,Padding=new Padding(12),UseMnemonic=false};
-                var bar=new FlowLayoutPanel {Dock=DockStyle.Top,Height=42,Padding=new Padding(10,2,0,0)};
+                var dialog=new Form {Name="RetirementPlanDialog",Width=620,Height=330,FormBorderStyle=FormBorderStyle.FixedDialog,MaximizeBox=false};
+                StyleWorkspaceDialog(dialog,repair?"修复退役状态":"调整退役计划");
+                var info=new Label {Text=player.DisplayName+"  [UID "+player.Uid+"]\n当前游戏日期："+today.ToString("yyyy-MM-dd")+"\n"+(repair?"计划记录已移除，但球员身上仍保留已宣布退役标记。":"计划退役日期："+snapshot.Record.Date.ToString("yyyy-MM-dd")),Dock=DockStyle.Top,Height=78,Padding=new Padding(4),UseMnemonic=false};
+                var bar=new FlowLayoutPanel {Dock=DockStyle.Top,Height=44,TabIndex=0};
                 var date=new DateTimePicker {Format=DateTimePickerFormat.Custom,CustomFormat="yyyy-MM-dd",MaxDate=new DateTime(2200,12,31),Width=130};
                 var postpone=new Button {Text="推迟至所选日期",AutoSize=true};var cancel=new Button {Text=repair?"修复残留退役状态":"取消退役计划",AutoSize=true};
                 if(!repair)
@@ -219,13 +220,16 @@ namespace Fm24Editor
                         bar.Controls.Add(date);bar.Controls.Add(postpone);
                     }
                 }
+                StyleButton(postpone,WorkspaceButtonRole.Primary);
+                StyleButton(cancel,bar.Controls.Contains(postpone)?WorkspaceButtonRole.Secondary:WorkspaceButtonRole.Primary);
                 bar.Controls.Add(cancel);
-                var note=new Label {Text="取消退役会同时移除计划记录并清除已宣布退役标记；推迟退役保留该标记。\n请暂停游戏后修改，完成后重新打开 FM 球员资料核对。\n修改会记录到「变更记录」，可在数据仍有效时撤销。",Dock=DockStyle.Fill,Padding=new Padding(12),UseMnemonic=false};
+                var note=new Label {Text="取消退役会同时移除计划记录并清除已宣布退役标记；推迟退役保留该标记。\n请暂停游戏后修改，完成后重新打开 FM 球员资料核对。\n修改会记录到「变更记录」，可在数据仍有效时撤销。",Dock=DockStyle.Fill,Padding=new Padding(4),UseMnemonic=false,ForeColor=UiMuted};
                 Action<bool> apply=delay=>
                 {
                     if(CurrentGameDay()!=today)throw new InvalidOperationException("游戏日期已变化，请重新打开退役计划。");
                     string action=delay?"将退役日期推迟至 "+date.Value.ToString("yyyy-MM-dd"):(repair?"修复残留退役状态":"取消已宣布的退役计划");
-                    if(MessageBox.Show(player.DisplayName+"："+action+"？","退役计划",MessageBoxButtons.YesNo)!=DialogResult.Yes)return;
+                    if(MessageBox.Show(dialog,player.DisplayName+"："+action+"？","退役计划",MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question,MessageBoxDefaultButton.Button2)!=DialogResult.Yes)return;
                     if(!snapshot.StillCurrent(fm.Read)) {MessageBox.Show("退役数据已被游戏更新，请关闭窗口重新打开。","退役计划");return;}
                     var plan=snapshot.Plan(today,delay?(DateTime?)date.Value:null);var attached=fm;
                     Func<bool> identity=()=>
@@ -247,7 +251,10 @@ namespace Fm24Editor
                 };
                 postpone.Click+=delegate {try {apply(true);}catch(Exception ex){MessageBox.Show(ex.Message,"退役计划");}};
                 cancel.Click+=delegate {try {apply(false);}catch(Exception ex){MessageBox.Show(ex.Message,"退役计划");}};
-                dialog.Controls.Add(note);dialog.Controls.Add(bar);dialog.Controls.Add(info);dialog.ShowDialog(this);
+                var actions=DialogActions(dialog,DialogDismiss("CloseRetirementPlan","关闭"));
+                actions.TabIndex=1;
+                dialog.Controls.Add(note);dialog.Controls.Add(bar);dialog.Controls.Add(info);dialog.Controls.Add(actions);
+                dialog.ShowDialog(this);
             }
             catch(Exception ex) {MessageBox.Show(ex.Message,"退役计划（只读）");}
         }

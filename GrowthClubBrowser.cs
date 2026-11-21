@@ -46,7 +46,7 @@ namespace Fm24Editor
         Control BuildGrowthViewBar()
         {
             var bar=WrappingBar("GrowthViews");
-            StyleButton(btnBrowseGrowthClubs,true);StyleButton(btnViewGrowthQueue);
+            StyleButton(btnBrowseGrowthClubs,WorkspaceButtonRole.Primary);StyleButton(btnViewGrowthQueue);
             btnBrowseGrowthClubs.Click+=delegate{SwitchGrowthView(false);};
             btnViewGrowthQueue.Click+=delegate{SwitchGrowthView(true);};
             bar.Controls.Add(btnBrowseGrowthClubs);bar.Controls.Add(btnViewGrowthQueue);
@@ -94,7 +94,8 @@ namespace Fm24Editor
                 btnRemoveGrowthPlayer.Visible=queue;
                 txtGrowPlayerSearch.Text=queue?"":browsePlayerQuery;
                 SetHint(txtGrowPlayerSearch,queue?"搜索已选球员或俱乐部…":"搜索球员姓名或 UID…");
-                StyleButton(btnBrowseGrowthClubs,!queue);StyleButton(btnViewGrowthQueue,queue);
+                SetButtonRole(btnBrowseGrowthClubs,queue?WorkspaceButtonRole.Secondary:WorkspaceButtonRole.Primary);
+                SetButtonRole(btnViewGrowthQueue,queue?WorkspaceButtonRole.Primary:WorkspaceButtonRole.Secondary);
                 UpdateGrowthColumns();
             }
             finally{switchingGrowthView=false;}

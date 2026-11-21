@@ -17,7 +17,7 @@ namespace Fm24Editor
         }
         readonly Label playerName = new Label { Dock=DockStyle.Fill, AutoEllipsis=true, TextAlign=ContentAlignment.MiddleLeft };
         readonly Label selection = new Label { Dock=DockStyle.Fill, TextAlign=ContentAlignment.MiddleLeft };
-        readonly Label help = new Label { Dock=DockStyle.Fill, ForeColor=Color.FromArgb(101,115,135), UseMnemonic=false };
+        readonly Label help = new Label { Dock=DockStyle.Fill, ForeColor=MainForm.UiMuted, UseMnemonic=false };
         internal readonly ComboBox Mode = new ComboBox { Name="GrowthFocusMode", Dock=DockStyle.Fill, DropDownStyle=ComboBoxStyle.DropDownList };
         readonly DualRoleSelector roles = new DualRoleSelector("Growth");
         internal ComboBox Direction {get{return roles.InRole;}}
@@ -49,7 +49,7 @@ namespace Fm24Editor
 
         public GrowthEditorPanel()
         {
-            Name="GrowthEditorPanel";BackColor=Color.FromArgb(247,249,252);AutoScroll=true;Padding=new Padding(10);
+            Name="GrowthEditorPanel";BackColor=MainForm.UiInset;AutoScroll=true;Padding=new Padding(10);
             body=new TableLayoutPanel { Dock=DockStyle.Top, Height=540, ColumnCount=1, RowCount=8, Padding=new Padding(2), BackColor=BackColor };
             body.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
             foreach(float height in new[]{24F,38F,96F,34F,26F})body.RowStyles.Add(new RowStyle(SizeType.Absolute,height));
@@ -87,8 +87,8 @@ namespace Fm24Editor
             actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,58));actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,42));
             actions.RowStyles.Add(new RowStyle(SizeType.Percent,50));actions.RowStyles.Add(new RowStyle(SizeType.Percent,50));
             actions.Controls.Add(Watch,0,0);actions.Controls.Add(Preview,1,0);actions.Controls.Add(ApplyChecked,0,1);actions.SetColumnSpan(ApplyChecked,2);body.Controls.Add(actions,0,7);
-            foreach(var button in new[]{Speed,ClearAttributes,Watch,ApplyChecked,Preview})MainForm.StyleWorkspaceButton(button,button==Watch);
-            MainForm.StyleWorkspaceButton(ConfigureSupport);
+            MainForm.StyleButton(Watch,WorkspaceButtonRole.Primary);
+            foreach(var button in new[]{Speed,ClearAttributes,ApplyChecked,Preview,ConfigureSupport})MainForm.StyleButton(button);
             Controls.Add(body);
             Resize+=delegate{FitEditorHeight();};
             FontChanged+=delegate
@@ -202,7 +202,7 @@ namespace Fm24Editor
             var profile=Context();
             selection.Text=options.Mode==GrowthMode.CaOnly?"属性由游戏训练处理":options.Mode==GrowthMode.SelectedAttributes?"已选 "+options.Attributes.Length+" 项属性":options.DefendingProfile==-2?profile.DisplayName:"有球 "+options.PossessionWeight+"% / 无球 "+(100-options.PossessionWeight)+"% 综合成长";
             bool invalid=options.Mode==GrowthMode.SelectedAttributes && (options.Attributes.Length==0 || options.Attributes.Any(i=>!GrowthProfile.Developable(i) || profile.Cost(i)<=0));
-            selection.ForeColor=invalid?Color.FromArgb(180,35,24):Color.FromArgb(31,42,61);
+            selection.ForeColor=invalid?MainForm.UiErrorInk:MainForm.UiInk;
             if(uid==0)help.Text="连接后选择球员，即可单独设置培养方式。";
             else if(running)help.Text="成长运行中，停止后可调整设置。预览可随时查看。";
             else if(invalid)help.Text="请勾选至少一项可用属性，再开始成长。";
