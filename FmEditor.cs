@@ -239,7 +239,7 @@ namespace Fm24Editor
         [DllImport("kernel32.dll", SetLastError = true)] public static extern IntPtr OpenProcess(uint access, bool inherit, int pid);
         [DllImport("kernel32.dll")] public static extern bool CloseHandle(IntPtr h);
         [DllImport("kernel32.dll", SetLastError = true)] public static extern bool ReadProcessMemory(IntPtr h, IntPtr addr, byte[] buf, IntPtr size, out IntPtr read);
-        [DllImport("kernel32.dll")] public static extern bool WriteProcessMemory(IntPtr h, IntPtr addr, byte[] buf, IntPtr size, out IntPtr written);
+        [DllImport("kernel32.dll", SetLastError = true)] public static extern bool WriteProcessMemory(IntPtr h, IntPtr addr, byte[] buf, IntPtr size, out IntPtr written);
         [DllImport("kernel32.dll", SetLastError = true)] public static extern IntPtr VirtualQueryEx(IntPtr h, IntPtr addr, out MBI info, IntPtr size);
     }
 
@@ -323,8 +323,21 @@ namespace Fm24Editor
 
         public bool Write(ulong addr, byte[] data)
         {
-            IntPtr w;
-            return Native.WriteProcessMemory(H, (IntPtr)(long)addr, data, (IntPtr)data.Length, out w) && (long)w == data.Length;
+            int error;
+            return Write(addr, data, out error);
+        }
+
+        public bool Write(ulong addr, byte[] data, out int error)
+        {
+            IntPtr written;
+            if (!Native.WriteProcessMemory(H, (IntPtr)(long)addr, data, (IntPtr)data.Length, out written))
+            {
+                error = Marshal.GetLastWin32Error();
+                return false;
+            }
+            const int partialCopy = 299;
+            error = (long)written == data.Length ? 0 : partialCopy;
+            return error == 0;
         }
 
         public ulong ReadPtr(ulong addr) { var b = Read(addr, 8); return b == null ? 0 : BitConverter.ToUInt64(b, 0); }
@@ -1887,7 +1900,8 @@ CurrentDateRva = 0x56237C8
         TextBox txtBalance = new TextBox { Width = 160 }, txtTransfer = new TextBox { Width = 160 }, txtTransferNext = new TextBox { Width = 160 }, txtWage = new TextBox { Width = 160 };
         Label lblWageYear = new Label { AutoSize = true }, lblWageSpend = new Label { AutoSize = true };
         Club loadedClub;
-        int[] loadedFin;
+        int?[] loadedFin;
+        bool filteringClubs;
         NumericUpDown[] numFacility = FmLayout.FacilityNames.Select(x => new NumericUpDown { Minimum = 1, Maximum = 20, Width = 60 }).ToArray();
         int[] loadedFacility;
         NumericUpDown numReputation = new NumericUpDown { Minimum = 0, Maximum = 10000, Increment = 100, Width = 80 };
@@ -2980,13 +2994,18 @@ CurrentDateRva = 0x56237C8
         void FilterClubs()
         {
             var q = txtClubSearch.Text.Trim();
+            var selected = lstClubs.SelectedItem as Club;
+            filteringClubs = true;
             lstClubs.BeginUpdate();
             try
             {
                 lstClubs.Items.Clear();
                 lstClubs.Items.AddRange(clubs.Where(c=>ClubSearch.Matches(c,q)).ToArray());
+                if (selected != null && lstClubs.Items.Contains(selected)) lstClubs.SelectedItem = selected;
             }
-            finally{lstClubs.EndUpdate();}
+            finally { lstClubs.EndUpdate(); filteringClubs = false; }
+            var current = lstClubs.SelectedItem as Club;
+            if (current != loadedClub) LoadClub(current);
         }
 
         // ---------- players ----------
@@ -4175,6 +4194,25 @@ CurrentDateRva = 0x56237C8
         }
 
         static ulong[] FinFields { get { return new[] { FmLayout.FinBalance, FmLayout.FinTransfer, FmLayout.FinTransferNext, FmLayout.FinWageBudget, FmLayout.FinWageSpend }; } }
+        static readonly string[] ClubMoneyNames = { "俱乐部结余", "剩余转会预算", "下赛季转会预算", "周薪预算" };
+
+        TextBox[] ClubMoneyInputs()
+        {
+            return new[] { txtBalance, txtTransfer, txtTransferNext, txtWage };
+        }
+
+        static string ClubMoneyText(int? amount, double rate)
+        {
+            return amount.HasValue ? Money(amount.Value * rate) : "暂不可读";
+        }
+
+        static string FinanceReadOnlyReason()
+        {
+            string reason;
+            if (Safety.Off.TryGetValue("core", out reason)) return "全局安全检查未通过：" + reason;
+            if (Safety.Off.TryGetValue("finance", out reason)) return "财务只读，全局财务检查未通过：" + reason;
+            return null;
+        }
 
         void ShowClubCatalogEntry(Club club,string reason)
         {
@@ -4209,7 +4247,12 @@ CurrentDateRva = 0x56237C8
 
         void LoadClub(Club c)
         {
-            if(c==null || fm==null || !btnScan.Enabled)return;
+            if (filteringClubs) return;
+            if (c == null || fm == null || !btnScan.Enabled)
+            {
+                ShowClubCatalogEntry(c, "请先完成挂接并扫描。");
+                return;
+            }
             if(!c.HasFullFinance)
             {
                 ShowClubCatalogEntry(c,c.CompactFinance?"已读取俱乐部。当前使用简化财务，俱乐部管理只读。":
@@ -4221,20 +4264,13 @@ CurrentDateRva = 0x56237C8
                 ShowClubCatalogEntry(c,"俱乐部或财务资料已变化。请重新挂接读取。");
                 return;
             }
-            var fields=FinFields;
-            var vals=new int[fields.Length];
-            for (int k = 0; k < fields.Length; k++)
+            var vals = FinFields.Select(field => fm.ReadI32(c.Finance + field)).ToArray();
+            if (vals.All(value => !value.HasValue))
             {
-                var v = fm.ReadI32(c.Finance + fields[k]);
-                if(v==null)
-                {
-                    ShowClubCatalogEntry(c,"财务数值暂不可读，可重新加载此俱乐部。");
-                    return;
-                }
-                vals[k] = v.Value;
+                ShowClubCatalogEntry(c, "财务数值暂不可读，可重新加载此俱乐部。");
+                return;
             }
             loadedClub = c; loadedFin = vals;
-            foreach (var box in new[] { txtBalance, txtTransfer, txtTransferNext, txtWage }) box.ReadOnly = !Safety.On("finance");
             loadedReputation = ReadReputation(c);
             numReputation.Enabled = loadedReputation >= 0;
             numReputation.Value = Math.Max(0, Math.Min(10000, loadedReputation));
@@ -4266,49 +4302,250 @@ CurrentDateRva = 0x56237C8
             numSeasonTickets.Enabled = loadedSeasonTickets >= 0; numSeasonTickets.Value = Math.Max(0, Math.Min(300000, loadedSeasonTickets));
             txtTicketPrice.Enabled = loadedTickets!=null || loadedTicketPrice >= 0; txtTicketPrice.Text = loadedTicketPrice >= 0 ? (loadedTicketPrice * r).ToString("0.00", CultureInfo.InvariantCulture) : loadedTickets!=null ? "未设置" : "";
             txtTicketPrice.ReadOnly=!txtTicketPrice.Enabled;
-            lblClub.Text = c.Name+"  [UID "+c.Uid+"]";
+            string financeRestriction = FinanceReadOnlyReason();
+            var inputs = ClubMoneyInputs();
+            for (int index = 0; index < inputs.Length; index++)
+            {
+                inputs[index].ReadOnly = financeRestriction != null || !vals[index].HasValue;
+                inputs[index].Text = ClubMoneyText(vals[index], r);
+            }
+            lblClub.Text = c.Name+"  [UID "+c.Uid+"]" + (financeRestriction == null ? "" : "\n" + financeRestriction);
             btnReloadClub.Enabled=true;
             btnApplyClub.Enabled=Safety.On("core");
             btnFreezeClub.Enabled=Safety.On("finance");
             btnClubSponsors.Enabled=Safety.On("sponsor");
-            txtBalance.Text = Money(vals[0] * r);
-            txtTransfer.Text = Money(vals[1] * r);
-            txtTransferNext.Text = Money(vals[2] * r);
-            txtWage.Text = Money(vals[3] * r);
-            lblWageYear.Text = "= " + Money(vals[3] * r * 52) + "／年";
-            lblWageSpend.Text = Money(vals[4] * r) + "／周（" + Money(vals[4] * r * 52) + "／年）";
-            lblStoredPounds.Text = "原始英镑金额：余额 £" + Money(vals[0]) + "，转会预算 £" + Money(vals[1]) + "，下赛季预算 £" + Money(vals[2]) +
-                                   "，周薪预算 £" + Money(vals[3]) + "/wk";
+            lblWageYear.Text = vals[3].HasValue ? "= " + Money(vals[3].Value * r * 52) + "／年" : "暂不可读";
+            lblWageSpend.Text = vals[4].HasValue ? ClubMoneyText(vals[4], r) + "／周（" + Money(vals[4].Value * r * 52) + "／年）" : "暂不可读";
+            lblStoredPounds.Text = "原始英镑金额：余额 £" + ClubMoneyText(vals[0], 1) + "，转会预算 £" + ClubMoneyText(vals[1], 1) +
+                                   "，下赛季预算 £" + ClubMoneyText(vals[2], 1) + "，周薪预算 £" + ClubMoneyText(vals[3], 1) + "/wk";
         }
 
         static string Money(double v) { return Math.Round(v).ToString("N0", CultureInfo.InvariantCulture); }
 
         static bool ParseMoney(string s, out double v) {return CurrencySetting.TryMoney(s,out v);}
 
-        void ApplyClub()
+        delegate bool ClubMoneyWriter(ulong address, byte[] value, out int error);
+
+        sealed class ClubMoneyEdit
         {
-            if(loadedClub==null || loadedFin==null || !Safety.On("core") || !btnScan.Enabled)return;
-            if(!ClubCatalogReader.MatchesFullFinance(fm,loadedClub))
+            public ulong Address;
+            public string Name, Input, Result;
+            public int? Before;
+            public int After;
+            public Freeze Floor;
+            public int? FloorValue;
+            public bool Written;
+            public bool LowersFloor { get { return FloorValue.HasValue && After < FloorValue.Value; } }
+        }
+
+        List<ClubMoneyEdit> ClubMoneyDrafts(Club club, int?[] snapshot, double rate)
+        {
+            var edits = new List<ClubMoneyEdit>();
+            if (club == null || snapshot == null) return edits;
+            var inputs = ClubMoneyInputs();
+            var fields = FinFields;
+            for (int i = 0; i < inputs.Length; i++)
             {
-                ShowClubCatalogEntry(loadedClub,"俱乐部或财务资料已变化。请重新挂接读取。");
+                string input = inputs[i].Text;
+                if (input == ClubMoneyText(snapshot[i], rate)) continue;
+                edits.Add(new ClubMoneyEdit { Address = club.Finance + fields[i], Name = ClubMoneyNames[i],
+                    Input = input, Before = snapshot[i] });
+            }
+            return edits;
+        }
+
+        string ClubDraftProblem(FmProcess attached, Club club, int?[] snapshot, ulong? save)
+        {
+            if (club == null || loadedClub != club || lstClubs.SelectedItem != club || loadedFin != snapshot)
+                return "俱乐部选择或财务草稿已变化，请重新核对。";
+            if (attached == null || fm != attached || !btnScan.Enabled ||
+                (save.HasValue && SaveLoadCount(attached) != save))
+                return "连接或存档已变化，请重新挂接并扫描。";
+            if (!club.HasFullFinance)
+                return club.CompactFinance ? "财务只读，当前俱乐部使用简化财务。" : "财务只读，完整财务尚未确认。";
+            if (!ClubCatalogReader.MatchesFullFinance(attached, club))
+                return "俱乐部或财务资料已变化，请重新挂接读取。";
+            if (!Safety.On("core")) return FinanceReadOnlyReason();
+            return snapshot == null ? "财务只读，原值读取失败，请重新加载。" : null;
+        }
+
+        static string CheckClubMoneyOriginal(ClubMoneyEdit edit, Func<ulong, int?> read)
+        {
+            var current = read(edit.Address);
+            if (!current.HasValue) return "旧值读取失败，请重新加载。";
+            return current == edit.Before ? null : "旧值已变更，当前为 £" + Money(current.Value) + "，请重新加载。";
+        }
+
+        static string PrepareClubMoney(ClubMoneyEdit edit, double rate, Func<ulong, int?> read)
+        {
+            if (!edit.Before.HasValue) return "财务只读，旧值读取失败。";
+            double entered;
+            if (!ParseMoney(edit.Input, out entered)) return "金额格式无效。";
+            double pounds = entered / rate;
+            if (double.IsNaN(pounds) || double.IsInfinity(pounds)) return "折算后的英镑金额不是有限数值。";
+            if (pounds < int.MinValue || pounds > int.MaxValue)
+                return "折算后的英镑金额超出 -2,147,483,648 至 2,147,483,647 的范围。";
+            edit.After = (int)Math.Round(pounds);
+            return CheckClubMoneyOriginal(edit, read);
+        }
+
+        Freeze ClubMoneyFloor(ulong address)
+        {
+            return freezes.FirstOrDefault(f => f.Addr == address && f.Signed && f.Value.Length == 4 && GuardsOk(f));
+        }
+
+        string CheckClubMoneyBeforeWrite(ClubMoneyEdit edit, Func<ulong, int?> read)
+        {
+            var floor = ClubMoneyFloor(edit.Address);
+            if (floor != edit.Floor || (floor != null && BitConverter.ToInt32(floor.Value, 0) != edit.FloorValue))
+                return "冻结下限已变化，请重新核对并提交。";
+            return CheckClubMoneyOriginal(edit, read);
+        }
+
+        void ReportClubMoney(Club club, List<ClubMoneyEdit> edits, string pendingResult = null)
+        {
+            string prefix = club == null ? "俱乐部财务" : club.Name;
+            var first = edits.FirstOrDefault(edit => !edit.Written && edit.Result != null) ?? edits.FirstOrDefault();
+            foreach (var edit in edits)
+            {
+                if (edit.Result == null) edit.Result = pendingResult;
+                if (!edit.Written) LogLine(prefix + " · " + edit.Name + " " + edit.Result);
+            }
+            if (first == null)
+            {
+                if (pendingResult != null) LogLine(prefix + " · " + pendingResult);
+                lblStatus.Text = pendingResult;
                 return;
             }
-            double r = Rate();
-            var boxes = new[] { txtBalance, txtTransfer, txtTransferNext, txtWage };
-            var names = new[] { "balance", "transfer budget", "下赛季转会预算", "周薪预算" };
-            int written = 0, skipped = 0;
-            for (int k = 0; k < boxes.Length && Safety.On("finance"); k++)
+            lblStatus.Text = first.Name + " " + first.Result + (edits.Count > 1 ? " 各项结果见「变更记录」。" : "");
+        }
+
+        bool ApplyClubMoney(Club club, List<ClubMoneyEdit> edits, double rate, Func<string> checkDraft,
+            Func<ulong, int?> read, ClubMoneyWriter write, Func<string, bool> confirm, out int written)
+        {
+            written = 0;
+            if (edits.Count == 0) return true;
+            Func<string> check = () => checkDraft() ?? FinanceReadOnlyReason();
+            string problem = check();
+            if (problem != null) { ReportClubMoney(club, edits, problem); return false; }
+
+            bool invalid = false;
+            foreach (var edit in edits)
             {
-                double dollars;
-                if (!ParseMoney(boxes[k].Text, out dollars)) { MessageBox.Show("无法读取 " + names[k] + " 金额。", "俱乐部"); return; }
-                if (boxes[k].Text == Money(loadedFin[k] * r)) continue;
-                long pounds = (long)Math.Round(dollars / r);
-                pounds = Math.Max(int.MinValue, Math.Min(int.MaxValue, pounds));
-                if (pounds == loadedFin[k]) continue;
-                var cur = fm.ReadI32(loadedClub.Finance + FinFields[k]);
-                if (cur == null || cur.Value != loadedFin[k]) { skipped++; continue; }
-                if (WriteLogged(loadedClub.Finance + FinFields[k], BitConverter.GetBytes((int)pounds),
-                    loadedClub.Name + ": " + names[k] + " £" + loadedFin[k].ToString("N0", CultureInfo.InvariantCulture) + " -> £" + pounds.ToString("N0", CultureInfo.InvariantCulture))) written++;
+                edit.Result = PrepareClubMoney(edit, rate, read);
+                if (edit.Result != null) invalid = true;
+                else if (edit.After == edit.Before.Value) edit.Result = "折算后同值，已跳过。";
+            }
+            if (invalid)
+            {
+                ReportClubMoney(club, edits, "本次有金额未通过校验，已跳过。");
+                return false;
+            }
+
+            var pending = edits.Where(edit => edit.Result == null).ToArray();
+            foreach (var edit in pending)
+            {
+                edit.Floor = ClubMoneyFloor(edit.Address);
+                edit.FloorValue = edit.Floor == null ? (int?)null : BitConverter.ToInt32(edit.Floor.Value, 0);
+            }
+            var reductions = pending.Where(edit => edit.LowersFloor).ToArray();
+            if (reductions.Length > 0)
+            {
+                string detail = string.Join("\n", reductions.Select(edit => edit.Name + " 当前冻结下限 £" +
+                    Money(edit.FloorValue.Value) + " → £" + Money(edit.After)));
+                if (!confirm(detail + "\n\n是否写入金额并同步下调这些冻结下限？"))
+                {
+                    ReportClubMoney(club, edits, "已取消下调冻结下限，本次未写入。");
+                    return false;
+                }
+            }
+
+            // The game and the roster refresh can advance while the confirmation dialog is open.
+            problem = check();
+            if (problem != null) { ReportClubMoney(club, edits, problem); return false; }
+            foreach (var edit in pending) edit.Result = CheckClubMoneyBeforeWrite(edit, read);
+            if (pending.Any(edit => edit.Result != null))
+            {
+                ReportClubMoney(club, edits, "本次财务状态已变化，已跳过。");
+                return false;
+            }
+
+            bool floorsChanged = false;
+            foreach (var edit in pending)
+            {
+                edit.Result = check() ?? CheckClubMoneyBeforeWrite(edit, read);
+                if (edit.Result != null) continue;
+                var data = BitConverter.GetBytes(edit.After);
+                int error;
+                if (!write(edit.Address, data, out error))
+                {
+                    edit.Result = "写入失败（Windows 错误码 " + error + "）。";
+                    continue;
+                }
+                problem = check();
+                if (problem != null)
+                {
+                    edit.Result = "写入后回读未通过。" + problem;
+                    continue;
+                }
+                var actual = read(edit.Address);
+                if (actual != edit.After)
+                {
+                    edit.Result = actual.HasValue ? "回读不一致，预期 £" + Money(edit.After) +
+                        "，实际 £" + Money(actual.Value) + "。" : "写入后回读失败。";
+                    continue;
+                }
+                edit.Written = true;
+                edit.Result = "已写入 £" + Money(edit.After) + "，回读通过。";
+                if (edit.LowersFloor)
+                {
+                    edit.Floor.Value = (byte[])data.Clone();
+                    edit.Floor.What = club.Name + " · " + edit.Name + " 最低 £" + Money(edit.After);
+                    edit.Result += " 冻结下限已同步。";
+                    floorsChanged = true;
+                }
+                RecordLoggedChange(edit.Address, BitConverter.GetBytes(edit.Before.Value), data, club.Name + " · " +
+                    edit.Name + " £" + Money(edit.Before.Value) + " → £" + Money(edit.After) + "。回读通过。" +
+                    (edit.LowersFloor ? " 冻结下限已同步。" : ""));
+                written++;
+            }
+            if (floorsChanged) RefreshFreezeList();
+            ReportClubMoney(club, edits);
+            return true;
+        }
+
+        void ApplyClub()
+        {
+            ApplyClub(prompt => MessageBox.Show(this, prompt, "调整资金冻结下限",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.Yes);
+        }
+
+        void ApplyClub(Func<string, bool> confirm, Func<ulong, int?> financeRead = null, ClubMoneyWriter financeWrite = null)
+        {
+            var attached = fm;
+            var club = loadedClub;
+            var snapshot = loadedFin;
+            double r = Rate();
+            var moneyEdits = ClubMoneyDrafts(club, snapshot, r);
+            var save = scannedSaveLoads;
+            Func<string> checkDraft = () => ClubDraftProblem(attached, club, snapshot, save);
+            string draftProblem = checkDraft();
+            if (draftProblem != null)
+            {
+                ShowClubCatalogEntry(lstClubs.SelectedItem as Club, draftProblem);
+                ReportClubMoney(club, moneyEdits, draftProblem);
+                return;
+            }
+            int written, skipped = 0;
+            if (!ApplyClubMoney(club, moneyEdits, r, checkDraft, financeRead ?? new Func<ulong, int?>(attached.ReadI32),
+                financeWrite ?? new ClubMoneyWriter(attached.Write), confirm, out written)) return;
+            string moneyStatus = moneyEdits.Count == 0 ? "" : lblStatus.Text;
+            draftProblem = checkDraft();
+            if (draftProblem != null)
+            {
+                ShowClubCatalogEntry(lstClubs.SelectedItem as Club, draftProblem);
+                lblStatus.Text = (moneyStatus.Length == 0 ? "" : moneyStatus + " ") + draftProblem;
+                return;
             }
             int rep = (int)numReputation.Value;
             if (numReputation.Enabled && rep != loadedReputation)
@@ -4381,11 +4618,14 @@ CurrentDateRva = 0x56237C8
                 else if (Math.Abs(pounds - loadedTicketPrice) >= 0.005 && WriteLogged(loadedClub.Finance + FmLayout.FinTicketPrice, BitConverter.GetBytes(pounds), loadedClub.Name + "：平均票价 £" +
                     loadedTicketPrice.ToString("0.00", CultureInfo.InvariantCulture) + " -> £" + pounds.ToString("0.00", CultureInfo.InvariantCulture))) written++;
             }
-            written += WriteName(loadedClub.Addr + FmLayout.ClubName, loadedClubName, txtClubName.Text, "name", ref skipped);
+            int renamed = WriteName(loadedClub.Addr + FmLayout.ClubName, loadedClubName, txtClubName.Text, "name", ref skipped);
+            written += renamed;
             written += WriteName(loadedClub.Addr + FmLayout.ClubShortName, loadedClubShort, txtClubShort.Text, "short name", ref skipped);
-            LoadClub(loadedClub);
-            lblStatus.Text = written + " 项数值已修改" + (skipped > 0 ? ", " + skipped + " 项因游戏在加载后更新了数据而跳过" : "") +
-                             "。请在 FM 中推进一天后查看。";
+            if (renamed != 0) FilterClubs();
+            LoadClub(lstClubs.SelectedItem as Club);
+            lblStatus.Text = (moneyStatus.Length == 0 ? "" : moneyStatus + " ") + written + " 项数值已修改" +
+                (skipped > 0 ? "，另有 " + skipped + " 项跳过" : "") + "。" +
+                (written > 0 ? "请在 FM 中推进一天后查看。" : "");
         }
 
         // ---------- sponsorship deals ----------
@@ -4485,7 +4725,7 @@ CurrentDateRva = 0x56237C8
             var buf = new byte[4 + ob.Length];
             BitConverter.GetBytes(nb.Length).CopyTo(buf, 0); nb.CopyTo(buf, 4);
             if (!WriteLogged(str, buf, loadedClub.Name + ": " + what + " " + old + " -> " + want)) return 0;
-            if (what == "name") { loadedClub.Name = want; FilterClubs(); }
+            if (what == "name") loadedClub.Name = want;
             return 1;
         }
 
@@ -4911,12 +5151,17 @@ CurrentDateRva = 0x56237C8
             }
             var old = fm.Read(addr, data.Length);
             if (old == null || !fm.Write(addr, data)) { MessageBox.Show("写入失败：" + what, "写入数据"); return false; }
+            RecordLoggedChange(addr, old, data, what);
+            return true;
+        }
+
+        void RecordLoggedChange(ulong addr, byte[] old, byte[] data, string what)
+        {
             var ch = new Change { Addr = addr, Old = old, New = data, What = what, When = DateTime.Now, Group = curGroup };
             changes.Add(ch);
             lstLog.Items.Add(ch);
             var line = ch.When.ToString("yyyy-MM-dd HH:mm:ss") + "  " + what + "  @" + addr.ToString("X") + " " + BitConverter.ToString(old) + " -> " + BitConverter.ToString(data);
             try { File.AppendAllText(logPath, line + Environment.NewLine); } catch { }
-            return true;
         }
 
         void UndoAll()

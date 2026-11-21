@@ -349,6 +349,7 @@ namespace Fm24Editor
                 ClubFacilitiesTests.Run(Check);
                 NativeEngineTests.Run(Check);
                 ClubCatalogTests.Run(Check);
+                ClubFinanceTests.Run(Check);
                 RosterRefreshTests.Run(Check);
                 PerformanceMaintenanceTests.Run(Check);
                 WorkspaceLayoutTests.Run(Check);
