@@ -63,7 +63,7 @@ namespace Fm24Editor
             { "Apply changes", "应用修改" }, { "Search", "搜索" }, { "Release", "解约" }, { "Swap with...", "交换..." },
             { "Move to club...", "转到俱乐部..." }, { "Details && traits...", "详情与特质..." }, { "Bonuses && clauses...", "奖金与条款..." },
             { "Create player...", "新建球员..." }, { "Sponsors...", "赞助商..." }, { "Heal injury", "治疗伤病" },
-            { "Heal all injuries", "治疗所有伤病" }, { "All visible to 20", "可见属性全拉满" },
+            { "Heal all injuries", "治疗所有伤病" }, { "All visible to 20", "将全部已验证基础属性填至极值" },
             { "All attributes to 20", "所有属性拉到 20" }, { "Max all verified attributes", "已验证属性全拉满" },
             { "Max condition, sharpness && morale", "体能、状态与心情拉满" },
             { "Freeze fit && happy", "冻结体能与心情" }, { "Freeze squad fit, sharp && happy", "冻结全队体能、状态与心情" },
@@ -1853,7 +1853,12 @@ CurrentDateRva = 0x56237C8
         string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "changes.log");
 
         Button btnScan = new Button { Text = "挂接并扫描", Width = 120 };
-        Label lblStatus = new Label { AutoSize = true, UseMnemonic = false, Text = "先启动 FM27 并载入存档，然后点“挂接并扫描”。" };
+        readonly TextBox lblStatus = new TextBox
+        {
+            Name = "OperationFeedbackText", AccessibleName = "操作反馈全文", ReadOnly = true,
+            Multiline = true, WordWrap = true, ScrollBars = ScrollBars.Vertical,
+            Text = "先启动 FM27 并载入存档，然后点“挂接并扫描”。"
+        };
         ProgressBar progress = new ProgressBar { Width = 200, Height = 18 };
         TextBox txtRate = new TextBox { Text = "1.3476", Width = 70 };   // FM27: $ per GBP (Finances: payroll budget / weekly wage budget / 52)
         TextBox txtCur = new TextBox { Text = "$", Width = 30 };
@@ -2109,7 +2114,7 @@ CurrentDateRva = 0x56237C8
             var buttons = new FlowLayoutPanel { Dock = DockStyle.Bottom, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, WrapContents = true, Padding = new Padding(4) };
             var btnApply = btnApplyPlayer;
             var btnReload = new Button { Text = "重新加载", Width = 80 };
-            var btnMax = new Button { Text = "可见属性全拉满", Width = 130 };
+            var btnMax = new Button { Name = "FillVerifiedPlayerAttributes", Text = "将全部已验证基础属性填至极值" };
             buttons.Controls.Add(btnApply); buttons.Controls.Add(btnReload); buttons.Controls.Add(btnMax); buttons.Controls.Add(btnHeal); buttons.Controls.Add(btnClauses); buttons.Controls.Add(btnDetails); buttons.Controls.Add(btnCreate); buttons.Controls.Add(btnSwap); buttons.Controls.Add(btnMove); buttons.Controls.Add(btnRelease); buttons.Controls.Add(btnRetirement); buttons.Controls.Add(btnPlayerAge);
             btnPlayerAge.Click += delegate { if (loadedPlayer != null) OpenBirthdayDialog(loadedPlayer.Person, loadedPlayer.DisplayName); };
             btnRetirement.Click += delegate { OpenRetirementDialog(); };
@@ -2375,10 +2380,14 @@ CurrentDateRva = 0x56237C8
         void ApplyPrize()
         {
             if (loadedPrize == null || loadedPrizeVals == null) return;
-            if (!Safety.On("prize")) { MessageBox.Show("这个 fm.exe 的奖金数据是只读的。", "奖金"); return; }
+            if (!Safety.On("prize"))
+            {
+                ShowOperationMessage(FeedbackKind.ReadOnly,"这个 fm.exe 的奖金数据是只读的。","奖金");
+                return;
+            }
             var cur = ReadPrizeVals(loadedPrize);
             ulong b0 = fm.ReadPtr(loadedPrize.Vector);
-            int written = 0, skipped = 0, laterOnly = 0; double r = Rate();
+            int written = 0, skipped = 0, failed = 0, laterOnly = 0; double r = Rate();
             for (int k = 0; k < loadedPrizeVals.Length && k < gridPrize.Rows.Count; k++)
             {
                 string t = Convert.ToString(gridPrize.Rows[k].Cells[1].Value); double money;
@@ -2387,7 +2396,7 @@ CurrentDateRva = 0x56237C8
                 if (pounds == loadedPrizeVals[k]) continue;
                 if (cur == null || k >= cur.Length || cur[k] != loadedPrizeVals[k]) { skipped++; continue; }
                 string what = loadedPrize.Name + ": " + Ordinal(k + 1) + " 名奖金 £" + loadedPrizeVals[k].ToString("N0", CultureInfo.InvariantCulture) + " -> £" + pounds.ToString("N0", CultureInfo.InvariantCulture);
-                if (!WriteLogged(b0 + (ulong)(4 * k), BitConverter.GetBytes(pounds), what)) continue;
+                if (!WriteLogged(b0 + (ulong)(4 * k), BitConverter.GetBytes(pounds), what)) { failed++; continue; }
                 written++;
                 // FM27 pays this season from its own copy, which only lists the places that pay something
                 bool thisSeason = loadedPrize.SeasonVectors.Count == 0;
@@ -2401,9 +2410,11 @@ CurrentDateRva = 0x56237C8
                 if (!thisSeason) laterOnly++;
             }
             LoadPrize(loadedPrize);
-            lblStatus.Text = written + " 项奖金已修改" + (skipped > 0 ? ", " + skipped + " 项因游戏数据变化而跳过" : "") +
+            ShowOperationFeedback(WriteFeedbackKind(written,skipped+failed),
+                written + " 项奖金已修改" + (skipped > 0 ? "，" + skipped + " 项因游戏数据变化而跳过" : "") +
+                (failed > 0 ? "，" + failed + " 项写入失败" : "") +
                 (laterOnly > 0 ? ". " + laterOnly + " 项从下赛季起生效（本赛季仅能修改原本设有奖金的名次）" : "") +
-                "。在下一游戏日的赛事规则界面查看。";
+                "。" + (written > 0 ? "在下一游戏日的赛事规则界面查看。" : ""));
         }
 
         TabPage BuildFinderTab()
@@ -3948,24 +3959,37 @@ CurrentDateRva = 0x56237C8
 
         void ApplyPlayer()
         {
-            if (loadedPlayer == null || loadedBlock == null || fm==null || !Safety.On("core")) return;
+            if (loadedPlayer == null || loadedBlock == null || fm==null || !Safety.On("core"))
+            {
+                string reason;
+                if (fm!=null && Safety.Off.TryGetValue("core",out reason))
+                    ShowOperationFeedback(FeedbackKind.ReadOnly,"球员资料只读。"+reason);
+                else ShowOperationFeedback(FeedbackKind.Information,"请选择球员并读取资料后再提交。");
+                return;
+            }
             var selected=loadedPlayer;
             try
             {
                 if(!object.ReferenceEquals(RefreshSelectedPlayer(selected),selected) || ReadContract(selected)!=loadedContract)
                 {
                     LoadPlayer(selected);
-                    lblStatus.Text="球员资料已更新，请核对当前数值后重新编辑。";
+                    ShowOperationFeedback(FeedbackKind.Failed,"球员资料已更新，请核对当前数值后重新编辑。");
                     return;
                 }
             }
             catch(Exception ex)
             {
-                ClearPlayerPreview("球员资料需要重新读取。"+ex.Message.Replace("注册数据","球员资料"));
+                string reason="球员资料需要重新读取。"+ex.Message.Replace("注册数据","球员资料");
+                ClearPlayerPreview(reason);
+                ShowOperationFeedback(FeedbackKind.Failed,reason);
                 return;
             }
             var current = fm.Read(loadedPlayer.Block, FmLayout.PosCount + FmLayout.AttrCount);
-            if (!FmLayout.ValidBlock(current)) { MessageBox.Show("这名球员的数据已经移位，请重新点「挂接并扫描」。", "球员"); return; }
+            if (!FmLayout.ValidBlock(current))
+            {
+                ShowOperationMessage(FeedbackKind.Failed,"这名球员的数据已经移位，请重新点「挂接并扫描」。","球员");
+                return;
+            }
 
             int written = 0, skipped = 0;
             for (int k = 0; k < FmLayout.AttrCount; k++)
@@ -4132,8 +4156,9 @@ CurrentDateRva = 0x56237C8
                 else skipped++;
             }
             LoadPlayer(loadedPlayer);
-            lblStatus.Text = written + " 项数值已修改" + (skipped > 0 ? ", " + skipped + " 项因游戏在加载后更新了数据而跳过" : "") +
-                             "。请在 FM 中推进一天后查看。";
+            ShowOperationFeedback(WriteFeedbackKind(written,skipped),
+                written + " 项球员数值已修改" + (skipped > 0 ? "，" + skipped + " 项因游戏数据变化或写入失败而跳过" : "") +
+                "。" + (written > 0 ? "请在 FM 中推进一天后查看。" : ""));
         }
 
         static bool IsYes(object v)
@@ -4257,6 +4282,7 @@ CurrentDateRva = 0x56237C8
             {
                 ShowClubCatalogEntry(c,c.CompactFinance?"已读取俱乐部。当前使用简化财务，俱乐部管理只读。":
                     "已读取俱乐部。完整财务尚未确认，俱乐部管理只读。");
+                ShowOperationFeedback(FeedbackKind.ReadOnly,lblClub.Text);
                 return;
             }
             if(!ClubCatalogReader.MatchesFullFinance(fm,c))
@@ -4268,6 +4294,7 @@ CurrentDateRva = 0x56237C8
             if (vals.All(value => !value.HasValue))
             {
                 ShowClubCatalogEntry(c, "财务数值暂不可读，可重新加载此俱乐部。");
+                ShowOperationFeedback(FeedbackKind.ReadOnly,lblClub.Text);
                 return;
             }
             loadedClub = c; loadedFin = vals;
@@ -4310,6 +4337,7 @@ CurrentDateRva = 0x56237C8
                 inputs[index].Text = ClubMoneyText(vals[index], r);
             }
             lblClub.Text = c.Name+"  [UID "+c.Uid+"]" + (financeRestriction == null ? "" : "\n" + financeRestriction);
+            if (financeRestriction != null) ShowOperationFeedback(FeedbackKind.ReadOnly,lblClub.Text);
             btnReloadClub.Enabled=true;
             btnApplyClub.Enabled=Safety.On("core");
             btnFreezeClub.Enabled=Safety.On("finance");
@@ -4402,22 +4430,37 @@ CurrentDateRva = 0x56237C8
             return CheckClubMoneyOriginal(edit, read);
         }
 
-        void ReportClubMoney(Club club, List<ClubMoneyEdit> edits, string pendingResult = null)
+        const string ClubMoneySameValue = "折算后同值，已跳过。";
+
+        static bool IsClubMoneyReadOnly(string reason)
+        {
+            return reason != null && (reason.StartsWith("财务只读",StringComparison.Ordinal) ||
+                reason.StartsWith("全局安全检查未通过",StringComparison.Ordinal));
+        }
+
+        static FeedbackKind ClubMoneyFeedbackKind(List<ClubMoneyEdit> edits,int written,int skipped,string blockedBy=null)
+        {
+            var unsuccessful=edits.Where(edit=>!edit.Written && edit.Result!=ClubMoneySameValue).ToArray();
+            if (written==0 && (IsClubMoneyReadOnly(blockedBy) ||
+                skipped==0 && unsuccessful.Length>0 && unsuccessful.All(edit=>IsClubMoneyReadOnly(edit.Result))))
+                return FeedbackKind.ReadOnly;
+            return WriteFeedbackKind(written,skipped+unsuccessful.Length+(blockedBy==null?0:1));
+        }
+
+        void ReportClubMoney(Club club, List<ClubMoneyEdit> edits, string pendingResult = null, bool canceled = false)
         {
             string prefix = club == null ? "俱乐部财务" : club.Name;
-            var first = edits.FirstOrDefault(edit => !edit.Written && edit.Result != null) ?? edits.FirstOrDefault();
             foreach (var edit in edits)
             {
                 if (edit.Result == null) edit.Result = pendingResult;
                 if (!edit.Written) LogLine(prefix + " · " + edit.Name + " " + edit.Result);
             }
-            if (first == null)
-            {
-                if (pendingResult != null) LogLine(prefix + " · " + pendingResult);
-                lblStatus.Text = pendingResult;
-                return;
-            }
-            lblStatus.Text = first.Name + " " + first.Result + (edits.Count > 1 ? " 各项结果见「变更记录」。" : "");
+            if (edits.Count==0 && pendingResult!=null) LogLine(prefix + " · " + pendingResult);
+            string details=edits.Count==0?pendingResult:
+                string.Join(Environment.NewLine,edits.Select(edit=>edit.Name+"："+edit.Result));
+            ShowOperationFeedback(canceled?FeedbackKind.Information:
+                ClubMoneyFeedbackKind(edits,edits.Count(edit=>edit.Written),0,pendingResult),
+                prefix+Environment.NewLine+details);
         }
 
         bool ApplyClubMoney(Club club, List<ClubMoneyEdit> edits, double rate, Func<string> checkDraft,
@@ -4434,7 +4477,7 @@ CurrentDateRva = 0x56237C8
             {
                 edit.Result = PrepareClubMoney(edit, rate, read);
                 if (edit.Result != null) invalid = true;
-                else if (edit.After == edit.Before.Value) edit.Result = "折算后同值，已跳过。";
+                else if (edit.After == edit.Before.Value) edit.Result = ClubMoneySameValue;
             }
             if (invalid)
             {
@@ -4455,7 +4498,7 @@ CurrentDateRva = 0x56237C8
                     Money(edit.FloorValue.Value) + " → £" + Money(edit.After)));
                 if (!confirm(detail + "\n\n是否写入金额并同步下调这些冻结下限？"))
                 {
-                    ReportClubMoney(club, edits, "已取消下调冻结下限，本次未写入。");
+                    ReportClubMoney(club, edits, "已取消下调冻结下限，本次未写入。", canceled:true);
                     return false;
                 }
             }
@@ -4544,7 +4587,8 @@ CurrentDateRva = 0x56237C8
             if (draftProblem != null)
             {
                 ShowClubCatalogEntry(lstClubs.SelectedItem as Club, draftProblem);
-                lblStatus.Text = (moneyStatus.Length == 0 ? "" : moneyStatus + " ") + draftProblem;
+                ShowOperationFeedback(ClubMoneyFeedbackKind(moneyEdits,written,0,draftProblem),
+                    (moneyStatus.Length==0?"":moneyStatus+Environment.NewLine)+draftProblem);
                 return;
             }
             int rep = (int)numReputation.Value;
@@ -4553,6 +4597,7 @@ CurrentDateRva = 0x56237C8
                 if (ReadReputation(loadedClub) != loadedReputation) skipped++;
                 else if (WriteLogged(loadedClub.Team + FmLayout.TeamReputation, BitConverter.GetBytes((ushort)rep), loadedClub.Name + "：声望 " + loadedReputation + " -> " + rep)) written++;
             }
+            string facilityFailure=null;
             var facilityRequests=new Dictionary<int,int>();
             for(int k=0;k<numFacility.Length;k++)if(numFacility[k].Enabled && (int)numFacility[k].Value!=loadedFacility[k])facilityRequests[k]=(int)numFacility[k].Value;
             if(facilityRequests.Count>0)
@@ -4561,7 +4606,14 @@ CurrentDateRva = 0x56237C8
                 else
                 {
                     skipped+=facilityRequests.Count;LogLine("设施修改未完成："+failure);MessageBox.Show(failure,"设施修改未完成");
-                    if(failure!=null && failure.Contains("重载")){LoadClub(loadedClub);lblStatus.Text="设施修改未完整恢复，请重载修改前的存档。";return;}
+                    facilityFailure=failure;
+                    if(failure!=null && failure.Contains("重载"))
+                    {
+                        LoadClub(loadedClub);
+                        ShowOperationFeedback(ClubMoneyFeedbackKind(moneyEdits,written,skipped),
+                            (moneyStatus.Length==0?"":moneyStatus+Environment.NewLine)+"设施修改未完整恢复："+failure);
+                        return;
+                    }
                 }
             }
             if (loadedStadium != 0)
@@ -4623,9 +4675,12 @@ CurrentDateRva = 0x56237C8
             written += WriteName(loadedClub.Addr + FmLayout.ClubShortName, loadedClubShort, txtClubShort.Text, "short name", ref skipped);
             if (renamed != 0) FilterClubs();
             LoadClub(lstClubs.SelectedItem as Club);
-            lblStatus.Text = (moneyStatus.Length == 0 ? "" : moneyStatus + " ") + written + " 项数值已修改" +
-                (skipped > 0 ? "，另有 " + skipped + " 项跳过" : "") + "。" +
-                (written > 0 ? "请在 FM 中推进一天后查看。" : "");
+            string summary=written+" 项俱乐部数值已修改"+
+                (skipped>0?"，另有 "+skipped+" 项跳过":"")+"。"+
+                (written>0?"请在 FM 中推进一天后查看。":"");
+            ShowOperationFeedback(ClubMoneyFeedbackKind(moneyEdits,written,skipped),
+                summary+(moneyStatus.Length==0?"":Environment.NewLine+moneyStatus)+
+                (facilityFailure==null?"":Environment.NewLine+"设施修改未完成："+facilityFailure));
         }
 
         // ---------- sponsorship deals ----------
@@ -4899,12 +4954,26 @@ CurrentDateRva = 0x56237C8
 
         void ApplyStaff()
         {
-            if (fm == null || loadedStaff == null || loadedStaffBlock == null) return;
-            if (!Safety.On("staff")) { MessageBox.Show("当前游戏版本的职员资料为只读：" + (Safety.Off.ContainsKey("staff") ? Safety.Off["staff"] : Safety.Off["core"]) + ".", "职员"); return; }
+            if (fm == null || loadedStaff == null || loadedStaffBlock == null)
+            {
+                if (loadedStaff!=null) ShowOperationFeedback(FeedbackKind.ReadOnly,"职员属性资料不完整，保持只读。");
+                else ShowOperationFeedback(FeedbackKind.Information,"请选择职员并读取资料后再提交。");
+                return;
+            }
+            if (!Safety.On("staff"))
+            {
+                ShowOperationMessage(FeedbackKind.ReadOnly,
+                    "当前游戏版本的职员资料为只读：" + (Safety.Off.ContainsKey("staff") ? Safety.Off["staff"] : Safety.Off["core"]) + "。","职员");
+                return;
+            }
             if (!StaffIdentityMatches(loadedStaff))
-            { MessageBox.Show("职员身份已变化，请重新挂接并扫描。", "职员"); return; }
+            { ShowOperationMessage(FeedbackKind.Failed,"职员身份已变化，请重新挂接并扫描。","职员"); return; }
             var cur = fm.Read(loadedStaff.Addr - FmLayout.StaffBlockBefore, FmLayout.StaffBlockLen);
-            if (!FmLayout.ValidStaffBlock(cur)) { MessageBox.Show("这个人的数据已经移位，请重新点「挂接并扫描」。", "职员"); return; }
+            if (!FmLayout.ValidStaffBlock(cur))
+            {
+                ShowOperationMessage(FeedbackKind.Failed,"这个人的数据已经移位，请重新点「挂接并扫描」。","职员");
+                return;
+            }
             int written = 0, skipped = 0;
             for (int k = 0; k < FmLayout.StaffAttrs.Length; k++)
             {
@@ -4954,7 +5023,7 @@ CurrentDateRva = 0x56237C8
                 if (currentContract == null || !currentContract.Full || currentContract.Address != loadedStaffContract)
                 {
                     LoadStaff(loadedStaff);
-                    lblStatus.Text = "职员合同已变化，合同修改已跳过。已修改 " + written + " 项其他数值。";
+                    ShowOperationFeedback(WriteFeedbackKind(written,1),"职员合同已变化，合同修改已跳过。已修改 " + written + " 项其他数值。");
                     return;
                 }
                 double r = Rate(), dollars;
@@ -4983,8 +5052,9 @@ CurrentDateRva = 0x56237C8
                 }
             }
             LoadStaff(loadedStaff);
-            lblStatus.Text = written + " 项数值已修改" + (skipped > 0 ? ", " + skipped + " 项因游戏在加载后更新了数据而跳过" : "") +
-                             "。请在 FM 中推进一天后查看。";
+            ShowOperationFeedback(WriteFeedbackKind(written,skipped),
+                written+" 项职员数值已修改"+(skipped>0?"，"+skipped+" 项因游戏数据变化或写入失败而跳过":"")+
+                "。"+(written>0?"请在 FM 中推进一天后查看。":""));
         }
 
         // ---------- freeze ----------

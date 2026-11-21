@@ -143,7 +143,7 @@ namespace Fm24Editor
                         page.Controls.Remove(layout);layout.Dispose();BuildPersonalEligibility(page,attached,player,owner);PolishWorkspace(page);
                     }
                 }
-                catch(Exception ex){MessageBox.Show(ex.Message,"资格修复未完成");refresh();}
+                catch(Exception ex){ShowOperationMessage(FeedbackKind.Failed,ex.Message,"资格修复未完成");refresh();}
             };
             page.Controls.Add(layout);refresh();
         }

@@ -78,10 +78,17 @@ namespace Fm24Editor
                     prepared[target.P.Uid]=individual;
                 }
                 catch(Exception ex){errors.Add(target.P.DisplayName+"："+ex.Message);}
-            if(errors.Count>0){MessageBox.Show("设置尚未应用，请先处理：\n"+string.Join("\n",errors.Take(8).ToArray()),"培养设置不适用");return;}
+            if(errors.Count>0)
+            {
+                const string message="设置尚未应用，请先处理：";
+                ShowOperationFeedback(FeedbackKind.Failed,message+Environment.NewLine+string.Join(Environment.NewLine,errors));
+                MessageBox.Show(message+"\n"+string.Join("\n",errors.Take(8)),"培养设置不适用");
+                return;
+            }
             foreach(var target in growWatch.Values)
             {target.Options=prepared[target.P.Uid];ResetGrowthTarget(target);growthPreferences[target.P.Uid]=target.Options.Clone();}
-            RefreshGrow();BindGrowthEditor();lblStatus.Text="培养设置已应用到 "+growWatch.Count+" 名已勾选球员；开始成长后才写入游戏。";
+            RefreshGrow();BindGrowthEditor();
+            ShowOperationFeedback(FeedbackKind.Success,"培养设置已应用到 "+growWatch.Count+" 名已勾选球员。开始成长后才写入游戏。");
         }
         void BindGrowthEditor()
         {

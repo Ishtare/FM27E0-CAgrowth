@@ -17,8 +17,8 @@ namespace Fm24Editor
         readonly TextBox txtGrowPlayerSearch=new TextBox{Name="GrowthPlayerSearch",Width=190};
         readonly CheckBox onlyGrowChecked=new CheckBox{Name="GrowthOnlyChecked",Text="仅看已勾选",AutoSize=true,Margin=new Padding(0,8,8,0)};
         readonly CheckBox growDetailed=new CheckBox{Name="GrowthDetailedColumns",Text="详细列",AutoSize=true};
-        readonly Button btnGrowAll=new Button{Name="GrowthSelectVisible",Text="勾选显示",Width=88};
-        readonly Button btnGrowNone=new Button{Name="GrowthUnselectVisible",Text="取消显示",Width=88};
+        readonly Button btnGrowAll=new Button{Name="GrowthSelectVisible",Text="勾选当前筛选结果",AutoSize=true};
+        readonly Button btnGrowNone=new Button{Name="GrowthUnselectVisible",Text="取消勾选当前筛选结果",AutoSize=true};
         readonly Button btnGrowEdit=new Button{Name="GrowthEditPlayer",Text="球员设置…",Width=100};
         readonly Button btnGrowOptimize=new Button{Name="GrowthOptimizeAttributes",Text="属性优化…",Width=105};
         SplitContainer growContent;
@@ -344,7 +344,11 @@ namespace Fm24Editor
         {
             var invalid=growWatch.Values.Where(t=>t.Note.StartsWith("已停止：")).ToArray();
             if(invalid.Length==0)return true;
-            MessageBox.Show("下列已勾选球员尚不能开始，请先调整设置或取消勾选：\n"+string.Join("\n",invalid.Take(8).Select(t=>t.P.DisplayName+"："+t.Note).ToArray()),"培养设置需要处理");RefreshGrow();return false;
+            const string message="下列已勾选球员尚不能开始，请先调整设置或取消勾选：";
+            var reasons=invalid.Select(t=>t.P.DisplayName+"："+t.Note).ToArray();
+            ShowOperationFeedback(FeedbackKind.Failed,message+Environment.NewLine+string.Join(Environment.NewLine,reasons));
+            MessageBox.Show(message+"\n"+string.Join("\n",reasons.Take(8)),"培养设置需要处理");
+            RefreshGrow();return false;
         }
 
         // A player's transaction is indivisible. Yield between players so stop and navigation remain responsive.
@@ -405,8 +409,15 @@ namespace Fm24Editor
             var msg = "写入 " + batch.Written + " 条";
             if (batch.Reached > 0) msg += "，" + batch.Reached + " 人已到 PA";
             if (batch.Stopped > 0) msg += "，" + batch.Stopped + " 人停止";
-            lblStatus.Text = msg + (growWatch.Values.Any(t => t.UseFocus) ? "。关键属性按估算预算同步成长，可重新载入球员资料查看。" : "。属性由 FM 后续训练处理。");
-            if (growOn && growWatch.Count > 0 && growWatch.Values.All(t => t.Done)) StopGrow("培养队列已完成或停止，请查看各球员状态");
+            string result=msg+(growWatch.Values.Any(t=>t.UseFocus)?
+                "。关键属性按估算预算同步成长，可重新载入球员资料查看。":"。属性由 FM 后续训练处理。");
+            if (batch.Stopped>0) result+=Environment.NewLine+"停止原因见已选培养名单中的球员状态及变更记录。";
+            if (growOn && growWatch.Count > 0 && growWatch.Values.All(t => t.Done))
+            {
+                StopGrow("培养队列已完成或停止，请查看各球员状态");
+                result+=Environment.NewLine+lblStatus.Text;
+            }
+            ShowOperationFeedback(WriteFeedbackKind(batch.Written,batch.Stopped),result);
         }
 
         void RunGrowthSlice()
@@ -447,13 +458,19 @@ namespace Fm24Editor
             if (fm == null) { MessageBox.Show("请先点「挂接并扫描」。", "CA 成长"); return; }
             if (!Safety.On("ability"))
             {
-                MessageBox.Show("这个 fm.exe 的 CA/PA 是只读的" + (Safety.Off.ContainsKey("ability") ? "（" + Safety.Off["ability"] + "）" : "") + "。详见「变更记录」页。", "CA 成长");
+                ShowOperationMessage(FeedbackKind.ReadOnly,"这个 fm.exe 的 CA/PA 是只读的" +
+                    (Safety.Off.ContainsKey("ability") ? "（" + Safety.Off["ability"] + "）" : "") + "。详见「变更记录」页。","CA 成长");
                 return;
             }
             foreach (var target in growWatch.Values) ResetGrowthTarget(target);
             if (!ValidateGrowthQueue()) return;
             int n = growWatch.Values.Count(t => !t.Done);
-            if (n == 0) { MessageBox.Show("先勾选至少一名还没到 PA 的球员。“勾选显示”只添加当前筛选后显示的球员。", "CA 成长"); return; }
+            if (n == 0)
+            {
+                ShowOperationMessage(FeedbackKind.Information,
+                    "先勾选至少一名还没到 PA 的球员。「勾选当前筛选结果」只添加当前筛选后显示的球员。","CA 成长");
+                return;
+            }
             string mode = growWatch.Values.Any(t => t.UseFocus) ? "同时按培养方向和估算预算提升关键属性；FM 后续训练仍可能调整。" : "属性由 FM 后续训练处理。";
             if (MessageBox.Show("把 " + n + " 名球员的 CA 直接拉到 PA？" + mode + "修改记入变更记录并支持撤销。", "直接拉到 PA", MessageBoxButtons.YesNo) != DialogResult.Yes) return;
             long day=0;
@@ -461,7 +478,7 @@ namespace Fm24Editor
             {
                 var date=fm.ReadGameDate();
                 try { day=DayKey(date??0); }
-                catch(InvalidDataException){MessageBox.Show("游戏日期无法稳定读取，请稍后再试。","直接到 PA");return;}
+                catch(InvalidDataException){ShowOperationMessage(FeedbackKind.Failed,"游戏日期无法稳定读取，请稍后再试。","直接到 PA");return;}
             }
             growOn=true;
             SetGrowControlsLocked(true);
@@ -475,12 +492,13 @@ namespace Fm24Editor
             if (fm == null) { MessageBox.Show("请先点「挂接并扫描」。", "CA 成长"); return; }
             if (!Safety.On("ability"))
             {
-                MessageBox.Show("这个 fm.exe 的 CA/PA 是只读的" + (Safety.Off.ContainsKey("ability") ? "（" + Safety.Off["ability"] + "）" : "") + "。详见「变更记录」页。", "CA 成长");
+                ShowOperationMessage(FeedbackKind.ReadOnly,"这个 fm.exe 的 CA/PA 是只读的" +
+                    (Safety.Off.ContainsKey("ability") ? "（" + Safety.Off["ability"] + "）" : "") + "。详见「变更记录」页。","CA 成长");
                 return;
             }
             if (!Safety.On("date"))
             {
-                MessageBox.Show("成长需要读游戏日期，而这个 fm.exe 的日期没过安全检查，无法开始成长。", "CA 成长");
+                ShowOperationMessage(FeedbackKind.ReadOnly,"成长需要读游戏日期，而这个 fm.exe 的日期没过安全检查，无法开始成长。","CA 成长");
                 return;
             }
             // the clock starts now: each player's time depends on his own gap at the selected gear
@@ -494,11 +512,11 @@ namespace Fm24Editor
             {
                 RefreshGrow();
                 string reason = growWatch.Values.FirstOrDefault(t => t.Note.StartsWith("已停止：")) == null ? "先勾选至少一名未到 PA 的球员。" : growWatch.Values.First(t => t.Note.StartsWith("已停止：")).Note;
-                MessageBox.Show(reason, "无法开始成长"); return;
+                ShowOperationMessage(FeedbackKind.Failed,reason,"无法开始成长"); return;
             }
             var startDate = fm.ReadGameDate();
             try { if (!startDate.HasValue) throw new InvalidOperationException(); GrowthStep.DayOnly(startDate.Value); }
-            catch { MessageBox.Show("游戏日期无法稳定读取，请暂停后重试。", "无法开始成长"); return; }
+            catch { ShowOperationMessage(FeedbackKind.Failed,"游戏日期无法稳定读取，请暂停后重试。","无法开始成长"); return; }
             growDay = DayKey(startDate.Value);
             growOn = true;
             RebuildGrowthLimitSchedule();

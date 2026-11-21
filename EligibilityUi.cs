@@ -43,7 +43,7 @@ namespace Fm24Editor
         }
         bool SaveEligibilityChanges(FmProcess attached,EligibilityReader snapshot,IList<EligibilityEdit> plan,string title)
         {
-            if(plan.Count==0){MessageBox.Show("所选状态已经满足，无需重复写入。",title);return false;}
+            if(plan.Count==0){ShowOperationMessage(FeedbackKind.Information,"所选状态已经满足，无需重复写入。",title);return false;}
             if(fm!=attached || Safety.Off.ContainsKey("core") || !snapshot.Matches(attached.Read))
                 throw new InvalidOperationException("连接或预览数据已变化，请重新打开注册资格窗口。");
             string preview=string.Join("\r\n",plan.Select(w=>w.Label).Distinct().ToArray());
@@ -58,7 +58,8 @@ namespace Fm24Editor
                 changes.Add(change);lstLog.Items.Add(change);
                 try {File.AppendAllText(logPath,change.When.ToString("yyyy-MM-dd HH:mm:ss")+"  "+change.What+"  @"+w.Address.ToString("X")+" "+BitConverter.ToString(w.Before)+" -> "+BitConverter.ToString(w.After)+Environment.NewLine);}catch{ }
             }
-            lblStatus.Text="注册资格数据已写入并读回。请在 FM 中重新打开报名界面核对；当前游戏日内、数据未变化时可撤销。";
+            ShowOperationFeedback(FeedbackKind.Success,title+Environment.NewLine+preview+Environment.NewLine+
+                "注册资格数据已写入并读回。请在 FM 中重新打开报名界面核对，当前游戏日内、数据未变化时可撤销。");
             LogLine(title+"："+string.Join("；",plan.Select(w=>w.Label).Distinct().ToArray()));
             return true;
         }

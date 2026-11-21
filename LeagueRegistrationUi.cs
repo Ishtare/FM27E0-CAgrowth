@@ -93,7 +93,7 @@ namespace Fm24Editor
             apply.Click+=delegate
             {
                 try{if(snapshot==null)return;var plan=snapshot.Plan(attached.Read,(int)number.Value);SaveEligibilityChanges(attached,snapshot.Reader,plan,"报名规则（影响整项赛事）");reload();}
-                catch(Exception ex){MessageBox.Show(ex.Message,"赛事规则未完成");reload();}
+                catch(Exception ex){ShowOperationMessage(FeedbackKind.Failed,ex.Message,"赛事规则未完成");reload();}
             };
             filter.TextChanged+=delegate
             {

@@ -21,6 +21,12 @@ namespace Fm24Editor
     {
         static readonly Color UiInk=Color.FromArgb(31,42,61),UiMuted=Color.FromArgb(101,115,135),UiLine=Color.FromArgb(224,230,238),UiAccent=Color.FromArgb(37,99,210);
         string lastScanReport="尚未连接游戏。先在 FM 中载入存档，再点击「挂接并扫描」。";
+        enum FeedbackKind { Information, Success, Partial, ReadOnly, Failed }
+        readonly Label feedbackTitle = new Label
+        {
+            Name = "OperationFeedbackTitle", Text = "操作反馈", Dock = DockStyle.Fill,
+            TextAlign = ContentAlignment.MiddleLeft, UseMnemonic = false
+        };
 
         static void StyleButton(Button button,bool primary=false)
         {
@@ -82,12 +88,54 @@ namespace Fm24Editor
 
         Control BuildStatusBar()
         {
-            var bar=new Panel {Name="ScanStatusBar",Dock=DockStyle.Bottom,Height=34,BackColor=Color.FromArgb(234,240,248),Padding=new Padding(14,2,12,2)};
+            var bar=new Panel {Name="ScanStatusBar",Dock=DockStyle.Bottom,Height=96,BackColor=Color.FromArgb(234,240,248),Padding=new Padding(14,4,12,6)};
+            var heading=new Panel {Dock=DockStyle.Top,Height=30};
             var details=new Button {Name="ScanDetailsButton",Text="连接详情…",Dock=DockStyle.Right,Width=112};StyleButton(details);details.Height=28;
             details.Click+=delegate {ShowScanDetails();};
-            lblStatus.AutoSize=false;lblStatus.Dock=DockStyle.Fill;lblStatus.AutoEllipsis=true;lblStatus.MaximumSize=Size.Empty;
-            lblStatus.Padding=new Padding(0,5,8,0);lblStatus.ForeColor=UiMuted;
-            bar.Controls.Add(lblStatus);bar.Controls.Add(details);return bar;
+            feedbackTitle.Font=new Font(Font,FontStyle.Bold);
+            heading.Controls.Add(feedbackTitle);heading.Controls.Add(details);
+            lblStatus.Dock=DockStyle.Fill;lblStatus.BackColor=Color.White;lblStatus.ForeColor=UiInk;
+            lblStatus.TextChanged+=delegate
+            {
+                SetFeedbackTitle(FeedbackKind.Information);
+                lblStatus.Select(0,0);
+                if(lblStatus.IsHandleCreated)lblStatus.ScrollToCaret();
+            };
+            bar.Controls.Add(lblStatus);bar.Controls.Add(heading);return bar;
+        }
+
+        void SetFeedbackTitle(FeedbackKind kind)
+        {
+            string title;
+            Color color;
+            switch(kind)
+            {
+                case FeedbackKind.Success: title="成功"; color=Color.FromArgb(25,100,65); break;
+                case FeedbackKind.Partial: title="部分成功"; color=Color.FromArgb(122,79,12); break;
+                case FeedbackKind.ReadOnly: title="只读拦截"; color=Color.FromArgb(122,79,12); break;
+                case FeedbackKind.Failed: title="未完成"; color=Color.FromArgb(156,35,34); break;
+                default: title=""; color=UiInk; break;
+            }
+            feedbackTitle.Text=title.Length==0?"操作反馈":"操作反馈 · "+title;
+            feedbackTitle.ForeColor=color;
+        }
+
+        static FeedbackKind WriteFeedbackKind(int written,int unsuccessful)
+        {
+            if(unsuccessful>0)return written>0?FeedbackKind.Partial:FeedbackKind.Failed;
+            return written>0?FeedbackKind.Success:FeedbackKind.Information;
+        }
+
+        void ShowOperationFeedback(FeedbackKind kind,string text)
+        {
+            lblStatus.Text=text;
+            SetFeedbackTitle(kind);
+        }
+
+        void ShowOperationMessage(FeedbackKind kind,string text,string title)
+        {
+            ShowOperationFeedback(kind,text);
+            MessageBox.Show(text,title);
         }
 
         void ShowScanDetails()

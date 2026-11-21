@@ -15,6 +15,10 @@ namespace Fm24Editor
             using(var form=new MainForm(false,false))
             {
                 var tabs=(TabControl)form.Controls.Find("WorkspaceTabs",true).Single();
+                var feedback=(TextBox)form.Controls.Find("OperationFeedbackText",true).Single();
+                check(feedback.Multiline && feedback.WordWrap && feedback.ReadOnly && feedback.ScrollBars==ScrollBars.Vertical &&
+                    form.Controls.Find("ScanDetailsButton",true).Length==1,
+                    "the workspace exposes selectable full feedback with vertical scrolling and a separate connection report");
                 var finance=(TabControl)form.Controls.Find("ClubManagementSections",true).Single();
                 check(finance.TabPages.Count==3 && finance.TabPages[0].Text=="资金与预算" && finance.TabPages[2].Text=="资料与票务","club management splits money, facilities and identity/tickets into separate sections");
                 check(Field<TextBox>(form,"txtBalance").Parent!=Field<NumericUpDown>(form,"numCapacity").Parent,"financial and stadium inputs are no longer one long overflowing form");
@@ -26,6 +30,19 @@ namespace Fm24Editor
                 check(attributes.Rows.Cast<DataGridViewRow>().All(row=>Convert.ToInt32(row.Cells[1].Value)==12),"category changes do not modify pending attribute values");
                 ((ComboBox)form.Controls.Find("PlayerAttributeCategory",true).Single()).SelectedIndex=0;
                 check(attributes.Rows.Cast<DataGridViewRow>().All(row=>row.Visible),"all hidden categories can be restored without rebuilding the data");
+                ((ComboBox)form.Controls.Find("PlayerAttributeCategory",true).Single()).SelectedIndex=3;
+                var more=(Button)form.Controls.Find("MorePlayerActions",true).Single();
+                var fill=more.ContextMenuStrip.Items.OfType<ToolStripMenuItem>().SelectMany(group=>group.DropDownItems.OfType<ToolStripMenuItem>())
+                    .Single(item=>item.Tag is Button && ((Button)item.Tag).Name=="FillVerifiedPlayerAttributes");
+                attributes.Rows[8].Cells[3].Value="待检查";
+                fill.PerformClick();
+                check(fill.Text=="将全部已验证基础属性填至极值" && !attributes.Rows[7].Visible &&
+                    Convert.ToInt32(attributes.Rows[7].Cells[1].Value)==(FmLayout.LowerIsBetter(FmLayout.Attrs[7])?1:20) &&
+                    Convert.ToInt32(attributes.Rows[8].Cells[1].Value)==12,
+                    "the bulk-fill label matches the existing behavior including hidden verified attributes only");
+                check(form.Controls.Find("GrowthSelectVisible",true).Single().Text=="勾选当前筛选结果" &&
+                    form.Controls.Find("GrowthUnselectVisible",true).Single().Text=="取消勾选当前筛选结果",
+                    "growth selection commands explicitly identify the current filtered results");
                 var staff=Field<DataGridView>(form,"gridStaff");staff.Rows.Add("战术",15,"已验证");staff.Rows.Add("医疗",14,"已验证");
                 ((TextBox)form.Controls.Find("StaffAttributeSearch",true).Single()).Text="战术";
                 check(staff.Rows.Count==2 && staff.Rows[0].Visible && !staff.Rows[1].Visible,"staff attribute filtering preserves edit row indices");

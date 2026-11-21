@@ -90,6 +90,8 @@ namespace Fm24Editor
             var change = changes.Last();
             check(change.Addr == transfer && change.What.Contains("回读通过") && txtTransfer.Text == "68,000,000",
                 "the editor refreshes the converted amount and adds a verified undo entry");
+            check(feedbackTitle.Text.EndsWith(" · 成功") && lblStatus.Text.Contains("剩余转会预算：已写入 £8,000,000，回读通过。"),
+                "successful write feedback shows the complete verified amount");
             lstLog.ClearSelected();
             lstLog.SelectedItem = change;
             UndoSelected();
@@ -125,6 +127,9 @@ namespace Fm24Editor
             check(FinanceLogHas("俱乐部结余 本次有金额未通过校验", logCount) &&
                 FinanceLogHas("剩余转会预算 本次有金额未通过校验", logCount) && FinanceLogHas("周薪预算 金额格式无效", logCount),
                 "preflight gives every dirty field its own reason");
+            check(feedbackTitle.Text.EndsWith(" · 未完成") && lblStatus.Lines.Length==4 &&
+                lblStatus.Lines[3]=="周薪预算：金额格式无效。",
+                "the visible failure feedback retains the last field's full reason as well as the earlier fields");
 
             LoadClub(club);
             foreach (string entered in new[] { "2147483648", "-2147483649", "2147483647.25", "1,000,000,000,000,000,000,000" })
@@ -200,6 +205,21 @@ namespace Fm24Editor
             check(changes.Count == count && lblStatus.Text.Contains("回读不一致") &&
                 fm.ReadI32(transfer) == 6000000 && txtTransfer.Text == "6,000,000",
                 "successful write API status still requires equal readback before recording success");
+
+            ulong balance=club.Finance+FmLayout.FinBalance;
+            txtBalance.Text="11,000,000";
+            txtTransfer.Text="7,000,000";
+            int attempts=0;
+            ApplyClub(_=>false,null,delegate(ulong address,byte[] payload,out int error)
+            {
+                attempts++;
+                return address==transfer?invalidHandle.Write(address,payload,out error):fm.Write(address,payload,out error);
+            });
+            check(attempts==2 && changes.Count==count+1 && changes.Last().Addr==balance && fm.ReadI32(transfer)==6000000,
+                "a partial finance result writes each edited target at most once and records only the verified change");
+            check(feedbackTitle.Text.EndsWith(" · 部分成功") && lblStatus.Lines.Any(line=>line.Contains("俱乐部结余：已写入")) &&
+                lblStatus.Lines.Any(line=>line.Contains("剩余转会预算：写入失败（Windows 错误码 ")),
+                "partial feedback includes both the confirmed write and the full failure detail");
             SetTestFinances(club);
             LoadClub(club);
         }
@@ -269,6 +289,8 @@ namespace Fm24Editor
             ApplyClub();
             check(changes.Count == count && fm.ReadI32(transfer) == 5000000 && lblStatus.Text.Contains("财务只读"),
                 "a read-only finance draft cannot write");
+            check(feedbackTitle.Text.EndsWith(" · 只读拦截") && lblStatus.Text.Contains(Safety.Off["finance"]),
+                "read-only finance feedback preserves the exact threshold reason");
             Safety.Off.Remove("finance");
             Safety.Off["core"] = "模拟核心数据检查失败";
             LoadClub(first);
