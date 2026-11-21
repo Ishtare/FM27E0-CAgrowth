@@ -20,7 +20,7 @@ namespace Fm24Editor
         readonly CheckBox extra=new CheckBox{Name="RestoreHiddenAndFeet",Text="同时恢复惯用脚与隐藏属性",AutoSize=true,Enabled=false};
         readonly Label status=new Label{Name="EarlySaveStatus",Dock=DockStyle.Top,Height=67,Padding=new Padding(10,5,10,0)};
         readonly Label budget=new Label{Name="EarlySaveComparison",Dock=DockStyle.Bottom,Height=65,Padding=new Padding(10,4,10,0)};
-        readonly DataGridView grid=new DataGridView{Name="EarlySaveAttributes",Dock=DockStyle.Fill,ReadOnly=true,
+        readonly DataGridView grid=new WorkspaceGrid{Name="EarlySaveAttributes",Dock=DockStyle.Fill,ReadOnly=true,
             RowHeadersVisible=false,AllowUserToAddRows=false,AllowUserToDeleteRows=false,
             AutoSizeColumnsMode=DataGridViewAutoSizeColumnsMode.Fill,BackgroundColor=Color.White};
         CancellationTokenSource reading;

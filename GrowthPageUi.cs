@@ -66,7 +66,7 @@ namespace Fm24Editor
             splitGrow=new SplitContainer{Dock=DockStyle.Fill,Size=new Size(1100,500),SplitterWidth=5,FixedPanel=FixedPanel.Panel1,SplitterDistance=194};
             lstGrowClubs.BorderStyle=BorderStyle.FixedSingle;lstGrowClubs.HorizontalScrollbar=true;splitGrow.Panel1.Padding=new Padding(0,0,8,0);
             splitGrow.Panel1.Controls.Add(lstGrowClubs);splitGrow.Panel1.Controls.Add(growthClubChecks);
-            splitGrow.Panel1.Controls.Add(growthMultiClub);splitGrow.Panel1.Controls.Add(txtGrowClubSearch);
+            splitGrow.Panel1.Controls.Add(growthMultiClub);splitGrow.Panel1.Controls.Add(SearchWithListSpacing(txtGrowClubSearch));
             splitGrow.Panel1.Controls.Add(new Label{Text="选择俱乐部",Dock=DockStyle.Top,Height=26,ForeColor=UiMuted});
             var views=BuildGrowthViewBar();ConnectGrowthClubBrowser();
             growContent=new SplitContainer{Name="GrowthContent",Dock=DockStyle.Fill,Size=new Size(900,500),SplitterWidth=5,

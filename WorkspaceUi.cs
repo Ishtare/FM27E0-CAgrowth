@@ -20,6 +20,7 @@ namespace Fm24Editor
     partial class MainForm
     {
         static readonly Color UiInk=Color.FromArgb(31,42,61),UiMuted=Color.FromArgb(101,115,135),UiLine=Color.FromArgb(224,230,238),UiAccent=Color.FromArgb(37,99,210);
+        static readonly Color UiDisabledButton=Color.FromArgb(235,239,244),UiDisabledText=Color.FromArgb(111,121,135);
         string lastScanReport="尚未连接游戏。先在 FM 中载入存档，再点击「挂接并扫描」。";
         enum FeedbackKind { Information, Success, Partial, ReadOnly, Failed }
         readonly Label feedbackTitle = new Label
@@ -28,11 +29,35 @@ namespace Fm24Editor
             TextAlign = ContentAlignment.MiddleLeft, UseMnemonic = false
         };
 
+        static void RefreshAccentButton(object sender,EventArgs e)
+        {
+            var button=(Button)sender;
+            button.FlatAppearance.BorderColor=button.Enabled?UiAccent:UiLine;
+            button.BackColor=button.Enabled?UiAccent:UiDisabledButton;
+            button.ForeColor=button.Enabled?Color.White:UiDisabledText;
+        }
+
+        static void SetButtonAccent(Button button,bool primary)
+        {
+            button.EnabledChanged-=RefreshAccentButton;
+            if(primary)
+            {
+                button.EnabledChanged+=RefreshAccentButton;
+                RefreshAccentButton(button,EventArgs.Empty);
+            }
+            else
+            {
+                button.FlatAppearance.BorderColor=UiLine;
+                button.BackColor=Color.White;
+                button.ForeColor=UiInk;
+            }
+        }
+
         static void StyleButton(Button button,bool primary=false)
         {
-            button.FlatStyle=FlatStyle.Flat;button.FlatAppearance.BorderColor=primary?UiAccent:UiLine;
-            button.BackColor=primary?UiAccent:Color.White;button.ForeColor=primary?Color.White:UiInk;
+            button.FlatStyle=FlatStyle.Flat;
             button.Height=32;button.Margin=new Padding(4);button.Padding=new Padding(4,0,4,0);button.UseVisualStyleBackColor=false;
+            SetButtonAccent(button,primary);
         }
         internal static void StyleWorkspaceButton(Button button,bool primary=false){StyleButton(button,primary);}
 
@@ -120,36 +145,46 @@ namespace Fm24Editor
             return form;
         }
 
+        static Panel SearchWithListSpacing(TextBox search)
+        {
+            var row=new Panel {Dock=DockStyle.Top,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,
+                Padding=new Padding(0,0,0,8)};
+            search.Dock=DockStyle.Top;
+            row.Controls.Add(search);
+            return row;
+        }
+
         Control BuildHeader()
         {
-            var header=new Panel {Name="AppHeader",Dock=DockStyle.Top,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,
-                BackColor=Color.White,Padding=new Padding(16,8,16,6)};
-            var identity=new TableLayoutPanel {Name="AppIdentity",Dock=DockStyle.Top,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,
-                ColumnCount=4,RowCount=1,Margin=Padding.Empty};
-            identity.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,46));identity.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
-            identity.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));identity.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            var logo=new PictureBox {Dock=DockStyle.Fill,MaximumSize=new Size(38,38),SizeMode=PictureBoxSizeMode.Zoom,Margin=new Padding(0,0,8,4)};
+            var header=WrappingBar("AppHeader");
+            header.BackColor=Color.White;
+            header.Padding=new Padding(14,4,12,4);
+            var logo=new PictureBox {Size=new Size(32,32),MaximumSize=new Size(32,32),
+                SizeMode=PictureBoxSizeMode.Zoom,Margin=new Padding(0,0,8,0)};
             using(var stream=typeof(MainForm).Assembly.GetManifestResourceStream("FM27E0.logo.png"))
                 if(stream!=null)using(var original=Image.FromStream(stream))logo.Image=new Bitmap(original);
-            identity.Controls.Add(logo,0,0);
-            identity.Controls.Add(new Label {AutoSize=true,Text="FM27E0 修改器  v"+Version,Font=new Font(Font,FontStyle.Bold),ForeColor=UiInk,Anchor=AnchorStyles.Left,Margin=new Padding(0)},1,0);
-            btnCalibrate.Text="显示货币…";StyleButton(btnCalibrate);btnCalibrate.AutoSize=true;btnCalibrate.Width=108;
-            identity.Controls.Add(btnCalibrate,2,0);
-            var names=new Button {Name="NameCatalogButton",Text="姓名库…",Width=108,AutoSize=true};StyleButton(names);
-            names.Click+=delegate {ShowNameCatalog();};identity.Controls.Add(names,3,0);
-            var connection=new TableLayoutPanel {Name="ConnectionBar",Dock=DockStyle.Top,AutoSize=true,
-                AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=3,RowCount=1,Margin=Padding.Empty,Padding=new Padding(0,4,0,0)};
-            connection.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            connection.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,162));
-            connection.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
-            StyleButton(btnScan,true);btnScan.Name="AttachAndScan";btnScan.AutoSize=true;btnScan.Width=132;btnScan.Margin=new Padding(0,0,12,0);
-            progress.Name="ScanProgress";progress.Height=16;progress.Anchor=AnchorStyles.Left|AnchorStyles.Right;
-            progress.Margin=new Padding(0,0,12,0);
+            var brand=new Label {AutoSize=true,Text="FM27E0 修改器  v"+Version,Font=new Font(Font,FontStyle.Bold),
+                ForeColor=UiInk,Margin=Padding.Empty};
+            var identity=FieldGroup(logo,brand);
+            identity.Name="AppIdentity";
+            StyleButton(btnScan,true);
+            btnScan.Name="AttachAndScan";btnScan.AutoSize=true;btnScan.Width=132;
+            progress.Name="ScanProgress";progress.Size=new Size(110,16);
+            progress.Margin=new Padding(4,0,8,0);
             lblMoney.Name="CurrencyDisplayHint";lblMoney.AutoSize=true;lblMoney.AutoEllipsis=false;
-            lblMoney.Anchor=AnchorStyles.Left|AnchorStyles.Right;lblMoney.TextAlign=ContentAlignment.MiddleLeft;
+            lblMoney.MaximumSize=new Size(280,0);lblMoney.TextAlign=ContentAlignment.MiddleLeft;
             lblMoney.ForeColor=UiMuted;lblMoney.Padding=Padding.Empty;lblMoney.Margin=Padding.Empty;
-            connection.Controls.Add(btnScan,0,0);connection.Controls.Add(progress,1,0);connection.Controls.Add(lblMoney,2,0);
-            header.Controls.Add(connection);header.Controls.Add(identity);return header;
+            var connection=FieldGroup(btnScan,progress,lblMoney);
+            connection.Name="ConnectionBar";
+            btnCalibrate.Text="显示货币…";StyleButton(btnCalibrate);btnCalibrate.AutoSize=true;btnCalibrate.Width=100;
+            var names=new Button {Name="NameCatalogButton",Text="姓名库…",Width=90,AutoSize=true};StyleButton(names);
+            names.Click+=delegate {ShowNameCatalog();};
+            var settings=FieldGroup(btnCalibrate,names);
+            settings.Name="HeaderSettings";
+            header.Controls.Add(identity);
+            header.Controls.Add(connection);
+            header.Controls.Add(settings);
+            return header;
         }
 
         Control BuildWorkspace(TabControl tabs)
@@ -172,7 +207,15 @@ namespace Fm24Editor
             group("人员管理",new[]{0,1,5,6},new[]{"球员资料","职员资料","球员筛选","职员筛选"});
             group("俱乐部与成长",new[]{2,3,4},new[]{"俱乐部管理","球队名单","CA 成长"});
             group("工具与记录",new[]{7,8,9},new[]{"赛事与报名","冻结管理","变更记录"});
-            Action highlight=()=>{foreach(var item in buttons){bool selected=item.Key==tabs.SelectedIndex;item.Value.BackColor=selected?UiAccent:Color.Transparent;item.Value.ForeColor=selected?Color.White:UiInk;}};
+            Action highlight=()=>
+            {
+                foreach(var item in buttons)
+                {
+                    bool selected=item.Key==tabs.SelectedIndex;
+                    SetButtonAccent(item.Value,selected);
+                    if(!selected)item.Value.BackColor=Color.Transparent;
+                }
+            };
             tabs.SelectedIndexChanged+=delegate {highlight();};highlight();
             navigation.ClientSizeChanged+=delegate
             {
@@ -185,20 +228,41 @@ namespace Fm24Editor
 
         Control BuildStatusBar()
         {
-            var bar=new Panel {Name="ScanStatusBar",Dock=DockStyle.Bottom,Height=96,BackColor=Color.FromArgb(234,240,248),Padding=new Padding(14,4,12,6)};
-            var heading=new Panel {Dock=DockStyle.Top,Height=30};
-            var details=new Button {Name="ScanDetailsButton",Text="连接详情…",Dock=DockStyle.Right,Width=112};StyleButton(details);details.Height=28;
+            var bar=new TableLayoutPanel{Name="ScanStatusBar",Dock=DockStyle.Bottom,AutoSize=true,
+                AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=2,RowCount=2,
+                BackColor=Color.FromArgb(234,240,248),Padding=new Padding(14,2,12,4)};
+            bar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
+            bar.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            bar.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            bar.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            var details=new Button {Name="ScanDetailsButton",Text="连接详情…",Width=112,AutoSize=true};
+            StyleButton(details);
+            details.Height=26;details.Anchor=AnchorStyles.Right;details.Margin=new Padding(8,3,0,3);
             details.Click+=delegate {ShowScanDetails();};
+            feedbackTitle.Dock=DockStyle.None;feedbackTitle.Anchor=AnchorStyles.Left;
+            feedbackTitle.AutoSize=true;feedbackTitle.Margin=Padding.Empty;
             feedbackTitle.Font=new Font(Font,FontStyle.Bold);
-            heading.Controls.Add(feedbackTitle);heading.Controls.Add(details);
-            lblStatus.Dock=DockStyle.Fill;lblStatus.BackColor=Color.White;lblStatus.ForeColor=UiInk;
+            lblStatus.Dock=DockStyle.Fill;lblStatus.AutoSize=false;lblStatus.BackColor=Color.White;
+            lblStatus.ForeColor=UiInk;lblStatus.Margin=Padding.Empty;
+            EventHandler fitMessage=delegate
+            {
+                int lines=lblStatus.Text.IndexOf('\n')>=0?2:1;
+                lblStatus.Height=lines*lblStatus.Font.Height+6;
+            };
+            lblStatus.FontChanged+=fitMessage;
+            fitMessage(lblStatus,EventArgs.Empty);
             lblStatus.TextChanged+=delegate
             {
+                fitMessage(lblStatus,EventArgs.Empty);
                 SetFeedbackTitle(FeedbackKind.Information);
                 lblStatus.Select(0,0);
                 if(lblStatus.IsHandleCreated)lblStatus.ScrollToCaret();
             };
-            bar.Controls.Add(lblStatus);bar.Controls.Add(heading);return bar;
+            bar.Controls.Add(feedbackTitle,0,0);
+            bar.Controls.Add(details,1,0);
+            bar.Controls.Add(lblStatus,0,1);
+            bar.SetColumnSpan(lblStatus,2);
+            return bar;
         }
 
         void SetFeedbackTitle(FeedbackKind kind)

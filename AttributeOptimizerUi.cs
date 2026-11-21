@@ -15,7 +15,8 @@ namespace Fm24Editor
         readonly CheckBox raise=new CheckBox{Name="OptimizationUsePa",Dock=DockStyle.Fill};
         readonly Button switchMode=new Button{Name="OptimizationSwitchMode",Text="切换到重新分配",Dock=DockStyle.Fill};
         readonly CheckBox changesOnly=new CheckBox{Name="OptimizationChangesOnly",Text="只看改动",Checked=true,AutoSize=true};
-        readonly DataGridView grid=new DataGridView{Name="OptimizationComparison",Dock=DockStyle.Fill,ReadOnly=true,AllowUserToAddRows=false,AllowUserToDeleteRows=false,RowHeadersVisible=false,AutoSizeColumnsMode=DataGridViewAutoSizeColumnsMode.Fill,BackgroundColor=Color.White};
+        readonly DataGridView grid=new WorkspaceGrid{Name="OptimizationComparison",Dock=DockStyle.Fill,ReadOnly=true,
+            AllowUserToAddRows=false,AllowUserToDeleteRows=false,RowHeadersVisible=false,BackgroundColor=Color.White};
         readonly Label summary=new Label{Name="OptimizationSummary",Dock=DockStyle.Bottom,Height=85,Padding=new Padding(8),ForeColor=Color.FromArgb(101,115,135)};
         readonly Button apply=new Button{Name="ApplyAttributeOptimization",Text="应用当前方案",Width=145};
         public AttributeOptimizationResult Plan {get;private set;}

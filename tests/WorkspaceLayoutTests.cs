@@ -43,6 +43,59 @@ namespace Fm24Editor
             Application.DoEvents();
         }
 
+        static Rectangle InParent(Control control,Control ancestor)
+        {
+            var bounds=control.Bounds;
+            for(var parent=control.Parent;parent!=ancestor;parent=parent.Parent)bounds.Offset(parent.Location);
+            return bounds;
+        }
+
+        static void CheckSearchGap(Action<bool,string> check,MainForm form,string inputName,string listName)
+        {
+            var input=Field<TextBox>(form,inputName);
+            var list=Field<ListBox>(form,listName);
+            int gap=list.Top-InParent(input,list.Parent).Bottom;
+            check(gap>=6,inputName+" leaves a gap above its results ("+gap+" px)");
+        }
+
+        static void CheckHeader(Action<bool,string> check,MainForm form,bool needsWrap)
+        {
+            var header=Named(form,"AppHeader");
+            var groups=header.Controls.Cast<Control>().ToArray();
+            CheckToolbar(check,header,"app header",groups);
+            bool sameRow=groups.Max(group=>group.Top)<groups.Min(group=>group.Bottom);
+            check(sameRow!=needsWrap,"header groups stay in one row when they fit and wrap onto the next row when required");
+        }
+
+        static void CheckFeedbackLayout(Action<bool,string> check,MainForm form)
+        {
+            var panel=Named(form,"ScanStatusBar");
+            var title=Named(panel,"OperationFeedbackTitle");
+            var details=Named(panel,"ScanDetailsButton");
+            var message=Named(panel,"OperationFeedbackText");
+            CheckContained(check,panel,"operation feedback",title,details,message);
+            check(Math.Abs(2*title.Top+title.Height-2*details.Top-details.Height)<=2 &&
+                details.Top>=panel.Padding.Top+details.Margin.Top && message.Top-details.Bottom>=details.Margin.Bottom,
+                "feedback title and details button have the same vertical center with breathing room");
+            check(message.Height>=message.Font.Height && message.Height<=2*message.Font.Height+7,
+                "scrollable feedback shows at most two lines of text by default");
+        }
+
+        static void CheckAccentStates(Action<bool,string> check,Button button)
+        {
+            var original=button.Enabled;
+            try
+            {
+                button.Enabled=false;
+                check(button.BackColor==Color.FromArgb(235,239,244) && button.ForeColor==Color.FromArgb(111,121,135),
+                    button.Text+" uses gray colors while disabled");
+                button.Enabled=true;
+                check(button.BackColor==Color.FromArgb(37,99,210) && button.ForeColor==Color.White,
+                    button.Text+" resumes blue with white text when enabled");
+            }
+            finally {button.Enabled=original;}
+        }
+
         public static void Run(Action<bool,string> check)
         {
             using(var form=new MainForm(false,false))
@@ -85,6 +138,15 @@ namespace Fm24Editor
                 check(competition.TabPages.Count==2 && competition.TabPages[0].Text=="报名与资格" && scopes.TabPages.Count==2,"registration is available in the main workspace beside prize money");
                 check(scopes.TabPages[0].Text=="球员当季资格" && scopes.TabPages[1].Text=="赛事名额与培养","player eligibility and whole-competition limits share one manager with explicit scopes");
                 check(!((ComboBox)form.Controls.Find("RegistrationPlayer",true).Single()).Enabled,"disconnected registration remains inspectable without enabling unknown writes");
+                foreach(var action in new[]{Field<Button>(form,"btnApplyPlayer"),Field<Button>(form,"btnApplyClub"),
+                    (Button)Named(form,"GrowthStartStop"),(Button)Named(form,"AttachAndScan")})
+                    CheckAccentStates(check,action);
+                foreach(var gridField in new[]{"gridAttrs","gridPos","gridStaff","gridGrow","gridFind","gridStaffFind","gridPrize"})
+                {
+                    var grid=Field<DataGridView>(form,gridField);
+                    check(grid.BorderStyle==BorderStyle.FixedSingle && grid.AutoSizeColumnsMode==DataGridViewAutoSizeColumnsMode.Fill,
+                        gridField+" keeps a clear frame and fills the available column width");
+                }
                 Field<Label>(form,"lblClub").Text="俱乐部名称 Club Name With a Long English Translation [UID 310000001]\r\n财务只读，完整的检查结果应可在此阅读。";
                 Field<Label>(form,"lblStoredPounds").Text="原始英镑金额：余额 £2,147,483,647，转会预算 £120,000,000，下赛季预算 £145,000,000，周薪预算 £560,000／周";
                 foreach(var size in new[]{new Size(1120,720),new Size(1360,860),new Size(1600,960)})
@@ -96,6 +158,25 @@ namespace Fm24Editor
                     CheckContained(check,header,"connection "+size,Named(header,"AttachAndScan"),Named(header,"ScanProgress"),Named(header,"CurrencyDisplayHint"));
                     var footer=Named(form,"WorkspaceFooter");
                     CheckContained(check,footer,"footer "+size,Named(footer,"SaveReminder"),Named(footer,"OriginalAuthorCredit"));
+                    CheckFeedbackLayout(check,form);
+                    if(size.Width==1600)CheckHeader(check,form,false);
+
+                    SelectPage(tabs,0);
+                    var positions=Field<DataGridView>(form,"gridPos");
+                    var attributeSplit=Field<SplitContainer>(form,"splitAttrs");
+                    var toolbar=Named(tabs.SelectedTab,"PlayerAttributeToolbar");
+                    var attributeBounds=InParent(attributes,attributeSplit);
+                    var positionBounds=InParent(positions,attributeSplit);
+                    check(toolbar.Parent==attributeSplit.Parent && toolbar.Bottom<=attributeSplit.Top &&
+                        attributeBounds.Top==positionBounds.Top && attributeBounds.Bottom==positionBounds.Bottom,
+                        "the two player grids start below the same toolbar and share their top and bottom edges at "+size);
+                    var positionHandle=positions.Handle;
+                    int contentWidth=positions.ClientSize.Width-2*SystemInformation.BorderSize.Width;
+                    int columnWidth=positions.Columns.GetColumnsWidth(DataGridViewElementStates.Visible);
+                    // The grid also reserves a pixel for the leading line inside its single-line frame.
+                    check(positions.Rows.Count==0 && contentWidth-columnWidth==1 && positions.Columns[0].Width>positions.Columns[1].Width,
+                        "an empty positions grid fills its frame and gives the position label more width at "+size);
+                    CheckSearchGap(check,form,"txtPlayerSearch","lstPlayers");
 
                     foreach(var page in new[]{5,6})
                     {
@@ -107,6 +188,15 @@ namespace Fm24Editor
                     SelectPage(tabs,1);
                     var staffActions=Named(form,"StaffActions");
                     CheckToolbar(check,staffActions,"staff actions "+size,staffActions.Controls.Cast<Control>().ToArray());
+                    var staffToolbar=Named(tabs.SelectedTab,"StaffAttributeToolbar");
+                    check(staffToolbar.Bottom<=staff.Top && staff.Bottom<=staffActions.Top,
+                        "the staff grid stays between its own toolbar and actions at "+size);
+                    var staffSplit=Field<SplitContainer>(form,"splitStaff");
+                    var staffListBounds=InParent(Field<ListBox>(form,"lstStaff"),staffSplit);
+                    var staffGridBounds=InParent(staff,staffSplit);
+                    check(staffListBounds.Top==staffGridBounds.Top && staffListBounds.Bottom==staffGridBounds.Bottom,
+                        "the staff list and attribute grid share their top and bottom edges at "+size);
+                    CheckSearchGap(check,form,"txtStaffSearch","lstStaff");
 
                     SelectPage(tabs,2);
                     var money=Named(finance,"ClubFinanceForm");
@@ -116,12 +206,19 @@ namespace Fm24Editor
                     CheckToolbar(check,clubActions,"club actions "+size,clubActions.Controls.Cast<Control>().ToArray());
                     check(finance.Bottom<=clubActions.Top && finance.TabPages.Cast<TabPage>().All(page=>page.AutoScroll),
                         "club forms scroll inside their tabs and below the identity while actions stay separate "+size);
+                    CheckSearchGap(check,form,"txtClubSearch","lstClubs");
+
+                    SelectPage(tabs,3);
+                    CheckSearchGap(check,form,"txtSquadClubSearch","lstSquadClubs");
 
                     SelectPage(tabs,7);
                     var registrationActions=Named(form,"RegistrationActions");
                     var playerPicker=Named(form,"RegistrationPlayerPicker");
                     CheckToolbar(check,registrationActions,"registration actions "+size,registrationActions.Controls.Cast<Control>().ToArray());
                     CheckContained(check,playerPicker,"registration picker "+size,playerPicker.Controls.Cast<Control>().ToArray());
+                    SelectPage(competition,1);
+                    CheckSearchGap(check,form,"txtPrizeSearch","lstPrizes");
+                    SelectPage(competition,0);
 
                     SelectPage(tabs,4);form.PerformLayout();typeof(MainForm).GetMethod("LayoutGrowthWorkspace",Private).Invoke(form,null);
                     var split=(SplitContainer)form.Controls.Find("GrowthContent",true).Single();
@@ -135,6 +232,7 @@ namespace Fm24Editor
                     CheckToolbar(check,growthActions,"growth actions "+size,growthActions.Controls.Cast<Control>().ToArray());
                     var scopeToolbar=Named(form,"GrowthScopeToolbar");
                     CheckToolbar(check,scopeToolbar,"growth scope "+size,scopeToolbar.Controls.Cast<Control>().ToArray());
+                    CheckSearchGap(check,form,"txtGrowClubSearch","lstGrowClubs");
                     var rosterToolbar=Named(form,"GrowthRosterToolbar");
                     CheckToolbar(check,rosterToolbar,"growth roster "+size,Field<TextBox>(form,"txtGrowPlayerSearch"),
                         Named(rosterToolbar,"GrowthOnlyChecked"),Named(rosterToolbar,"GrowthSelectVisible"),
@@ -155,6 +253,22 @@ namespace Fm24Editor
                     typeof(Button).GetMethod("OnClick",Private).Invoke(browse,new object[]{EventArgs.Empty});
                 }
                 form.Size=new Size(1120,720);
+                var minSize=form.MinimumSize;
+                var appHeader=Named(form,"AppHeader");
+                var headerGroups=appHeader.Controls.Cast<Control>().ToArray();
+                int groupWidth=headerGroups.Max(group=>group.Width+group.Margin.Horizontal);
+                form.MinimumSize=Size.Empty;
+                form.ClientSize=new Size(groupWidth+appHeader.Padding.Horizontal+28,form.ClientSize.Height);
+                CheckHeader(check,form,true);
+                form.MinimumSize=minSize;
+                form.Size=new Size(1120,720);
+                var initialFeedback=feedback.Text;
+                int singleLineHeight=feedback.Height;
+                feedback.Text="第一行操作结果\r\n第二行原因\r\n第三行详情";
+                CheckFeedbackLayout(check,form);
+                check(feedback.Height>singleLineHeight && feedback.Lines.Length==3,
+                    "multiline feedback grows to a second visible line and keeps the full scrollable text");
+                feedback.Text=initialFeedback;
                 SelectPage(tabs,5);
                 var position=Field<ComboBox>(form,"fPos");
                 var inputFont=position.Font;

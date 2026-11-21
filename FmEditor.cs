@@ -1979,12 +1979,12 @@ CurrentDateRva = 0x56237C8
 
         static DataGridView NewGrid()
         {
-            var g = new DataGridView
+            var g = new WorkspaceGrid
             {
                 Dock = DockStyle.Fill, AllowUserToAddRows = false, AllowUserToDeleteRows = false, RowHeadersVisible = false,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, SelectionMode = DataGridViewSelectionMode.CellSelect
+                SelectionMode = DataGridViewSelectionMode.CellSelect
             };
-            g.BackgroundColor=Color.White;g.BorderStyle=BorderStyle.None;g.GridColor=Color.FromArgb(234,238,244);
+            g.BackgroundColor=Color.White;g.GridColor=Color.FromArgb(234,238,244);
             g.EnableHeadersVisualStyles=false;g.ColumnHeadersHeight=34;g.RowTemplate.Height=29;
             g.ColumnHeadersDefaultCellStyle.BackColor=Color.FromArgb(240,244,249);g.ColumnHeadersDefaultCellStyle.ForeColor=Color.FromArgb(70,84,104);
             g.DefaultCellStyle.SelectionBackColor=Color.FromArgb(223,235,254);g.DefaultCellStyle.SelectionForeColor=Color.FromArgb(22,46,85);
@@ -2108,7 +2108,7 @@ CurrentDateRva = 0x56237C8
             var page = new TabPage("球员");
             var split = splitPlayers = new SplitContainer { Dock = DockStyle.Fill };
             split.Panel1.Controls.Add(lstPlayers);
-            split.Panel1.Controls.Add(txtPlayerSearch);
+            split.Panel1.Controls.Add(SearchWithListSpacing(txtPlayerSearch));
             split.Panel1.Controls.Add(new Label { Text = "球员搜索：中文 / 英文 / UID", Dock = DockStyle.Top, Height = 24, Padding = new Padding(0, 4, 0, 0) });
 
             gridAttrs.Columns.Add("attr", "属性");
@@ -2116,15 +2116,18 @@ CurrentDateRva = 0x56237C8
             gridAttrs.Columns.Add("raw", "原始值（1-100）");
             gridAttrs.Columns.Add("note", "备注");
             gridAttrs.Columns[0].ReadOnly = true; gridAttrs.Columns[2].ReadOnly = true; gridAttrs.Columns[3].ReadOnly = true;
-            gridAttrs.Columns[0].FillWeight = 160; gridAttrs.Columns[3].FillWeight = 70;
+            gridAttrs.Columns[0].FillWeight = 140;
+            gridAttrs.Columns[1].FillWeight = 120;
+            gridAttrs.Columns[3].FillWeight = 90;
 
             gridPos.Columns.Add("pos", "位置 / 状态");
             gridPos.Columns.Add("value", "数值");
             gridPos.Columns[0].ReadOnly = true;
+            gridPos.Columns[0].FillWeight = 170;
+            gridPos.Columns[1].FillWeight = 75;
 
             var right = splitAttrs = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Vertical };
             right.Panel1.Controls.Add(gridAttrs);
-            right.Panel1.Controls.Add(BuildPlayerAttributeToolbar());
             right.Panel2.Controls.Add(gridPos);
 
             var buttons = new FlowLayoutPanel { Dock = DockStyle.Bottom, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, WrapContents = true, Padding = new Padding(4) };
@@ -2145,6 +2148,7 @@ CurrentDateRva = 0x56237C8
             };
 
             split.Panel2.Controls.Add(right);
+            split.Panel2.Controls.Add(BuildPlayerAttributeToolbar());
             split.Panel2.Controls.Add(buttons);
             WrapDockedLabel(lblPlayer);
             split.Panel2.Controls.Add(lblPlayer);
@@ -2189,7 +2193,7 @@ CurrentDateRva = 0x56237C8
             var page = new TabPage("球队");
             var split = splitSquad = new SplitContainer { Dock = DockStyle.Fill };
             split.Panel1.Controls.Add(lstSquadClubs);
-            split.Panel1.Controls.Add(txtSquadClubSearch);
+            split.Panel1.Controls.Add(SearchWithListSpacing(txtSquadClubSearch));
             split.Panel1.Controls.Add(new Label { Text = "俱乐部：", Dock = DockStyle.Top, Height = 22, Padding = new Padding(0, 4, 0, 0) });
 
             var buttons = new FlowLayoutPanel { Dock = DockStyle.Bottom, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, WrapContents = true, Padding = new Padding(4) };
@@ -2336,14 +2340,14 @@ CurrentDateRva = 0x56237C8
         List<PrizeTable> prizes = new List<PrizeTable>();
         ListBox lstPrizes = new ListBox { Dock = DockStyle.Fill, IntegralHeight = false };
         TextBox txtPrizeSearch = new TextBox { Dock = DockStyle.Top };
-        DataGridView gridPrize = new DataGridView { Dock = DockStyle.Fill, AllowUserToAddRows = false, AllowUserToDeleteRows = false, RowHeadersVisible = false, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill };
+        DataGridView gridPrize = new WorkspaceGrid { Dock = DockStyle.Fill, AllowUserToAddRows = false, AllowUserToDeleteRows = false, RowHeadersVisible = false };
         PrizeTable loadedPrize; int[] loadedPrizeVals;
 
         TabPage BuildPrizeTab()
         {
             var page = new TabPage("赛事与报名");
             var split = splitPrize = new SplitContainer { Dock = DockStyle.Fill };
-            split.Panel1.Controls.Add(lstPrizes); split.Panel1.Controls.Add(txtPrizeSearch);
+            split.Panel1.Controls.Add(lstPrizes); split.Panel1.Controls.Add(SearchWithListSpacing(txtPrizeSearch));
             split.Panel1.Controls.Add(new Label { Text = "搜索赛事：", Dock = DockStyle.Top, Height = 22, Padding = new Padding(0, 4, 0, 0) });
             gridPrize.Columns.Add("pos", "名次"); gridPrize.Columns.Add("amount", "奖金");
             gridPrize.Columns[0].ReadOnly = true;
@@ -3591,7 +3595,7 @@ CurrentDateRva = 0x56237C8
                 Text = p.DisplayName + " (" + ClubNameOf(p.Club) + "）将与所选球员互换球队。" +
                        "双方保留原合同（工资、期限和条款）。修改可以从「变更记录」撤销。" };
             var ok = new Button { Text = "交换球员", Dock = DockStyle.Bottom, Height = 30 };
-            f.Controls.Add(list); f.Controls.Add(search); f.Controls.Add(new Label { Text = "搜索球员（中文或英文，一字名须完整匹配）：", Dock = DockStyle.Top, Height = 20 });
+            f.Controls.Add(list); f.Controls.Add(SearchWithListSpacing(search)); f.Controls.Add(new Label { Text = "搜索球员（中文或英文，一字名须完整匹配）：", Dock = DockStyle.Top, Height = 20 });
             f.Controls.Add(info); f.Controls.Add(ok);
             search.TextChanged += delegate
             {
@@ -3700,7 +3704,7 @@ CurrentDateRva = 0x56237C8
                        "球员名单须有空位：FM 在游戏内完成转会后会分配空位，刚读取存档时可能没有空位。" +
                        "没有空位时可使用「交换」功能。修改可以从「变更记录」撤销。" };
             var ok = new Button { Text = "转移", Dock = DockStyle.Bottom, Height = 30 };
-            f.Controls.Add(list); f.Controls.Add(search); f.Controls.Add(new Label { Text = "搜索俱乐部（至少 2 个字符）：", Dock = DockStyle.Top, Height = 20 });
+            f.Controls.Add(list); f.Controls.Add(SearchWithListSpacing(search)); f.Controls.Add(new Label { Text = "搜索俱乐部（至少 2 个字符）：", Dock = DockStyle.Top, Height = 20 });
             f.Controls.Add(teamBox); f.Controls.Add(info); f.Controls.Add(ok);
             search.TextChanged += delegate
             {
@@ -4824,9 +4828,15 @@ CurrentDateRva = 0x56237C8
         {
             var page = new TabPage("职员");
             var split = splitStaff = new SplitContainer { Dock = DockStyle.Fill };
+            var searchRow=SearchWithListSpacing(txtStaffSearch);
+            var searchCaption=new Label {Text="搜职员：姓名或俱乐部（至少 2 个字符）\n输入 manager 可编辑你自己",
+                Dock=DockStyle.Top,Height=46,Font=new Font(Font.FontFamily,8.5f),Padding=new Padding(0,2,0,0)};
+            var leftGridInset=new Panel{Dock=DockStyle.Top,Height=0};
+            var rightGridInset=new Panel{Dock=DockStyle.Top,Height=0};
             split.Panel1.Controls.Add(lstStaff);
-            split.Panel1.Controls.Add(txtStaffSearch);
-            split.Panel1.Controls.Add(new Label { Text = "搜职员：姓名或俱乐部（至少 2 个字符）\n输入 manager 可编辑你自己", Dock = DockStyle.Top, Height = 46, Font = new Font(Font.FontFamily, 8.5f), Padding = new Padding(0, 2, 0, 0) });
+            split.Panel1.Controls.Add(leftGridInset);
+            split.Panel1.Controls.Add(searchRow);
+            split.Panel1.Controls.Add(searchCaption);
 
             gridStaff.Columns.Add("attr", "属性");
             gridStaff.Columns.Add("value", "数值");
@@ -4846,11 +4856,22 @@ CurrentDateRva = 0x56237C8
             btnStaffAge.Click += delegate { if (loadedStaff != null) OpenBirthdayDialog(loadedStaff.Pers, loadedStaff.Name); };
             btnStaffMove.Click += delegate { MoveStaffDialog(); };
 
+            var staffToolbar=BuildStaffAttributeToolbar();
             split.Panel2.Controls.Add(gridStaff);
-            split.Panel2.Controls.Add(BuildStaffAttributeToolbar());
+            split.Panel2.Controls.Add(rightGridInset);
+            split.Panel2.Controls.Add(staffToolbar);
             split.Panel2.Controls.Add(buttons);
             WrapDockedLabel(lblStaff);
             split.Panel2.Controls.Add(lblStaff);
+            EventHandler alignStaffTables=delegate
+            {
+                int difference=searchCaption.Height+searchRow.Height-lblStaff.Height-staffToolbar.Height;
+                leftGridInset.Height=Math.Max(0,-difference);
+                rightGridInset.Height=Math.Max(0,difference);
+                split.Panel1.Padding=new Padding(0,0,0,buttons.Height);
+            };
+            foreach(var row in new Control[]{searchCaption,searchRow,lblStaff,staffToolbar,buttons})row.SizeChanged+=alignStaffTables;
+            alignStaffTables(split,EventArgs.Empty);
             page.Controls.Add(split);
 
             txtStaffSearch.TextChanged += delegate { FilterStaff(); };

@@ -6,6 +6,25 @@ using System.Windows.Forms;
 
 namespace Fm24Editor
 {
+    sealed class WorkspaceGrid : DataGridView
+    {
+        static readonly Color FrameColor=Color.FromArgb(194,204,217);
+
+        public WorkspaceGrid()
+        {
+            BorderStyle=BorderStyle.FixedSingle;
+            AutoSizeColumnsMode=DataGridViewAutoSizeColumnsMode.Fill;
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            if(BorderStyle==BorderStyle.FixedSingle)
+                ControlPaint.DrawBorder(e.Graphics,ClientRectangle,SystemInformation.HighContrast?SystemColors.WindowFrame:FrameColor,
+                    ButtonBorderStyle.Solid);
+        }
+    }
+
     partial class MainForm
     {
         readonly ComboBox playerAttributeCategory=new ComboBox{Name="PlayerAttributeCategory",DropDownStyle=ComboBoxStyle.DropDownList,Width=144};
@@ -13,7 +32,8 @@ namespace Fm24Editor
         internal static void StyleWorkspaceGrid(DataGridView grid,Font font)
         {
             grid.EnableHeadersVisualStyles=false;grid.ColumnHeadersHeight=36;grid.ColumnHeadersHeightSizeMode=DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            grid.BackgroundColor=Color.White;grid.BorderStyle=BorderStyle.None;grid.GridColor=UiLine;
+            grid.BackgroundColor=Color.White;grid.BorderStyle=BorderStyle.FixedSingle;grid.GridColor=UiLine;
+            grid.AutoSizeColumnsMode=DataGridViewAutoSizeColumnsMode.Fill;
             grid.ColumnHeadersDefaultCellStyle.BackColor=Color.FromArgb(239,243,249);grid.ColumnHeadersDefaultCellStyle.ForeColor=UiMuted;
             grid.ColumnHeadersDefaultCellStyle.Font=new Font(font,FontStyle.Bold);grid.ColumnHeadersDefaultCellStyle.WrapMode=DataGridViewTriState.False;grid.RowTemplate.Height=30;
             grid.DefaultCellStyle.Padding=new Padding(4,2,4,2);grid.DefaultCellStyle.SelectionBackColor=Color.FromArgb(224,235,254);grid.DefaultCellStyle.SelectionForeColor=UiInk;
@@ -98,7 +118,7 @@ namespace Fm24Editor
         TabPage BuildClubManagementTab()
         {
             var page=new TabPage("俱乐部管理");var split=splitClubs=new SplitContainer{Dock=DockStyle.Fill};
-            split.Panel1.Controls.Add(lstClubs);split.Panel1.Controls.Add(txtClubSearch);split.Panel1.Controls.Add(new Label{Text="搜索俱乐部",Dock=DockStyle.Top,Height=26,ForeColor=UiMuted});
+            split.Panel1.Controls.Add(lstClubs);split.Panel1.Controls.Add(SearchWithListSpacing(txtClubSearch));split.Panel1.Controls.Add(new Label{Text="搜索俱乐部",Dock=DockStyle.Top,Height=26,ForeColor=UiMuted});
             var sections=new TabControl{Name="ClubManagementSections",Dock=DockStyle.Fill};
             var money=new TabPage("资金与预算"){AutoScroll=true};var facilities=new TabPage("设施与球场"){AutoScroll=true};var identity=new TabPage("资料与票务"){AutoScroll=true};sections.TabPages.AddRange(new[]{money,facilities,identity});
             var finance=ManagementForm("ClubFinanceForm");AddCurRow(finance,0,"俱乐部结余（{C}）",txtBalance);AddCurRow(finance,1,"剩余转会预算（{C}）",txtTransfer);AddCurRow(finance,2,"下赛季转会预算（{C}）",txtTransferNext);AddCurRow(finance,3,"周薪预算（{C}）",txtWage);

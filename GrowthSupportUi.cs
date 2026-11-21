@@ -15,7 +15,8 @@ namespace Fm24Editor
         readonly int ca;
         readonly int? age;
         readonly ICollection<int> scope;
-        readonly DataGridView grid=new DataGridView{Name="SupportAttributeTargets",Dock=DockStyle.Fill,AllowUserToAddRows=false,AllowUserToDeleteRows=false,RowHeadersVisible=false,AutoSizeColumnsMode=DataGridViewAutoSizeColumnsMode.Fill,BackgroundColor=Color.White};
+        readonly DataGridView grid=new WorkspaceGrid{Name="SupportAttributeTargets",Dock=DockStyle.Fill,
+            AllowUserToAddRows=false,AllowUserToDeleteRows=false,RowHeadersVisible=false,BackgroundColor=Color.White};
         readonly Label status=new Label{Name="SupportStatus",Dock=DockStyle.Fill,ForeColor=Color.FromArgb(101,115,135)};
         readonly CheckBox enabled=new CheckBox{Name="SupportEnabled",Text="启用低值属性补强",AutoSize=true};
         readonly NumericUpDown threshold=new NumericUpDown{Name="SupportThreshold",Minimum=1,Maximum=5,Width=58};
