@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.1.29 (modified release, 2026-11-21)
+
+- Validate all edited club finance fields before writing. Reject non-finite currency conversions and rounded values outside the signed 32-bit range. Check the selected club and the original field values at submission.
+- Ask before lowering a funding freeze floor. Read back each finance write and report the result per field, including skipped values, failed writes and verification errors.
+- Refine the responsive workspace with aligned and framed grids, a compact connection toolbar and readable operation feedback. Improve text contrast and give primary, secondary and undo buttons explicit styles.
+- Open player and staff profiles from search by button or keyboard. Clarify growth actions and registration scope while preserving the selected view. Standardize auxiliary dialogs, focus order and confirmation defaults.
+
 ## v1.1.28 (modified full test build, 2026-11-21)
 
 - Separate physiotherapy and doctor roles. Use one catalog of 21 roles for staff search and transfers, including head performance analysts, head coaches and directors of football.
