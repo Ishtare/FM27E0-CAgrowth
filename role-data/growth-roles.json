@@ -1,0 +1,2132 @@
+{
+  "reference_season": "FM26",
+  "presets_are_fm27_tactical_role_detection": false,
+  "presets_are_official_fm27_ability_weights": false,
+  "source": "https://community.sports-interactive.com/forums/topic/600770-football-manager-26-roles-attributes/",
+  "official_mechanism": "https://www.footballmanager.com/fm26/features/possession-out-possession-fm26s-new-tactical-evolution",
+  "detail_presets": 88,
+  "style_attribute_excluded": "Eccentricity",
+  "roles": [
+    {
+      "group": "中锋",
+      "phase": "持球",
+      "english": "Deep-Lying Forward",
+      "chinese": "拖后中锋",
+      "core": [
+        2,
+        22,
+        23,
+        52,
+        6,
+        36
+      ],
+      "support": [
+        1,
+        7,
+        17,
+        18,
+        28,
+        10,
+        42
+      ]
+    },
+    {
+      "group": "中锋",
+      "phase": "持球",
+      "english": "Channel Forward",
+      "chinese": "肋部中锋",
+      "core": [
+        1,
+        2,
+        22,
+        23,
+        52,
+        6,
+        29,
+        34
+      ],
+      "support": [
+        0,
+        3,
+        7,
+        17,
+        18,
+        46,
+        42,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "中锋",
+      "phase": "持球",
+      "english": "Centre Forward",
+      "chinese": "中锋",
+      "core": [
+        2,
+        22,
+        3,
+        23,
+        52,
+        6,
+        34,
+        36
+      ],
+      "support": [
+        1,
+        7,
+        17,
+        18,
+        46,
+        42,
+        39,
+        38
+      ]
+    },
+    {
+      "group": "中锋",
+      "phase": "持球",
+      "english": "Target Forward",
+      "chinese": "支点中锋",
+      "core": [
+        2,
+        3,
+        45,
+        43,
+        52,
+        6,
+        42,
+        39,
+        36
+      ],
+      "support": [
+        22,
+        17,
+        18,
+        28
+      ]
+    },
+    {
+      "group": "中锋",
+      "phase": "持球",
+      "english": "Poacher",
+      "chinese": "抢点型前锋",
+      "core": [
+        2,
+        3,
+        17,
+        52,
+        53,
+        6,
+        34
+      ],
+      "support": [
+        22,
+        23,
+        18,
+        42
+      ]
+    },
+    {
+      "group": "中锋",
+      "phase": "持球",
+      "english": "False Nine",
+      "chinese": "伪九号",
+      "core": [
+        1,
+        22,
+        7,
+        23,
+        52,
+        18,
+        6,
+        28,
+        10,
+        34
+      ],
+      "support": [
+        2,
+        17,
+        26,
+        46,
+        42
+      ]
+    },
+    {
+      "group": "边锋",
+      "phase": "持球",
+      "english": "Inside Winger",
+      "chinese": "内切型边锋",
+      "core": [
+        1,
+        22,
+        23,
+        52,
+        28,
+        34,
+        46
+      ],
+      "support": [
+        0,
+        4,
+        7,
+        17,
+        26,
+        6,
+        10,
+        29,
+        42,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "边锋",
+      "phase": "持球",
+      "english": "Wide Forward",
+      "chinese": "边路前锋",
+      "core": [
+        1,
+        22,
+        23,
+        17,
+        6,
+        34,
+        46,
+        38
+      ],
+      "support": [
+        0,
+        2,
+        7,
+        52,
+        26,
+        29,
+        42,
+        37
+      ]
+    },
+    {
+      "group": "边锋",
+      "phase": "持球",
+      "english": "Inside Forward",
+      "chinese": "内切型前锋",
+      "core": [
+        1,
+        22,
+        23,
+        17,
+        52,
+        6,
+        34,
+        46
+      ],
+      "support": [
+        0,
+        2,
+        4,
+        7,
+        26,
+        10,
+        29,
+        42,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "边锋",
+      "phase": "持球",
+      "english": "Winger",
+      "chinese": "边锋",
+      "core": [
+        0,
+        1,
+        23,
+        28,
+        34,
+        46,
+        38
+      ],
+      "support": [
+        22,
+        7,
+        17,
+        26,
+        6,
+        29,
+        42,
+        37
+      ]
+    },
+    {
+      "group": "边锋",
+      "phase": "持球",
+      "english": "Playmaking Winger",
+      "chinese": "组织型边锋",
+      "core": [
+        0,
+        1,
+        22,
+        7,
+        23,
+        52,
+        18,
+        6,
+        28,
+        10,
+        34
+      ],
+      "support": [
+        17,
+        26,
+        29,
+        46,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "前腰",
+      "phase": "持球",
+      "english": "Second Striker",
+      "chinese": "二前锋",
+      "core": [
+        2,
+        22,
+        17,
+        52,
+        6,
+        34
+      ],
+      "support": [
+        1,
+        4,
+        7,
+        23,
+        53,
+        18,
+        29,
+        46,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "前腰",
+      "phase": "持球",
+      "english": "Free Role",
+      "chinese": "自由进攻核心",
+      "core": [
+        1,
+        22,
+        4,
+        7,
+        23,
+        52,
+        26,
+        6,
+        10
+      ],
+      "support": [
+        0,
+        2,
+        17,
+        18,
+        34,
+        46
+      ]
+    },
+    {
+      "group": "前腰",
+      "phase": "持球",
+      "english": "Attacking Midfielder",
+      "chinese": "前腰",
+      "core": [
+        22,
+        4,
+        7,
+        23,
+        52,
+        26,
+        6
+      ],
+      "support": [
+        0,
+        1,
+        2,
+        17,
+        18,
+        10,
+        34,
+        46
+      ]
+    },
+    {
+      "group": "前腰",
+      "phase": "持球",
+      "english": "Advanced Playmaker",
+      "chinese": "前场组织核心",
+      "core": [
+        22,
+        7,
+        23,
+        52,
+        18,
+        6,
+        28,
+        10
+      ],
+      "support": [
+        0,
+        1,
+        17,
+        26,
+        34,
+        46
+      ]
+    },
+    {
+      "group": "前腰",
+      "phase": "持球",
+      "english": "Channel Midfielder",
+      "chinese": "肋部中场",
+      "core": [
+        0,
+        22,
+        7,
+        23,
+        52,
+        6,
+        29,
+        34
+      ],
+      "support": [
+        1,
+        4,
+        17,
+        18,
+        26,
+        10,
+        46,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "边前卫",
+      "phase": "持球",
+      "english": "Inside Winger",
+      "chinese": "内切型边锋",
+      "core": [
+        1,
+        22,
+        23,
+        52,
+        28,
+        34,
+        46
+      ],
+      "support": [
+        0,
+        4,
+        7,
+        17,
+        26,
+        6,
+        10,
+        29,
+        42,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "边前卫",
+      "phase": "持球",
+      "english": "Winger",
+      "chinese": "边锋",
+      "core": [
+        0,
+        1,
+        23,
+        28,
+        34,
+        46,
+        38
+      ],
+      "support": [
+        22,
+        7,
+        17,
+        26,
+        6,
+        29,
+        42,
+        37
+      ]
+    },
+    {
+      "group": "边前卫",
+      "phase": "持球",
+      "english": "Playmaking Winger",
+      "chinese": "组织型边锋",
+      "core": [
+        0,
+        1,
+        22,
+        7,
+        23,
+        52,
+        18,
+        6,
+        28,
+        10,
+        34
+      ],
+      "support": [
+        17,
+        26,
+        29,
+        46,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "边前卫",
+      "phase": "持球",
+      "english": "Wide Midfielder",
+      "chinese": "边前卫",
+      "core": [
+        0,
+        7,
+        23,
+        18,
+        28,
+        29,
+        38,
+        37
+      ],
+      "support": [
+        1,
+        22,
+        17,
+        52,
+        6,
+        10,
+        34,
+        46
+      ]
+    },
+    {
+      "group": "中场",
+      "phase": "持球",
+      "english": "Attacking Midfielder",
+      "chinese": "前腰",
+      "core": [
+        22,
+        4,
+        7,
+        23,
+        52,
+        26,
+        6
+      ],
+      "support": [
+        0,
+        1,
+        2,
+        17,
+        18,
+        10,
+        34,
+        46
+      ]
+    },
+    {
+      "group": "中场",
+      "phase": "持球",
+      "english": "Advanced Playmaker",
+      "chinese": "前场组织核心",
+      "core": [
+        22,
+        7,
+        23,
+        52,
+        18,
+        6,
+        28,
+        10
+      ],
+      "support": [
+        0,
+        1,
+        17,
+        26,
+        34,
+        46
+      ]
+    },
+    {
+      "group": "中场",
+      "phase": "持球",
+      "english": "Channel Midfielder",
+      "chinese": "肋部中场",
+      "core": [
+        0,
+        22,
+        7,
+        23,
+        52,
+        6,
+        29,
+        34
+      ],
+      "support": [
+        1,
+        4,
+        17,
+        18,
+        26,
+        10,
+        46,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "中场",
+      "phase": "持球",
+      "english": "Midfield Playmaker",
+      "chinese": "中场组织核心",
+      "core": [
+        22,
+        7,
+        23,
+        52,
+        18,
+        6,
+        28,
+        10
+      ],
+      "support": [
+        1,
+        9,
+        17,
+        26,
+        20,
+        29,
+        46,
+        37
+      ]
+    },
+    {
+      "group": "中场",
+      "phase": "持球",
+      "english": "Wide Central Midfielder",
+      "chinese": "侧翼中前卫",
+      "core": [
+        22,
+        7,
+        9,
+        18,
+        28
+      ],
+      "support": [
+        0,
+        1,
+        23,
+        17,
+        52,
+        53,
+        6,
+        20,
+        10,
+        29,
+        46,
+        37
+      ]
+    },
+    {
+      "group": "中场",
+      "phase": "持球",
+      "english": "Central Midfielder",
+      "chinese": "中前卫",
+      "core": [
+        22,
+        7,
+        9,
+        18,
+        28
+      ],
+      "support": [
+        23,
+        17,
+        52,
+        53,
+        6,
+        20,
+        10,
+        29,
+        37
+      ]
+    },
+    {
+      "group": "后腰",
+      "phase": "持球",
+      "english": "Deep-Lying Playmaker",
+      "chinese": "拖后组织核心",
+      "core": [
+        22,
+        7,
+        23,
+        52,
+        18,
+        28,
+        10
+      ],
+      "support": [
+        5,
+        17,
+        53,
+        6,
+        20,
+        29,
+        42,
+        37,
+        9
+      ]
+    },
+    {
+      "group": "后腰",
+      "phase": "持球",
+      "english": "Box-to-Box Playmaker",
+      "chinese": "全能组织核心",
+      "core": [
+        22,
+        7,
+        23,
+        52,
+        18,
+        6,
+        28,
+        10,
+        29,
+        37
+      ],
+      "support": [
+        1,
+        4,
+        5,
+        17,
+        38,
+        9,
+        20,
+        34,
+        46,
+        42
+      ]
+    },
+    {
+      "group": "后腰",
+      "phase": "持球",
+      "english": "Box-to-Box Midfielder",
+      "chinese": "全能中场",
+      "core": [
+        7,
+        9,
+        6,
+        28,
+        29,
+        37
+      ],
+      "support": [
+        1,
+        2,
+        22,
+        4,
+        23,
+        45,
+        17,
+        34,
+        42,
+        38,
+        36,
+        52,
+        18
+      ]
+    },
+    {
+      "group": "后腰",
+      "phase": "持球",
+      "english": "Defensive Midfielder",
+      "chinese": "防守型后腰",
+      "core": [
+        9,
+        17,
+        53,
+        20,
+        28
+      ],
+      "support": [
+        22,
+        5,
+        7,
+        45,
+        29,
+        37,
+        36,
+        52,
+        18
+      ]
+    },
+    {
+      "group": "后腰",
+      "phase": "持球",
+      "english": "Half Back",
+      "chinese": "半后卫",
+      "core": [
+        3,
+        5,
+        9,
+        17,
+        53,
+        20,
+        28,
+        39,
+        36
+      ],
+      "support": [
+        22,
+        7,
+        45,
+        29,
+        37,
+        43,
+        52,
+        18
+      ]
+    },
+    {
+      "group": "翼卫",
+      "phase": "持球",
+      "english": "Advanced Wing-Back",
+      "chinese": "进攻型翼卫",
+      "core": [
+        0,
+        1,
+        23,
+        6,
+        28,
+        29,
+        34,
+        46,
+        38,
+        37
+      ],
+      "support": [
+        22,
+        5,
+        7,
+        9,
+        17,
+        18,
+        26,
+        20,
+        42
+      ]
+    },
+    {
+      "group": "翼卫",
+      "phase": "持球",
+      "english": "Wing-Back",
+      "chinese": "翼卫",
+      "core": [
+        0,
+        5,
+        9,
+        28,
+        29,
+        34,
+        38,
+        37
+      ],
+      "support": [
+        1,
+        22,
+        7,
+        23,
+        17,
+        53,
+        18,
+        6,
+        20,
+        46,
+        42
+      ]
+    },
+    {
+      "group": "翼卫",
+      "phase": "持球",
+      "english": "Playmaking Wing-Back",
+      "chinese": "组织型翼卫",
+      "core": [
+        22,
+        7,
+        9,
+        23,
+        52,
+        18,
+        28,
+        10,
+        34
+      ],
+      "support": [
+        0,
+        1,
+        5,
+        17,
+        53,
+        6,
+        20,
+        29,
+        46,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "翼卫",
+      "phase": "持球",
+      "english": "Inside Wing-Back",
+      "chinese": "内收型翼卫",
+      "core": [
+        7,
+        9,
+        17,
+        52,
+        18,
+        20,
+        28,
+        34
+      ],
+      "support": [
+        22,
+        5,
+        23,
+        53,
+        29,
+        46,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "边后卫",
+      "phase": "持球",
+      "english": "Wing-Back",
+      "chinese": "翼卫",
+      "core": [
+        0,
+        5,
+        9,
+        28,
+        29,
+        34,
+        38,
+        37
+      ],
+      "support": [
+        1,
+        22,
+        7,
+        23,
+        17,
+        53,
+        18,
+        6,
+        20,
+        46,
+        42
+      ]
+    },
+    {
+      "group": "边后卫",
+      "phase": "持球",
+      "english": "Full-Back",
+      "chinese": "边后卫",
+      "core": [
+        5,
+        9,
+        17,
+        53,
+        20,
+        28,
+        34
+      ],
+      "support": [
+        0,
+        1,
+        7,
+        23,
+        18,
+        29,
+        46,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "边后卫",
+      "phase": "持球",
+      "english": "Playmaking Wing-Back",
+      "chinese": "组织型翼卫",
+      "core": [
+        22,
+        7,
+        9,
+        23,
+        52,
+        18,
+        28,
+        10,
+        34
+      ],
+      "support": [
+        0,
+        1,
+        5,
+        17,
+        53,
+        6,
+        20,
+        29,
+        46,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "边后卫",
+      "phase": "持球",
+      "english": "Inside Wing-Back",
+      "chinese": "内收型翼卫",
+      "core": [
+        7,
+        9,
+        17,
+        52,
+        18,
+        20,
+        28,
+        34
+      ],
+      "support": [
+        22,
+        5,
+        23,
+        53,
+        29,
+        46,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "边后卫",
+      "phase": "持球",
+      "english": "Inside Full-Back",
+      "chinese": "内收型边后卫",
+      "core": [
+        3,
+        5,
+        9,
+        17,
+        20,
+        36
+      ],
+      "support": [
+        1,
+        45,
+        43,
+        52,
+        53,
+        18,
+        29,
+        34,
+        46,
+        39,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "中后卫",
+      "phase": "持球",
+      "english": "Ball-Playing Centre-Back",
+      "chinese": "出球中后卫",
+      "core": [
+        3,
+        5,
+        7,
+        9,
+        17,
+        52,
+        20,
+        39,
+        36
+      ],
+      "support": [
+        22,
+        23,
+        45,
+        43,
+        53,
+        18,
+        10,
+        38
+      ]
+    },
+    {
+      "group": "中后卫",
+      "phase": "持球",
+      "english": "Advanced Centre-Back",
+      "chinese": "压上型中后卫",
+      "core": [
+        3,
+        5,
+        7,
+        9,
+        23,
+        17,
+        52,
+        18,
+        20,
+        28,
+        39,
+        36
+      ],
+      "support": [
+        22,
+        1,
+        45,
+        43,
+        53,
+        10,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "中后卫",
+      "phase": "持球",
+      "english": "Overlapping Centre-Back",
+      "chinese": "套边型中后卫",
+      "core": [
+        0,
+        3,
+        5,
+        9,
+        17,
+        29,
+        39,
+        38,
+        37,
+        36
+      ],
+      "support": [
+        1,
+        23,
+        45,
+        43,
+        52,
+        53,
+        18,
+        6,
+        20,
+        34,
+        46
+      ]
+    },
+    {
+      "group": "中后卫",
+      "phase": "持球",
+      "english": "Wide Centre-Back",
+      "chinese": "边中卫",
+      "core": [
+        3,
+        5,
+        9,
+        17,
+        20,
+        39,
+        36
+      ],
+      "support": [
+        1,
+        45,
+        43,
+        52,
+        53,
+        18,
+        29,
+        34,
+        46,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "中后卫",
+      "phase": "持球",
+      "english": "No-Nonsense Centre-Back",
+      "chinese": "防守型中后卫",
+      "core": [
+        3,
+        5,
+        9,
+        17,
+        20,
+        39,
+        36
+      ],
+      "support": [
+        45,
+        43,
+        53,
+        38
+      ]
+    },
+    {
+      "group": "中后卫",
+      "phase": "持球",
+      "english": "Centre-Back",
+      "chinese": "中后卫",
+      "core": [
+        3,
+        5,
+        9,
+        17,
+        20,
+        39,
+        36
+      ],
+      "support": [
+        45,
+        43,
+        52,
+        53,
+        18,
+        38
+      ]
+    },
+    {
+      "group": "门将",
+      "phase": "持球",
+      "english": "No-Nonsense Goalkeeper",
+      "chinese": "稳健型门将",
+      "core": [
+        12,
+        13,
+        14,
+        11,
+        21,
+        53,
+        20,
+        46
+      ],
+      "support": [
+        19,
+        17,
+        18
+      ]
+    },
+    {
+      "group": "门将",
+      "phase": "持球",
+      "english": "Ball-Playing Goalkeeper",
+      "chinese": "出球型门将",
+      "core": [
+        12,
+        13,
+        14,
+        11,
+        15,
+        21,
+        53,
+        20,
+        46
+      ],
+      "support": [
+        19,
+        7,
+        16,
+        17,
+        52,
+        18
+      ]
+    },
+    {
+      "group": "门将",
+      "phase": "持球",
+      "english": "Goalkeeper",
+      "chinese": "门将",
+      "core": [
+        12,
+        13,
+        14,
+        11,
+        21,
+        53,
+        20,
+        46
+      ],
+      "support": [
+        15,
+        19,
+        16,
+        17,
+        18
+      ]
+    },
+    {
+      "group": "中锋",
+      "phase": "无球",
+      "english": "Centre Forward",
+      "chinese": "中锋",
+      "core": [
+        17,
+        18,
+        29
+      ],
+      "support": [
+        5,
+        45,
+        6,
+        28,
+        37
+      ]
+    },
+    {
+      "group": "中锋",
+      "phase": "无球",
+      "english": "Tracking Centre Forward",
+      "chinese": "回防型中锋",
+      "core": [
+        45,
+        17,
+        18,
+        28,
+        29,
+        37
+      ],
+      "support": [
+        5,
+        6,
+        20
+      ]
+    },
+    {
+      "group": "中锋",
+      "phase": "无球",
+      "english": "Splitting Outlet Centre Forward",
+      "chinese": "拉边反击中锋",
+      "core": [
+        17,
+        53,
+        18,
+        6,
+        28,
+        38
+      ],
+      "support": [
+        22,
+        5,
+        52,
+        34
+      ]
+    },
+    {
+      "group": "中锋",
+      "phase": "无球",
+      "english": "Central Outlet Centre Forward",
+      "chinese": "中路反击中锋",
+      "core": [
+        17,
+        53,
+        18,
+        6,
+        28,
+        42
+      ],
+      "support": [
+        22,
+        5,
+        52,
+        36
+      ]
+    },
+    {
+      "group": "边锋",
+      "phase": "无球",
+      "english": "Winger",
+      "chinese": "边锋",
+      "core": [
+        34,
+        17,
+        18,
+        28,
+        29
+      ],
+      "support": [
+        45,
+        5,
+        6,
+        46,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "边锋",
+      "phase": "无球",
+      "english": "Tracking Winger",
+      "chinese": "回防型边锋",
+      "core": [
+        45,
+        17,
+        18,
+        28,
+        29,
+        34,
+        37
+      ],
+      "support": [
+        5,
+        9,
+        6,
+        20,
+        46,
+        38
+      ]
+    },
+    {
+      "group": "边锋",
+      "phase": "无球",
+      "english": "Wide Outlet Winger",
+      "chinese": "边路反击边锋",
+      "core": [
+        17,
+        53,
+        18,
+        6,
+        28,
+        38
+      ],
+      "support": [
+        1,
+        22,
+        5,
+        52,
+        34,
+        46
+      ]
+    },
+    {
+      "group": "边锋",
+      "phase": "无球",
+      "english": "Inside Outlet Winger",
+      "chinese": "内收反击边锋",
+      "core": [
+        17,
+        53,
+        18,
+        6,
+        28,
+        42
+      ],
+      "support": [
+        1,
+        22,
+        5,
+        52,
+        34,
+        36
+      ]
+    },
+    {
+      "group": "前腰",
+      "phase": "无球",
+      "english": "Attacking Midfielder",
+      "chinese": "前腰",
+      "core": [
+        17,
+        18,
+        29
+      ],
+      "support": [
+        5,
+        45,
+        6,
+        28,
+        37
+      ]
+    },
+    {
+      "group": "前腰",
+      "phase": "无球",
+      "english": "Central Outlet Attacking Midfielder",
+      "chinese": "中路反击前腰",
+      "core": [
+        17,
+        53,
+        18,
+        6,
+        28,
+        42
+      ],
+      "support": [
+        22,
+        5,
+        52,
+        36
+      ]
+    },
+    {
+      "group": "前腰",
+      "phase": "无球",
+      "english": "Splitting Outlet Attacking Midfielder",
+      "chinese": "拉边反击前腰",
+      "core": [
+        17,
+        53,
+        18,
+        6,
+        28,
+        38
+      ],
+      "support": [
+        22,
+        5,
+        52,
+        34
+      ]
+    },
+    {
+      "group": "前腰",
+      "phase": "无球",
+      "english": "Tracking Attacking Midfielder",
+      "chinese": "回防型前腰",
+      "core": [
+        45,
+        17,
+        18,
+        28,
+        29,
+        37
+      ],
+      "support": [
+        5,
+        6,
+        20
+      ]
+    },
+    {
+      "group": "边前卫",
+      "phase": "无球",
+      "english": "Wide Outlet Wide Midfielder",
+      "chinese": "边路反击边前卫",
+      "core": [
+        17,
+        53,
+        18,
+        6,
+        28,
+        38
+      ],
+      "support": [
+        1,
+        22,
+        5,
+        52,
+        34,
+        46
+      ]
+    },
+    {
+      "group": "边前卫",
+      "phase": "无球",
+      "english": "Wide Midfielder",
+      "chinese": "边前卫",
+      "core": [
+        18,
+        28,
+        29,
+        34
+      ],
+      "support": [
+        5,
+        45,
+        17,
+        6,
+        46,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "边前卫",
+      "phase": "无球",
+      "english": "Tracking Wide Midfielder",
+      "chinese": "回防型边前卫",
+      "core": [
+        45,
+        17,
+        18,
+        28,
+        29,
+        34,
+        37
+      ],
+      "support": [
+        5,
+        9,
+        6,
+        20,
+        46,
+        38
+      ]
+    },
+    {
+      "group": "中场",
+      "phase": "无球",
+      "english": "Pressing Central Midfielder",
+      "chinese": "压迫型中前卫",
+      "core": [
+        9,
+        45,
+        17,
+        18,
+        28,
+        29,
+        37
+      ],
+      "support": [
+        5,
+        53,
+        20,
+        38,
+        36
+      ]
+    },
+    {
+      "group": "中场",
+      "phase": "无球",
+      "english": "Wide Covering Central Midfielder",
+      "chinese": "侧翼补位中前卫",
+      "core": [
+        5,
+        9,
+        18,
+        28,
+        29,
+        46,
+        37
+      ],
+      "support": [
+        45,
+        17,
+        53,
+        20,
+        38
+      ]
+    },
+    {
+      "group": "中场",
+      "phase": "无球",
+      "english": "Central Midfielder",
+      "chinese": "中前卫",
+      "core": [
+        9,
+        18,
+        28,
+        29
+      ],
+      "support": [
+        5,
+        45,
+        17,
+        53,
+        20,
+        37
+      ]
+    },
+    {
+      "group": "中场",
+      "phase": "无球",
+      "english": "Screening Central Midfielder",
+      "chinese": "屏障型中前卫",
+      "core": [
+        5,
+        9,
+        53,
+        18,
+        20
+      ],
+      "support": [
+        17,
+        28,
+        29,
+        37
+      ]
+    },
+    {
+      "group": "后腰",
+      "phase": "无球",
+      "english": "Pressing Defensive Midfielder",
+      "chinese": "压迫型后腰",
+      "core": [
+        9,
+        45,
+        17,
+        18,
+        20,
+        28,
+        29,
+        37
+      ],
+      "support": [
+        5,
+        53,
+        38,
+        36
+      ]
+    },
+    {
+      "group": "后腰",
+      "phase": "无球",
+      "english": "Defensive Midfielder",
+      "chinese": "防守型后腰",
+      "core": [
+        9,
+        17,
+        18,
+        20,
+        28,
+        29
+      ],
+      "support": [
+        5,
+        45,
+        53,
+        37,
+        36
+      ]
+    },
+    {
+      "group": "后腰",
+      "phase": "无球",
+      "english": "Wide Covering Defensive Midfielder",
+      "chinese": "侧翼补位后腰",
+      "core": [
+        5,
+        9,
+        17,
+        18,
+        20,
+        28,
+        29,
+        46,
+        37
+      ],
+      "support": [
+        45,
+        53,
+        38,
+        36
+      ]
+    },
+    {
+      "group": "后腰",
+      "phase": "无球",
+      "english": "Screening Defensive Midfielder",
+      "chinese": "屏障型后腰",
+      "core": [
+        5,
+        9,
+        17,
+        53,
+        18,
+        20
+      ],
+      "support": [
+        28,
+        29,
+        37,
+        36
+      ]
+    },
+    {
+      "group": "后腰",
+      "phase": "无球",
+      "english": "Dropping Defensive Midfielder",
+      "chinese": "后撤型后腰",
+      "core": [
+        5,
+        9,
+        17,
+        53,
+        18,
+        20,
+        28,
+        29,
+        39,
+        36
+      ],
+      "support": [
+        45,
+        37
+      ]
+    },
+    {
+      "group": "翼卫",
+      "phase": "无球",
+      "english": "Pressing Wing-Back",
+      "chinese": "压迫型翼卫",
+      "core": [
+        5,
+        9,
+        45,
+        17,
+        20,
+        28,
+        29,
+        34,
+        37
+      ],
+      "support": [
+        53,
+        43,
+        18,
+        46,
+        38
+      ]
+    },
+    {
+      "group": "翼卫",
+      "phase": "无球",
+      "english": "Wing-Back",
+      "chinese": "翼卫",
+      "core": [
+        5,
+        9,
+        17,
+        20,
+        28,
+        34,
+        37
+      ],
+      "support": [
+        45,
+        53,
+        18,
+        29,
+        46,
+        38
+      ]
+    },
+    {
+      "group": "翼卫",
+      "phase": "无球",
+      "english": "Holding Wing-Back",
+      "chinese": "留守型翼卫",
+      "core": [
+        5,
+        9,
+        17,
+        53,
+        18,
+        20,
+        34
+      ],
+      "support": [
+        28,
+        46,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "边后卫",
+      "phase": "无球",
+      "english": "Pressing Full-Back",
+      "chinese": "压迫型边后卫",
+      "core": [
+        5,
+        9,
+        45,
+        17,
+        20,
+        28,
+        29,
+        34
+      ],
+      "support": [
+        43,
+        53,
+        18,
+        46,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "边后卫",
+      "phase": "无球",
+      "english": "Holding Full-Back",
+      "chinese": "留守型边后卫",
+      "core": [
+        5,
+        9,
+        17,
+        53,
+        18,
+        20,
+        34
+      ],
+      "support": [
+        28,
+        46,
+        38
+      ]
+    },
+    {
+      "group": "边后卫",
+      "phase": "无球",
+      "english": "Full-Back",
+      "chinese": "边后卫",
+      "core": [
+        5,
+        9,
+        17,
+        20,
+        28,
+        34
+      ],
+      "support": [
+        45,
+        53,
+        18,
+        29,
+        46,
+        38,
+        37
+      ]
+    },
+    {
+      "group": "中后卫",
+      "phase": "无球",
+      "english": "Covering Wide Centre-Back",
+      "chinese": "补位型边中卫",
+      "core": [
+        3,
+        5,
+        9,
+        17,
+        53,
+        18,
+        20,
+        39,
+        38,
+        36
+      ],
+      "support": [
+        43,
+        34,
+        46
+      ]
+    },
+    {
+      "group": "中后卫",
+      "phase": "无球",
+      "english": "Wide Centre-Back",
+      "chinese": "边中卫",
+      "core": [
+        3,
+        5,
+        9,
+        17,
+        20,
+        39,
+        36
+      ],
+      "support": [
+        45,
+        43,
+        53,
+        18,
+        34,
+        46,
+        38
+      ]
+    },
+    {
+      "group": "中后卫",
+      "phase": "无球",
+      "english": "Covering Centre-Back",
+      "chinese": "补位型中后卫",
+      "core": [
+        3,
+        5,
+        9,
+        17,
+        53,
+        18,
+        20,
+        39,
+        38,
+        36
+      ],
+      "support": [
+        43,
+        34
+      ]
+    },
+    {
+      "group": "中后卫",
+      "phase": "无球",
+      "english": "Centre-Back",
+      "chinese": "中后卫",
+      "core": [
+        3,
+        5,
+        9,
+        17,
+        20,
+        39,
+        36
+      ],
+      "support": [
+        45,
+        43,
+        52,
+        53,
+        18,
+        38
+      ]
+    },
+    {
+      "group": "中后卫",
+      "phase": "无球",
+      "english": "Stopping Wide Centre-Back",
+      "chinese": "上抢型边中卫",
+      "core": [
+        3,
+        5,
+        9,
+        45,
+        17,
+        43,
+        20,
+        39,
+        36
+      ],
+      "support": [
+        53,
+        18,
+        34,
+        46,
+        38
+      ]
+    },
+    {
+      "group": "中后卫",
+      "phase": "无球",
+      "english": "Stopping Centre-Back",
+      "chinese": "上抢型中后卫",
+      "core": [
+        3,
+        5,
+        9,
+        45,
+        17,
+        43,
+        20,
+        39,
+        36
+      ],
+      "support": [
+        53,
+        18,
+        38
+      ]
+    },
+    {
+      "group": "门将",
+      "phase": "无球",
+      "english": "Goalkeeper",
+      "chinese": "门将",
+      "core": [
+        12,
+        13,
+        14,
+        11,
+        21,
+        53,
+        20,
+        46
+      ],
+      "support": [
+        19,
+        17,
+        18,
+        32
+      ]
+    },
+    {
+      "group": "门将",
+      "phase": "无球",
+      "english": "Sweeper Keeper",
+      "chinese": "清道夫门将",
+      "core": [
+        12,
+        13,
+        14,
+        11,
+        19,
+        21,
+        32,
+        17,
+        18,
+        46
+      ],
+      "support": [
+        53,
+        20,
+        34
+      ]
+    },
+    {
+      "group": "门将",
+      "phase": "无球",
+      "english": "Line-Holding Goalkeeper",
+      "chinese": "门线型门将",
+      "core": [
+        12,
+        13,
+        14,
+        11,
+        21,
+        53,
+        20,
+        46
+      ],
+      "support": [
+        19,
+        17,
+        18
+      ]
+    }
+  ]
+}

@@ -1,0 +1,384 @@
+已核对人物姓名对照库收录范围
+v1.1.12 同时内置完整游戏词库（506,169 条组成记录、91,482 条完整／条件记录）及自动音译。
+本文件只统计下列来源人物对照；目录待补项目不等于修改器会继续只显示英文。
+资料核对日期：2026-11-12
+
+按央视赛事中心各球队球员目录整理，含目录列出的青年及外租球员。
+这份名单用于中英文姓名对照，不改变 FM 中的所属球队，也不代表某份存档的实时阵容。
+五大联赛 96 队（3,385 人有对照）继续保留，新增中超 16 队、48 支国家队及其他欧洲 16 队。
+176 个球队目录共 5,338 条按编号去重的人物资料；5,162 条有可用中文对照，176 条缺少确认译名或生日，暂列待补。
+目录统计按央视编号去重；同一人物偶有多个目录编号，例如李可的两份资料，不能当作 FM 中两个人。
+本次新增 1,777 条目录对照及 2 条单独核实记录（本泽马）；保留原有 106 条基础对照，合计 5,270 条姓名记录。
+本泽马支持“本泽马 / 卡里姆·本泽马 / Karim Benzema / Benzema”；已核对的 FM UID 与原名可在年龄修改后继续匹配。
+以下人数为姓名资料覆盖数量；存档中的实际匹配数量请在“姓名对照…”查看。
+各联赛内去重；联赛之间可能因转会或外租有重复。
+
+英超：20 队；727 / 731 人有中文译名
+  阿森纳：33 / 33
+  利物浦：39 / 39
+  曼城：28 / 28
+  阿斯顿维拉：40 / 41
+  托特纳姆：48 / 48
+  考文垂城：36 / 36
+  曼联：42 / 42
+  布赖顿：47 / 47
+  纽卡斯尔联：39 / 39
+  切尔西：31 / 31
+  富勒姆：35 / 36
+  伊普斯维奇：40 / 40
+  伯恩茅斯：35 / 35
+  水晶宫：38 / 40
+  布伦特福德：35 / 35
+  埃弗顿：26 / 26
+  诺丁汉森林：24 / 24
+  赫尔城：42 / 42
+  利兹联：36 / 36
+  桑德兰：35 / 35
+
+西甲：20 队；646 / 651 人有中文译名
+  皇家马德里：35 / 37
+  巴塞罗那：34 / 34
+  马德里竞技：28 / 28
+  毕尔巴鄂竞技：38 / 38
+  皇家社会：32 / 32
+  贝蒂斯：29 / 29
+  巴伦西亚：36 / 36
+  奥萨苏纳：29 / 29
+  比利亚雷亚尔：27 / 27
+  赫塔费：34 / 35
+  阿拉维斯：34 / 34
+  塞维利亚：33 / 33
+  巴列卡诺：34 / 35
+  塞尔塔：36 / 36
+  拉科鲁尼亚：35 / 35
+  西班牙人：33 / 33
+  桑坦德：30 / 31
+  莱万特：31 / 31
+  马拉加：33 / 33
+  埃尔切：33 / 33
+
+意甲：20 队；853 / 863 人有中文译名
+  国际米兰：46 / 46
+  米兰：42 / 42
+  尤文图斯：42 / 44
+  博洛尼亚：51 / 52
+  罗马：43 / 45
+  亚特兰大：45 / 48
+  那不勒斯：48 / 48
+  佛罗伦萨：57 / 57
+  拉齐奥：37 / 37
+  蒙扎：39 / 39
+  都灵：46 / 46
+  热那亚：53 / 53
+  乌迪内斯：37 / 37
+  卡利亚里：47 / 48
+  莱切：41 / 41
+  弗罗西诺内：31 / 31
+  萨索洛：53 / 53
+  威尼斯：46 / 47
+  帕尔马：45 / 46
+  科莫：48 / 48
+
+德甲：18 队；628 / 634 人有中文译名
+  埃尔沃斯贝格：28 / 28
+  勒沃库森：42 / 45
+  拜仁慕尼黑：32 / 33
+  斯图加特：38 / 38
+  多特蒙德：33 / 33
+  莱比锡：37 / 37
+  法兰克福：37 / 37
+  霍芬海姆：42 / 44
+  弗赖堡：31 / 31
+  奥格斯堡：35 / 35
+  不来梅：38 / 38
+  门兴格拉德巴赫：36 / 36
+  柏林联：34 / 34
+  科隆：36 / 36
+  沙尔克04：37 / 37
+  美因茨：34 / 34
+  汉堡：36 / 36
+  帕德博恩：34 / 34
+
+法甲：18 队；594 / 599 人有中文译名
+  勒芒：33 / 34
+  巴黎圣日耳曼：28 / 28
+  布雷斯特：27 / 28
+  摩纳哥：34 / 34
+  里尔：38 / 38
+  朗斯：37 / 38
+  尼斯：39 / 40
+  马赛：30 / 30
+  雷恩：37 / 37
+  巴黎：28 / 28
+  里昂：38 / 38
+  图卢兹：31 / 31
+  勒阿弗尔：32 / 33
+  斯特拉斯堡：41 / 41
+  洛里昂：31 / 31
+  欧塞尔：39 / 39
+  特鲁瓦：32 / 32
+  昂热：27 / 27
+
+中超：16 队；527 / 636 人有中文译名
+  上海申花：35 / 39
+  天津津门虎：29 / 31
+  大连英博：32 / 34
+  重庆铜梁龙：38 / 46
+  山东泰山：33 / 35
+  上海海港：42 / 42
+  北京国安：42 / 44
+  浙江：31 / 34
+  成都蓉城：34 / 39
+  武汉三镇：46 / 51
+  云南玉昆：33 / 35
+  河南：28 / 31
+  辽宁铁人：33 / 65
+  青岛西海岸：25 / 39
+  青岛海牛：24 / 39
+  深圳新鹏城：26 / 36
+
+世界杯国家队目录：48 队；1216 / 1233 人有中文译名
+  加拿大：26 / 26
+  巴拿马：26 / 26
+  海地：26 / 26
+  库拉索：26 / 26
+  波黑：25 / 26
+  阿尔及利亚：26 / 26
+  苏格兰：22 / 23
+  西班牙：24 / 24
+  土耳其：21 / 23
+  荷兰：22 / 23
+  克罗地亚：23 / 23
+  突尼斯：26 / 26
+  塞内加尔：26 / 26
+  埃及：26 / 26
+  加纳：26 / 26
+  伊朗：26 / 26
+  科特迪瓦：26 / 26
+  日本：30 / 32
+  摩洛哥：26 / 26
+  新西兰：26 / 26
+  卡塔尔：26 / 26
+  阿根廷：26 / 26
+  刚果（金）：26 / 26
+  挪威：23 / 23
+  葡萄牙：23 / 23
+  比利时：23 / 23
+  美国：26 / 26
+  乌拉圭：26 / 26
+  韩国：38 / 42
+  澳大利亚：26 / 26
+  佛得角：26 / 26
+  伊拉克：26 / 26
+  墨西哥：26 / 26
+  法国：30 / 30
+  瑞士：21 / 23
+  德国：24 / 24
+  乌兹别克斯坦：26 / 26
+  南非：26 / 26
+  哥伦比亚：26 / 26
+  沙特阿拉伯：26 / 26
+  瑞典：21 / 23
+  英格兰：22 / 22
+  捷克：21 / 23
+  奥地利：23 / 23
+  厄瓜多尔：26 / 26
+  约旦：26 / 26
+  巴西：26 / 26
+  巴拉圭：26 / 26
+
+五大联赛外的欧洲球队补充：16 队；583 / 603 人有中文译名
+  凯尔特人：30 / 30
+  布鲁日：29 / 31
+  埃因霍温：33 / 33
+  波尔图：34 / 36
+  加拉塔萨雷：45 / 45
+  顿涅茨克矿工：49 / 49
+  格拉茨风暴：32 / 32
+  布拉格斯拉维亚：47 / 48
+  费内巴切：42 / 42
+  萨格勒布迪纳摩：39 / 39
+  葡萄牙体育：40 / 42
+  奥林匹亚科斯：38 / 38
+  布拉格斯巴达：29 / 42
+  费耶诺德：33 / 33
+  圣吉罗斯：33 / 33
+  博多格林特：30 / 30
+
+待补资料（继续支持游戏原名搜索）：
+  Kadan Young（阿斯顿维拉）
+  Sam Amissah（富勒姆）
+  Nathanael James Kalembo（水晶宫）
+  Matheus Franca（水晶宫）
+  Mario Rivas（皇家马德里）
+  Diego Villalba（皇家马德里）
+  Oscar Lopez（赫塔费）
+  Rayane Belaid（巴列卡诺）
+  Pablo Garcia（桑坦德）
+  Filippo Pagnucco（尤文图斯）
+  Augusto Owusu（尤文图斯）
+  Jon Rowe（博洛尼亚、亚特兰大）
+  Levente Kilvinger（罗马）
+  Valerio Maccaroni（罗马）
+  Mattia Sonzogni（亚特兰大）
+  Matteo Plaia（亚特兰大）
+  Marton Prettenhoffer（卡利亚里）
+  Daniel Fila（威尼斯）
+  Jacob Ondrejka（帕尔马）
+  Luca Erlein（勒沃库森）
+  Kenan Doganay（勒沃库森）
+  Dustin Buck（勒沃库森）
+  Tim Binder（拜仁慕尼黑）
+  Tiago Poller（霍芬海姆）
+  Lion Wagenbach（霍芬海姆）
+  Adnane Kharroubi（勒芒）
+  Djylian N'Guessan（布雷斯特）
+  Moussa Diarra（朗斯）
+  Everton Pereira（尼斯）
+  Joan Tincres（勒阿弗尔）
+  Zhicheng Jiang（上海申花）
+  Dongyang Sun（上海申花）
+  Shuyi Zhao（上海申花）
+  Feiyang Zhang（上海申花）
+  Xiwen Hu（天津津门虎）
+  Ka fai Wong（天津津门虎）
+  Xiaofeng Wang（大连英博）
+  Zeng Junhao（大连英博）
+  Lin Lei（重庆铜梁龙）
+  Shisen Li（重庆铜梁龙）
+  Zhicheng Tong（重庆铜梁龙）
+  Jie Wang（重庆铜梁龙）
+  Yetong Cheng（重庆铜梁龙）
+  Yunyang Gong（重庆铜梁龙）
+  Yanxin Chen（重庆铜梁龙）
+  Huamao Li（重庆铜梁龙）
+  Maimaiti Yimulan（山东泰山）
+  Li Xiaoheng（山东泰山）
+  Deng Jiefu（北京国安）
+  Ma Mingyang（北京国安）
+  Peicheng Zhao（浙江）
+  Yanbin Wang（浙江）
+  Qian Yuanfan（浙江）
+  Xiong Jiajun（成都蓉城）
+  Chen Shihan（成都蓉城）
+  Li Zhijun（成都蓉城）
+  Wang Yueheng（成都蓉城）
+  Weihao Shuai（成都蓉城）
+  Li Zihao（武汉三镇）
+  Zheng Yiran（武汉三镇）
+  Wenjie You（武汉三镇）
+  Zhu Wenchuan（武汉三镇）
+  Yiheng Liu（武汉三镇）
+  Bo Li（云南玉昆）
+  Rong Jiahui（云南玉昆）
+  Wang Chaohui（河南）
+  Wu Fei（河南）
+  Chen Hanyang（河南）
+  Tian Gao（辽宁铁人）
+  Yutong Fan（辽宁铁人）
+  Xie Jintian（辽宁铁人）
+  Wang Tianai（辽宁铁人）
+  Yu Duan（辽宁铁人）
+  Feng Jiang（辽宁铁人）
+  Shang Yu（辽宁铁人）
+  Sheriazat Mutanllip（辽宁铁人）
+  Mingxuan Zhang（辽宁铁人）
+  Gyo Cheol Gu（辽宁铁人）
+  Xiang Xu（辽宁铁人）
+  Yu Chen（辽宁铁人）
+  Quanshu Shen（辽宁铁人）
+  Zhang（辽宁铁人）
+  Mingyu Wu（辽宁铁人）
+  Xiaohui Qu（辽宁铁人）
+  Li Jianhui（辽宁铁人）
+  Jun Ma（辽宁铁人）
+  Shen Haodi（辽宁铁人）
+  Yinhan Min（辽宁铁人）
+  Chengchen Fu（辽宁铁人）
+  Lejiang Kang（辽宁铁人）
+  Uros Tomovic（辽宁铁人）
+  Hui Jin（辽宁铁人）
+  Chao Wang（辽宁铁人）
+  Ezimet Ekrem（辽宁铁人）
+  Yongze Chen（辽宁铁人）
+  Chris Shimbayev（辽宁铁人）
+  Chenya Xiao（辽宁铁人）
+  Hongjun Xin（辽宁铁人）
+  Jiaming Zhang（辽宁铁人）
+  Ren Zhongda（辽宁铁人）
+  Bingyu Qi（青岛西海岸）
+  Ziquan Wang（青岛西海岸）
+  Elnizar Lohman（青岛西海岸）
+  Gengrui Wang（青岛西海岸）
+  Zhicheng Liu（青岛西海岸）
+  Junzhen Xue（青岛西海岸）
+  Barak Braunshtain（青岛西海岸）
+  Haiyang Fang（青岛西海岸）
+  Jia Weiwei（青岛西海岸）
+  Mu Zihan（青岛西海岸）
+  Yang Zhanpeng（青岛西海岸）
+  Shiming Jin（青岛西海岸）
+  Alexander Xie（青岛西海岸）
+  Wang Tanyou（青岛西海岸）
+  Jun Liu（青岛海牛）
+  Mewlan Jappar（青岛海牛）
+  Wang Kuan（青岛海牛）
+  Tash Mustapa（青岛海牛）
+  Xinyang Yi（青岛海牛）
+  Ngan Cheuk Pan（青岛海牛）
+  Nemanja Andjelkovic（青岛海牛）
+  Zixian Wei（青岛海牛）
+  Yan Zhoubin（青岛海牛）
+  Ruicong Gong（青岛海牛）
+  Jingyao Cui（青岛海牛）
+  Ziyu Hu（青岛海牛）
+  Zhaolei Kuang（青岛海牛）
+  Yang Cong（青岛海牛）
+  Kwong Siu-lai（青岛海牛）
+  Yifan Ge（深圳新鹏城）
+  Zhijian Xuan（深圳新鹏城）
+  Yuheng Wang（深圳新鹏城）
+  Jiajin Hu（深圳新鹏城）
+  Tian Yifan（深圳新鹏城）
+  Menghui Yu（深圳新鹏城）
+  Shaolin He（深圳新鹏城）
+  Dalong Xia（深圳新鹏城）
+  Boyang Zhao（深圳新鹏城）
+  Yao Junyi（深圳新鹏城）
+  Nail Omerovic（波黑）
+  Kristi Montgomery（苏格兰）
+  Melih Kabasakal（土耳其）
+  Ilhan Fakili（土耳其）
+  Mexx Meerdink（荷兰）
+  Henry Heroki Mochizuki（日本）
+  Kota Tawaratsumida（日本）
+  Seung-wook Park（韩国）
+  Hwang Jae-won（韩国）
+  Jeong Ho-yeon（韩国）
+  Lee Ho-Jae（韩国）
+  Alvyn Sanches（瑞士）
+  Winsley Boteli（瑞士）
+  Hampus Hampus（瑞典）
+  Paulos Abraham（瑞典）
+  Matej Radosta（捷克）
+  Martin Subert（捷克）
+  Jessi Da Silva（布鲁日）
+  Wisdom Mike（布鲁日）
+  Dominik Prpic（波尔图）
+  Mateus Mide（波尔图）
+  Neil Glossoa（布拉格斯拉维亚）
+  Rodrigo Rodrigues（葡萄牙体育）
+  Paulo Cardoso（葡萄牙体育）
+  Daniel Kerl（布拉格斯巴达）
+  Sebastian Zajac（布拉格斯巴达）
+  Lukas Franc（布拉格斯巴达）
+  Jakub Martinec（布拉格斯巴达）
+  Petr Hodous（布拉格斯巴达）
+  Tobias Kvalvagnes Guddal（布拉格斯巴达）
+  Viktor Tamas Vitalyos（布拉格斯巴达）
+  Sebastian Pech（布拉格斯巴达）
+  Jonatan Braut Brunes（布拉格斯巴达）
+  Matyas Vojta（布拉格斯巴达）
+  Ebrima Singhateh（布拉格斯巴达）
+  Kevin Prince Milla（布拉格斯巴达）
+  Ondrej Penxa（布拉格斯巴达）

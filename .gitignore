@@ -1,0 +1,18 @@
+# Local runtime data
+/names/
+/settings.txt
+/changes.log
+*.log
+*.fm
+
+# Generated build/test artifacts and local tooling
+*.exe
+*.pdb
+*.zip
+build.tmp/
+/tests/third-party/
+__pycache__/
+*.pyc
+.vs/
+*.user
+*.suo

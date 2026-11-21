@@ -1,0 +1,2010 @@
+{
+  "retrieved": "2026-11-12",
+  "teams": 176,
+  "directory_people": 5338,
+  "translated_people": 5162,
+  "pending_people": 176,
+  "base_records": 106,
+  "supplementary_records": 1777,
+  "verified_records": 2,
+  "total_name_records": 5270,
+  "preferred_spellings": 105,
+  "leagues": [
+    {
+      "league": "英超",
+      "teams": 20,
+      "people": 731,
+      "translated": 727,
+      "pending": 4
+    },
+    {
+      "league": "西甲",
+      "teams": 20,
+      "people": 651,
+      "translated": 646,
+      "pending": 5
+    },
+    {
+      "league": "意甲",
+      "teams": 20,
+      "people": 863,
+      "translated": 853,
+      "pending": 10
+    },
+    {
+      "league": "德甲",
+      "teams": 18,
+      "people": 634,
+      "translated": 628,
+      "pending": 6
+    },
+    {
+      "league": "法甲",
+      "teams": 18,
+      "people": 599,
+      "translated": 594,
+      "pending": 5
+    },
+    {
+      "league": "中超",
+      "teams": 16,
+      "people": 636,
+      "translated": 527,
+      "pending": 109
+    },
+    {
+      "league": "世界杯国家队目录",
+      "teams": 48,
+      "people": 1233,
+      "translated": 1216,
+      "pending": 17
+    },
+    {
+      "league": "五大联赛外的欧洲球队补充",
+      "teams": 16,
+      "people": 603,
+      "translated": 583,
+      "pending": 20
+    }
+  ],
+  "team_coverage": [
+    {
+      "league": "英超",
+      "team": "阿森纳",
+      "people": 33,
+      "translated": 33,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38540"
+    },
+    {
+      "league": "英超",
+      "team": "利物浦",
+      "people": 39,
+      "translated": 39,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38546"
+    },
+    {
+      "league": "英超",
+      "team": "曼城",
+      "people": 28,
+      "translated": 28,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38547"
+    },
+    {
+      "league": "英超",
+      "team": "阿斯顿维拉",
+      "people": 41,
+      "translated": 40,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38541"
+    },
+    {
+      "league": "英超",
+      "team": "托特纳姆",
+      "people": 48,
+      "translated": 48,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38554"
+    },
+    {
+      "league": "英超",
+      "team": "考文垂城",
+      "people": 36,
+      "translated": 36,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38577"
+    },
+    {
+      "league": "英超",
+      "team": "曼联",
+      "people": 42,
+      "translated": 42,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38548"
+    },
+    {
+      "league": "英超",
+      "team": "布赖顿",
+      "people": 47,
+      "translated": 47,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38580"
+    },
+    {
+      "league": "英超",
+      "team": "纽卡斯尔联",
+      "people": 39,
+      "translated": 39,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38549"
+    },
+    {
+      "league": "英超",
+      "team": "切尔西",
+      "people": 31,
+      "translated": 31,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38545"
+    },
+    {
+      "league": "英超",
+      "team": "富勒姆",
+      "people": 36,
+      "translated": 35,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38550"
+    },
+    {
+      "league": "英超",
+      "team": "伊普斯维奇",
+      "people": 40,
+      "translated": 40,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38588"
+    },
+    {
+      "league": "英超",
+      "team": "伯恩茅斯",
+      "people": 35,
+      "translated": 35,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38829"
+    },
+    {
+      "league": "英超",
+      "team": "水晶宫",
+      "people": 40,
+      "translated": 38,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38556"
+    },
+    {
+      "league": "英超",
+      "team": "布伦特福德",
+      "people": 35,
+      "translated": 35,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38843"
+    },
+    {
+      "league": "英超",
+      "team": "埃弗顿",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38552"
+    },
+    {
+      "league": "英超",
+      "team": "诺丁汉森林",
+      "people": 24,
+      "translated": 24,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38569"
+    },
+    {
+      "league": "英超",
+      "team": "赫尔城",
+      "people": 42,
+      "translated": 42,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38860"
+    },
+    {
+      "league": "英超",
+      "team": "利兹联",
+      "people": 36,
+      "translated": 36,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38576"
+    },
+    {
+      "league": "英超",
+      "team": "桑德兰",
+      "people": 35,
+      "translated": 35,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38585"
+    },
+    {
+      "league": "西甲",
+      "team": "皇家马德里",
+      "people": 37,
+      "translated": 35,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38602"
+    },
+    {
+      "league": "西甲",
+      "team": "巴塞罗那",
+      "people": 34,
+      "translated": 34,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38604"
+    },
+    {
+      "league": "西甲",
+      "team": "马德里竞技",
+      "people": 28,
+      "translated": 28,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38627"
+    },
+    {
+      "league": "西甲",
+      "team": "毕尔巴鄂竞技",
+      "people": 38,
+      "translated": 38,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38612"
+    },
+    {
+      "league": "西甲",
+      "team": "皇家社会",
+      "people": 32,
+      "translated": 32,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38624"
+    },
+    {
+      "league": "西甲",
+      "team": "贝蒂斯",
+      "people": 29,
+      "translated": 29,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38616"
+    },
+    {
+      "league": "西甲",
+      "team": "巴伦西亚",
+      "people": 36,
+      "translated": 36,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38611"
+    },
+    {
+      "league": "西甲",
+      "team": "奥萨苏纳",
+      "people": 29,
+      "translated": 29,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38614"
+    },
+    {
+      "league": "西甲",
+      "team": "比利亚雷亚尔",
+      "people": 27,
+      "translated": 27,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38625"
+    },
+    {
+      "league": "西甲",
+      "team": "赫塔费",
+      "people": 35,
+      "translated": 34,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38617"
+    },
+    {
+      "league": "西甲",
+      "team": "阿拉维斯",
+      "people": 34,
+      "translated": 34,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38652"
+    },
+    {
+      "league": "西甲",
+      "team": "塞维利亚",
+      "people": 33,
+      "translated": 33,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38606"
+    },
+    {
+      "league": "西甲",
+      "team": "巴列卡诺",
+      "people": 35,
+      "translated": 34,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39318"
+    },
+    {
+      "league": "西甲",
+      "team": "塞尔塔",
+      "people": 36,
+      "translated": 36,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38632"
+    },
+    {
+      "league": "西甲",
+      "team": "拉科鲁尼亚",
+      "people": 35,
+      "translated": 35,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38613"
+    },
+    {
+      "league": "西甲",
+      "team": "西班牙人",
+      "people": 33,
+      "translated": 33,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38619"
+    },
+    {
+      "league": "西甲",
+      "team": "桑坦德",
+      "people": 31,
+      "translated": 30,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38623"
+    },
+    {
+      "league": "西甲",
+      "team": "莱万特",
+      "people": 31,
+      "translated": 31,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38622"
+    },
+    {
+      "league": "西甲",
+      "team": "马拉加",
+      "people": 33,
+      "translated": 33,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38621"
+    },
+    {
+      "league": "西甲",
+      "team": "埃尔切",
+      "people": 33,
+      "translated": 33,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=57172"
+    },
+    {
+      "league": "意甲",
+      "team": "国际米兰",
+      "people": 46,
+      "translated": 46,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38666"
+    },
+    {
+      "league": "意甲",
+      "team": "米兰",
+      "people": 42,
+      "translated": 42,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38664"
+    },
+    {
+      "league": "意甲",
+      "team": "尤文图斯",
+      "people": 44,
+      "translated": 42,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38679"
+    },
+    {
+      "league": "意甲",
+      "team": "博洛尼亚",
+      "people": 52,
+      "translated": 51,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38698"
+    },
+    {
+      "league": "意甲",
+      "team": "罗马",
+      "people": 45,
+      "translated": 43,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38687"
+    },
+    {
+      "league": "意甲",
+      "team": "亚特兰大",
+      "people": 48,
+      "translated": 45,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38668"
+    },
+    {
+      "league": "意甲",
+      "team": "那不勒斯",
+      "people": 48,
+      "translated": 48,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39677"
+    },
+    {
+      "league": "意甲",
+      "team": "佛罗伦萨",
+      "people": 57,
+      "translated": 57,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38689"
+    },
+    {
+      "league": "意甲",
+      "team": "拉齐奥",
+      "people": 37,
+      "translated": 37,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38695"
+    },
+    {
+      "league": "意甲",
+      "team": "蒙扎",
+      "people": 39,
+      "translated": 39,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=40660"
+    },
+    {
+      "league": "意甲",
+      "team": "都灵",
+      "people": 46,
+      "translated": 46,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39019"
+    },
+    {
+      "league": "意甲",
+      "team": "热那亚",
+      "people": 53,
+      "translated": 53,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39013"
+    },
+    {
+      "league": "意甲",
+      "team": "乌迪内斯",
+      "people": 37,
+      "translated": 37,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=56751"
+    },
+    {
+      "league": "意甲",
+      "team": "卡利亚里",
+      "people": 48,
+      "translated": 47,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38696"
+    },
+    {
+      "league": "意甲",
+      "team": "莱切",
+      "people": 41,
+      "translated": 41,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38671"
+    },
+    {
+      "league": "意甲",
+      "team": "弗罗西诺内",
+      "people": 31,
+      "translated": 31,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39622"
+    },
+    {
+      "league": "意甲",
+      "team": "萨索洛",
+      "people": 53,
+      "translated": 53,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=40908"
+    },
+    {
+      "league": "意甲",
+      "team": "威尼斯",
+      "people": 47,
+      "translated": 46,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39018"
+    },
+    {
+      "league": "意甲",
+      "team": "帕尔马",
+      "people": 46,
+      "translated": 45,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38700"
+    },
+    {
+      "league": "意甲",
+      "team": "科莫",
+      "people": 48,
+      "translated": 48,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39655"
+    },
+    {
+      "league": "德甲",
+      "team": "埃尔沃斯贝格",
+      "people": 28,
+      "translated": 28,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39382"
+    },
+    {
+      "league": "德甲",
+      "team": "勒沃库森",
+      "people": 45,
+      "translated": 42,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38678"
+    },
+    {
+      "league": "德甲",
+      "team": "拜仁慕尼黑",
+      "people": 33,
+      "translated": 32,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38608"
+    },
+    {
+      "league": "德甲",
+      "team": "斯图加特",
+      "people": 38,
+      "translated": 38,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38669"
+    },
+    {
+      "league": "德甲",
+      "team": "多特蒙德",
+      "people": 33,
+      "translated": 33,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38618"
+    },
+    {
+      "league": "德甲",
+      "team": "莱比锡",
+      "people": 37,
+      "translated": 37,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=50216"
+    },
+    {
+      "league": "德甲",
+      "team": "法兰克福",
+      "people": 37,
+      "translated": 37,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38896"
+    },
+    {
+      "league": "德甲",
+      "team": "霍芬海姆",
+      "people": 44,
+      "translated": 42,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39383"
+    },
+    {
+      "league": "德甲",
+      "team": "弗赖堡",
+      "people": 31,
+      "translated": 31,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38685"
+    },
+    {
+      "league": "德甲",
+      "team": "奥格斯堡",
+      "people": 35,
+      "translated": 35,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39432"
+    },
+    {
+      "league": "德甲",
+      "team": "不来梅",
+      "people": 38,
+      "translated": 38,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38647"
+    },
+    {
+      "league": "德甲",
+      "team": "门兴格拉德巴赫",
+      "people": 36,
+      "translated": 36,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38643"
+    },
+    {
+      "league": "德甲",
+      "team": "柏林联",
+      "people": 34,
+      "translated": 34,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39392"
+    },
+    {
+      "league": "德甲",
+      "team": "科隆",
+      "people": 36,
+      "translated": 36,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38954"
+    },
+    {
+      "league": "德甲",
+      "team": "沙尔克04",
+      "people": 37,
+      "translated": 37,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38665"
+    },
+    {
+      "league": "德甲",
+      "team": "美因茨",
+      "people": 34,
+      "translated": 34,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38675"
+    },
+    {
+      "league": "德甲",
+      "team": "汉堡",
+      "people": 36,
+      "translated": 36,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38673"
+    },
+    {
+      "league": "德甲",
+      "team": "帕德博恩",
+      "people": 34,
+      "translated": 34,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39900"
+    },
+    {
+      "league": "法甲",
+      "team": "勒芒",
+      "people": 34,
+      "translated": 33,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38809"
+    },
+    {
+      "league": "法甲",
+      "team": "巴黎圣日耳曼",
+      "people": 28,
+      "translated": 28,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38767"
+    },
+    {
+      "league": "法甲",
+      "team": "布雷斯特",
+      "people": 28,
+      "translated": 27,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38792"
+    },
+    {
+      "league": "法甲",
+      "team": "摩纳哥",
+      "people": 34,
+      "translated": 34,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38708"
+    },
+    {
+      "league": "法甲",
+      "team": "里尔",
+      "people": 38,
+      "translated": 38,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38762"
+    },
+    {
+      "league": "法甲",
+      "team": "朗斯",
+      "people": 38,
+      "translated": 37,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38713"
+    },
+    {
+      "league": "法甲",
+      "team": "尼斯",
+      "people": 40,
+      "translated": 39,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38756"
+    },
+    {
+      "league": "法甲",
+      "team": "马赛",
+      "people": 30,
+      "translated": 30,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38721"
+    },
+    {
+      "league": "法甲",
+      "team": "雷恩",
+      "people": 37,
+      "translated": 37,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38748"
+    },
+    {
+      "league": "法甲",
+      "team": "巴黎",
+      "people": 28,
+      "translated": 28,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39941"
+    },
+    {
+      "league": "法甲",
+      "team": "里昂",
+      "people": 38,
+      "translated": 38,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38716"
+    },
+    {
+      "league": "法甲",
+      "team": "图卢兹",
+      "people": 31,
+      "translated": 31,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38724"
+    },
+    {
+      "league": "法甲",
+      "team": "勒阿弗尔",
+      "people": 33,
+      "translated": 32,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38816"
+    },
+    {
+      "league": "法甲",
+      "team": "斯特拉斯堡",
+      "people": 41,
+      "translated": 41,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38757"
+    },
+    {
+      "league": "法甲",
+      "team": "洛里昂",
+      "people": 31,
+      "translated": 31,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38814"
+    },
+    {
+      "league": "法甲",
+      "team": "欧塞尔",
+      "people": 39,
+      "translated": 39,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38723"
+    },
+    {
+      "league": "法甲",
+      "team": "特鲁瓦",
+      "people": 32,
+      "translated": 32,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38844"
+    },
+    {
+      "league": "法甲",
+      "team": "昂热",
+      "people": 27,
+      "translated": 27,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38791"
+    },
+    {
+      "league": "中超",
+      "team": "上海申花",
+      "people": 39,
+      "translated": 35,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38560"
+    },
+    {
+      "league": "中超",
+      "team": "天津津门虎",
+      "people": 31,
+      "translated": 29,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38609"
+    },
+    {
+      "league": "中超",
+      "team": "大连英博",
+      "people": 34,
+      "translated": 32,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=760798"
+    },
+    {
+      "league": "中超",
+      "team": "重庆铜梁龙",
+      "people": 46,
+      "translated": 38,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=760795"
+    },
+    {
+      "league": "中超",
+      "team": "山东泰山",
+      "people": 35,
+      "translated": 33,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38561"
+    },
+    {
+      "league": "中超",
+      "team": "上海海港",
+      "people": 42,
+      "translated": 42,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=45145"
+    },
+    {
+      "league": "中超",
+      "team": "北京国安",
+      "people": 44,
+      "translated": 42,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38563"
+    },
+    {
+      "league": "中超",
+      "team": "浙江",
+      "people": 34,
+      "translated": 31,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39003"
+    },
+    {
+      "league": "中超",
+      "team": "成都蓉城",
+      "people": 39,
+      "translated": 34,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=209850"
+    },
+    {
+      "league": "中超",
+      "team": "武汉三镇",
+      "people": 51,
+      "translated": 46,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=214250"
+    },
+    {
+      "league": "中超",
+      "team": "云南玉昆",
+      "people": 35,
+      "translated": 33,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=760788"
+    },
+    {
+      "league": "中超",
+      "team": "河南",
+      "people": 31,
+      "translated": 28,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39002"
+    },
+    {
+      "league": "中超",
+      "team": "辽宁铁人",
+      "people": 65,
+      "translated": 33,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=214132"
+    },
+    {
+      "league": "中超",
+      "team": "青岛西海岸",
+      "people": 39,
+      "translated": 25,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=727470"
+    },
+    {
+      "league": "中超",
+      "team": "青岛海牛",
+      "people": 39,
+      "translated": 24,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38564"
+    },
+    {
+      "league": "中超",
+      "team": "深圳新鹏城",
+      "people": 36,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=214131"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "加拿大",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39188"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "巴拿马",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39191"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "海地",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39257"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "库拉索",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=54566"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "波黑",
+      "people": 26,
+      "translated": 25,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39175"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "阿尔及利亚",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=54962"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "苏格兰",
+      "people": 23,
+      "translated": 22,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39056"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "西班牙",
+      "people": 24,
+      "translated": 24,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39166"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "土耳其",
+      "people": 23,
+      "translated": 21,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39156"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "荷兰",
+      "people": 23,
+      "translated": 22,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39060"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "克罗地亚",
+      "people": 23,
+      "translated": 23,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39162"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "突尼斯",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39212"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "塞内加尔",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39206"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "埃及",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39131"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "加纳",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39201"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "伊朗",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39176"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "科特迪瓦",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39200"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "日本",
+      "people": 32,
+      "translated": 30,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39253"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "摩洛哥",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39204"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "新西兰",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=40416"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "卡塔尔",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39254"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "阿根廷",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39160"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "刚果（金）",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39202"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "挪威",
+      "people": 23,
+      "translated": 23,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39055"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "葡萄牙",
+      "people": 23,
+      "translated": 23,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39159"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "比利时",
+      "people": 23,
+      "translated": 23,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39059"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "美国",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39190"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "乌拉圭",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39161"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "韩国",
+      "people": 42,
+      "translated": 38,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39248"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "澳大利亚",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39260"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "佛得角",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39183"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "伊拉克",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39225"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "墨西哥",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39210"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "法国",
+      "people": 30,
+      "translated": 30,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39063"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "瑞士",
+      "people": 23,
+      "translated": 21,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39062"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "德国",
+      "people": 24,
+      "translated": 24,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39064"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "乌兹别克斯坦",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39226"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "南非",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39195"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "哥伦比亚",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39169"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "沙特阿拉伯",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39241"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "瑞典",
+      "people": 23,
+      "translated": 21,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39058"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "英格兰",
+      "people": 22,
+      "translated": 22,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39138"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "捷克",
+      "people": 23,
+      "translated": 21,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39141"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "奥地利",
+      "people": 23,
+      "translated": 23,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39061"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "厄瓜多尔",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39173"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "约旦",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39231"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "巴西",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39172"
+    },
+    {
+      "league": "世界杯国家队目录",
+      "team": "巴拉圭",
+      "people": 26,
+      "translated": 26,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39170"
+    },
+    {
+      "league": "五大联赛外的欧洲球队补充",
+      "team": "凯尔特人",
+      "people": 30,
+      "translated": 30,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38590"
+    },
+    {
+      "league": "五大联赛外的欧洲球队补充",
+      "team": "布鲁日",
+      "people": 31,
+      "translated": 29,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38662"
+    },
+    {
+      "league": "五大联赛外的欧洲球队补充",
+      "team": "埃因霍温",
+      "people": 33,
+      "translated": 33,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38751"
+    },
+    {
+      "league": "五大联赛外的欧洲球队补充",
+      "team": "波尔图",
+      "people": 36,
+      "translated": 34,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38936"
+    },
+    {
+      "league": "五大联赛外的欧洲球队补充",
+      "team": "加拉塔萨雷",
+      "people": 45,
+      "translated": 45,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38978"
+    },
+    {
+      "league": "五大联赛外的欧洲球队补充",
+      "team": "顿涅茨克矿工",
+      "people": 49,
+      "translated": 49,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39116"
+    },
+    {
+      "league": "五大联赛外的欧洲球队补充",
+      "team": "格拉茨风暴",
+      "people": 32,
+      "translated": 32,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38535"
+    },
+    {
+      "league": "五大联赛外的欧洲球队补充",
+      "team": "布拉格斯拉维亚",
+      "people": 48,
+      "translated": 47,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39065"
+    },
+    {
+      "league": "五大联赛外的欧洲球队补充",
+      "team": "费内巴切",
+      "people": 42,
+      "translated": 42,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38999"
+    },
+    {
+      "league": "五大联赛外的欧洲球队补充",
+      "team": "萨格勒布迪纳摩",
+      "people": 39,
+      "translated": 39,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39067"
+    },
+    {
+      "league": "五大联赛外的欧洲球队补充",
+      "team": "葡萄牙体育",
+      "people": 42,
+      "translated": 40,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38934"
+    },
+    {
+      "league": "五大联赛外的欧洲球队补充",
+      "team": "奥林匹亚科斯",
+      "people": 38,
+      "translated": 38,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39029"
+    },
+    {
+      "league": "五大联赛外的欧洲球队补充",
+      "team": "布拉格斯巴达",
+      "people": 42,
+      "translated": 29,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39083"
+    },
+    {
+      "league": "五大联赛外的欧洲球队补充",
+      "team": "费耶诺德",
+      "people": 33,
+      "translated": 33,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38749"
+    },
+    {
+      "league": "五大联赛外的欧洲球队补充",
+      "team": "圣吉罗斯",
+      "people": 33,
+      "translated": 33,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=39593"
+    },
+    {
+      "league": "五大联赛外的欧洲球队补充",
+      "team": "博多格林特",
+      "people": 30,
+      "translated": 30,
+      "source": "https://cbs.sports.cctv.cn/team.html?id=38939"
+    }
+  ],
+  "pending": [
+    {
+      "english": "Kadan Young",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=488312"
+    },
+    {
+      "english": "Sam Amissah",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=532507"
+    },
+    {
+      "english": "Nathanael James Kalembo",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=568409"
+    },
+    {
+      "english": "Matheus Franca",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=490679"
+    },
+    {
+      "english": "Mario Rivas",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=537089"
+    },
+    {
+      "english": "Diego Villalba",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=564717"
+    },
+    {
+      "english": "Oscar Lopez",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=539307"
+    },
+    {
+      "english": "Rayane Belaid",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=492107"
+    },
+    {
+      "english": "Pablo Garcia",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=535789"
+    },
+    {
+      "english": "Filippo Pagnucco",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=532506"
+    },
+    {
+      "english": "Augusto Owusu",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=532514"
+    },
+    {
+      "english": "Jon Rowe",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=485443"
+    },
+    {
+      "english": "Levente Kilvinger",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=568445"
+    },
+    {
+      "english": "Valerio Maccaroni",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=568444"
+    },
+    {
+      "english": "Mattia Sonzogni",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=564815"
+    },
+    {
+      "english": "Matteo Plaia",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=492140"
+    },
+    {
+      "english": "Marton Prettenhoffer",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=568437"
+    },
+    {
+      "english": "Daniel Fila",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=538476"
+    },
+    {
+      "english": "Jacob Ondrejka",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=467453"
+    },
+    {
+      "english": "Luca Erlein",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=535592"
+    },
+    {
+      "english": "Kenan Doganay",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=564718"
+    },
+    {
+      "english": "Dustin Buck",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=545370"
+    },
+    {
+      "english": "Tim Binder",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=564876"
+    },
+    {
+      "english": "Tiago Poller",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=568404"
+    },
+    {
+      "english": "Lion Wagenbach",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=568406"
+    },
+    {
+      "english": "Adnane Kharroubi",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=568484"
+    },
+    {
+      "english": "Djylian N'Guessan",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=534117"
+    },
+    {
+      "english": "Moussa Diarra",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=568510"
+    },
+    {
+      "english": "Everton Pereira",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=532420"
+    },
+    {
+      "english": "Joan Tincres",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=532352"
+    },
+    {
+      "english": "Zhicheng Jiang",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=560316"
+    },
+    {
+      "english": "Dongyang Sun",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=564877"
+    },
+    {
+      "english": "Shuyi Zhao",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=566879"
+    },
+    {
+      "english": "Feiyang Zhang",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=558331"
+    },
+    {
+      "english": "Xiwen Hu",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=561746"
+    },
+    {
+      "english": "Ka fai Wong",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=543752"
+    },
+    {
+      "english": "Xiaofeng Wang",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=487519"
+    },
+    {
+      "english": "Zeng Junhao",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=564676"
+    },
+    {
+      "english": "Lin Lei",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555756"
+    },
+    {
+      "english": "Shisen Li",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555736"
+    },
+    {
+      "english": "Zhicheng Tong",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555754"
+    },
+    {
+      "english": "Jie Wang",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=557127"
+    },
+    {
+      "english": "Yetong Cheng",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555718"
+    },
+    {
+      "english": "Yunyang Gong",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555751"
+    },
+    {
+      "english": "Yanxin Chen",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555767"
+    },
+    {
+      "english": "Huamao Li",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555758"
+    },
+    {
+      "english": "Maimaiti Yimulan",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=537297"
+    },
+    {
+      "english": "Li Xiaoheng",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=564800"
+    },
+    {
+      "english": "Deng Jiefu",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555449"
+    },
+    {
+      "english": "Ma Mingyang",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=564677"
+    },
+    {
+      "english": "Peicheng Zhao",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=561789"
+    },
+    {
+      "english": "Yanbin Wang",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=562401"
+    },
+    {
+      "english": "Qian Yuanfan",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=560315"
+    },
+    {
+      "english": "Xiong Jiajun",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555217"
+    },
+    {
+      "english": "Chen Shihan",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=536336"
+    },
+    {
+      "english": "Li Zhijun",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555213"
+    },
+    {
+      "english": "Wang Yueheng",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555215"
+    },
+    {
+      "english": "Weihao Shuai",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555156"
+    },
+    {
+      "english": "Li Zihao",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=561534"
+    },
+    {
+      "english": "Zheng Yiran",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=562188"
+    },
+    {
+      "english": "Wenjie You",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=531938"
+    },
+    {
+      "english": "Zhu Wenchuan",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=552019"
+    },
+    {
+      "english": "Yiheng Liu",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=521839"
+    },
+    {
+      "english": "Bo Li",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=557108"
+    },
+    {
+      "english": "Rong Jiahui",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=558899"
+    },
+    {
+      "english": "Wang Chaohui",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=557118"
+    },
+    {
+      "english": "Wu Fei",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555779"
+    },
+    {
+      "english": "Chen Hanyang",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=557117"
+    },
+    {
+      "english": "Tian Gao",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555733"
+    },
+    {
+      "english": "Yutong Fan",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555749"
+    },
+    {
+      "english": "Xie Jintian",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=537736"
+    },
+    {
+      "english": "Wang Tianai",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=558820"
+    },
+    {
+      "english": "Yu Duan",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555710"
+    },
+    {
+      "english": "Feng Jiang",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555722"
+    },
+    {
+      "english": "Shang Yu",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555727"
+    },
+    {
+      "english": "Sheriazat Mutanllip",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555730"
+    },
+    {
+      "english": "Mingxuan Zhang",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555735"
+    },
+    {
+      "english": "Gyo Cheol Gu",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555740"
+    },
+    {
+      "english": "Xiang Xu",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555741"
+    },
+    {
+      "english": "Yu Chen",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555744"
+    },
+    {
+      "english": "Quanshu Shen",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=537735"
+    },
+    {
+      "english": "Zhang",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=557138"
+    },
+    {
+      "english": "Mingyu Wu",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=563171"
+    },
+    {
+      "english": "Xiaohui Qu",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=350207"
+    },
+    {
+      "english": "Li Jianhui",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555717"
+    },
+    {
+      "english": "Jun Ma",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555723"
+    },
+    {
+      "english": "Shen Haodi",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555725"
+    },
+    {
+      "english": "Yinhan Min",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555732"
+    },
+    {
+      "english": "Chengchen Fu",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555734"
+    },
+    {
+      "english": "Lejiang Kang",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555747"
+    },
+    {
+      "english": "Uros Tomovic",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555715"
+    },
+    {
+      "english": "Hui Jin",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555726"
+    },
+    {
+      "english": "Chao Wang",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555729"
+    },
+    {
+      "english": "Ezimet Ekrem",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555731"
+    },
+    {
+      "english": "Yongze Chen",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=488272"
+    },
+    {
+      "english": "Chris Shimbayev",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555743"
+    },
+    {
+      "english": "Chenya Xiao",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555746"
+    },
+    {
+      "english": "Hongjun Xin",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555748"
+    },
+    {
+      "english": "Jiaming Zhang",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555766"
+    },
+    {
+      "english": "Ren Zhongda",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555742"
+    },
+    {
+      "english": "Bingyu Qi",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=551273"
+    },
+    {
+      "english": "Ziquan Wang",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=557123"
+    },
+    {
+      "english": "Elnizar Lohman",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=561470"
+    },
+    {
+      "english": "Gengrui Wang",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=557104"
+    },
+    {
+      "english": "Zhicheng Liu",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555790"
+    },
+    {
+      "english": "Junzhen Xue",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=557124"
+    },
+    {
+      "english": "Barak Braunshtain",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=466492"
+    },
+    {
+      "english": "Haiyang Fang",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=548669"
+    },
+    {
+      "english": "Jia Weiwei",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555786"
+    },
+    {
+      "english": "Mu Zihan",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=557112"
+    },
+    {
+      "english": "Yang Zhanpeng",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=557113"
+    },
+    {
+      "english": "Shiming Jin",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=560281"
+    },
+    {
+      "english": "Alexander Xie",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=560584"
+    },
+    {
+      "english": "Wang Tanyou",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555787"
+    },
+    {
+      "english": "Jun Liu",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555711"
+    },
+    {
+      "english": "Mewlan Jappar",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=557098"
+    },
+    {
+      "english": "Wang Kuan",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555781"
+    },
+    {
+      "english": "Tash Mustapa",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=488258"
+    },
+    {
+      "english": "Xinyang Yi",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=567616"
+    },
+    {
+      "english": "Ngan Cheuk Pan",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=532970"
+    },
+    {
+      "english": "Nemanja Andjelkovic",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=520565"
+    },
+    {
+      "english": "Zixian Wei",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=557099"
+    },
+    {
+      "english": "Yan Zhoubin",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=558075"
+    },
+    {
+      "english": "Ruicong Gong",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=561909"
+    },
+    {
+      "english": "Jingyao Cui",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=563164"
+    },
+    {
+      "english": "Ziyu Hu",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=567922"
+    },
+    {
+      "english": "Zhaolei Kuang",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=557107"
+    },
+    {
+      "english": "Yang Cong",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555780"
+    },
+    {
+      "english": "Kwong Siu-lai",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=564801"
+    },
+    {
+      "english": "Yifan Ge",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=488696"
+    },
+    {
+      "english": "Zhijian Xuan",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=537740"
+    },
+    {
+      "english": "Yuheng Wang",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555782"
+    },
+    {
+      "english": "Jiajin Hu",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=486184"
+    },
+    {
+      "english": "Tian Yifan",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555760"
+    },
+    {
+      "english": "Menghui Yu",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=561707"
+    },
+    {
+      "english": "Shaolin He",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=483196"
+    },
+    {
+      "english": "Dalong Xia",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=494692"
+    },
+    {
+      "english": "Boyang Zhao",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555771"
+    },
+    {
+      "english": "Yao Junyi",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=557121"
+    },
+    {
+      "english": "Nail Omerovic",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=498139"
+    },
+    {
+      "english": "Kristi Montgomery",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=502239"
+    },
+    {
+      "english": "Melih Kabasakal",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=340489"
+    },
+    {
+      "english": "Ilhan Fakili",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=516873"
+    },
+    {
+      "english": "Mexx Meerdink",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=496456"
+    },
+    {
+      "english": "Henry Heroki Mochizuki",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=500109"
+    },
+    {
+      "english": "Kota Tawaratsumida",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=494873"
+    },
+    {
+      "english": "Seung-wook Park",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=497289"
+    },
+    {
+      "english": "Hwang Jae-won",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=497291"
+    },
+    {
+      "english": "Jeong Ho-yeon",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=494875"
+    },
+    {
+      "english": "Lee Ho-Jae",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=500149"
+    },
+    {
+      "english": "Alvyn Sanches",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=496515"
+    },
+    {
+      "english": "Winsley Boteli",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=544202"
+    },
+    {
+      "english": "Hampus Hampus",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=515004"
+    },
+    {
+      "english": "Paulos Abraham",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=476245"
+    },
+    {
+      "english": "Matej Radosta",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=439411"
+    },
+    {
+      "english": "Martin Subert",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=518850"
+    },
+    {
+      "english": "Jessi Da Silva",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=568481"
+    },
+    {
+      "english": "Wisdom Mike",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=537134"
+    },
+    {
+      "english": "Dominik Prpic",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=495563"
+    },
+    {
+      "english": "Mateus Mide",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=568214"
+    },
+    {
+      "english": "Neil Glossoa",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=535708"
+    },
+    {
+      "english": "Rodrigo Rodrigues",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=541372"
+    },
+    {
+      "english": "Paulo Cardoso",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=568179"
+    },
+    {
+      "english": "Daniel Kerl",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=546334"
+    },
+    {
+      "english": "Sebastian Zajac",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=555920"
+    },
+    {
+      "english": "Lukas Franc",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=558360"
+    },
+    {
+      "english": "Jakub Martinec",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=425471"
+    },
+    {
+      "english": "Petr Hodous",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=544557"
+    },
+    {
+      "english": "Tobias Kvalvagnes Guddal",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=501955"
+    },
+    {
+      "english": "Viktor Tamas Vitalyos",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=505881"
+    },
+    {
+      "english": "Sebastian Pech",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=556911"
+    },
+    {
+      "english": "Jonatan Braut Brunes",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=350162"
+    },
+    {
+      "english": "Matyas Vojta",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=505483"
+    },
+    {
+      "english": "Ebrima Singhateh",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=544037"
+    },
+    {
+      "english": "Kevin Prince Milla",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=535916"
+    },
+    {
+      "english": "Ondrej Penxa",
+      "source": "https://cbs.sports.cctv.cn/player.html?id=551985"
+    }
+  ]
+}

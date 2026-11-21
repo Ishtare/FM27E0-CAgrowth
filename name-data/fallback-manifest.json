@@ -1,0 +1,19 @@
+{
+  "version": "1.1.12",
+  "source": "User-authorized read of the same-project person-name translation work; original data ownership retained",
+  "source_read_only_sha256": {
+    "NameDictionary.cs": "e466da6e1b5c719f6955419d37d556135c6fc33ba2b9d4ab75f260fcd58cf1ca",
+    "PhoneticEngine.cs": "fe6c43be1538c1ea8b7a49c9f69a4a728ed19d2e7707c38557b212fa1ec60e4d",
+    "contexts.tsv": "5d5804292fcbcf6a1e3f769cbaffec73eba559bab0b6347e925e066b47d39da0",
+    "countries.tsv": "df875ff993376ffa23a8e877882db23d429cb296df6c6353909ee7443b79780a",
+    "manifest.json": "abcc0b5ca7c323e0755ce8953fb67e89b66786c773227f52350a01584b15e7d5",
+    "words.tsv": "45aad7c76b33be8e5e8dc726e02716e6f5e085ac44a25b6a850575ff1327e9b5"
+  },
+  "full_word_rows": 506169,
+  "full_context_rows": 91482,
+  "full_gzip_bytes": 5476786,
+  "full_sha256": "0025d5a40bcdc0614febc02056fe5115def5e4ce0c49b4e19e091ffa5d2a63f5",
+  "engine": "managed-rules-0.2.0; display/search only, no game hooks or native phonetic library",
+  "embedded_resource": "FM27E0.name-bank.gz",
+  "format": "FMEDITOR-NAMES-1, gzip, lossless country/word/context TSVs"
+}

@@ -1,0 +1,20 @@
+CA calculation and FM27 save format references
+
+ChoreaW published the positional weights, correction procedure and worked examples for the pre-game editor.
+https://www.playgm.cc/thread-986285-1-1.html
+
+The C# implementation adapts the positional data and numerical model from FM27 Scout.
+The save reader uses its descriptions of FM27 containers, player records and person identities.
+Revision 7fb12175f59b4d41b4418bf0378c3855a5bab4bd
+https://github.com/shlk20/fm27-scout-code/tree/7fb12175f59b4d41b4418bf0378c3855a5bab4bd
+Copyright (c) 2026 FM27 Scout contributors. See FM27-Scout-LICENSE.txt (MIT).
+
+Local FM27 database reads were checked against the installed 2700 file layout.
+The fm-data format notes describe the Zstandard framing in people_db.dat.
+https://github.com/nottatdat/fm-data/blob/master/tools/fmdb.py
+
+Zstandard v1.5.7 is used to read the installed database and user-selected early saves.
+The x64 libzstd.dll is from the upstream zstd-v1.5.7-win64.zip.
+https://github.com/facebook/zstd/releases/tag/v1.5.7
+Upstream ZIP SHA-256 acb4e8111511749dc7a3ebedca9b04190e37a17afeb73f55d4425dbf0b90fad9
+See Zstandard-LICENSE.txt (BSD).

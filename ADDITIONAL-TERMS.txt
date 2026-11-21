@@ -1,0 +1,17 @@
+FM27€0 - additional terms under section 7 of the GNU General Public License v3
+
+FM27€0 is licensed under the GNU GPL v3 or any later version (see LICENSE), with
+these additional terms, as section 7(b) and 7(c) of the GPL allow. They apply to the
+program and to every version made from it.
+
+1. Attribution (section 7(b)). Keep the notice "Original by Anze Alexander" and the
+   link to the original download page visible in the program's main window, as the
+   original does.
+
+2. Name and origin (section 7(c)). A modified version must not be called "FM27€0"
+   or present itself as the original. Either give it a different name, or show clearly
+   in its name and main window that it is a modified version (for example
+   "FM27€0 - modified by <name>").
+
+The original download page is:
+https://sortitoutsi.net/content/78059/fm27eur0-v100-live-editor-for-fm27

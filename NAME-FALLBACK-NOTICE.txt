@@ -1,0 +1,12 @@
+FM27 Automatic Chinese Person Names 0.2.0
+Copyright (c) 2026. Authored for the user of this workspace.
+
+The authored C# source in this package is free software: you may redistribute
+and/or modify it under the GNU General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your option)
+any later version. It is provided without any warranty. See COPYING-GPL3.txt.
+
+The GPL notice applies to the authored plugin source, not to the user's
+Football Manager database/name translations, save, or separate upstream
+components. Existing upstream licenses remain applicable to those components.
+This is a community candidate, not an official SI/SEGA release.

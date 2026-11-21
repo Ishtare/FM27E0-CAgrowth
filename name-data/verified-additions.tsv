@@ -1,0 +1,6 @@
+# 单独核实的姓名对照。8435089 为已核对的 FM UID，不是央视目录编号。
+# 生日身份另见 https://worldcup.cctv.com/2022/12/19/ARTIla96WkxuClUigz4cs4e1221219.shtml
+# UID 对照要求原名同时匹配；无对应 UID 时，第二条只用完整英文姓名和生日，不用姓氏单独识别人物。
+uid	english	birth_date	chinese	aliases	source
+8435089	Karim Benzema|Benzema	1987-12-19	本泽马	卡里姆·本泽马	https://www.news.cn/photo/2022-12/26/c_1129232660_6.htm
+0	Karim Benzema	1987-12-19	本泽马	卡里姆·本泽马	https://worldcup.cctv.com/2022/12/19/ARTIla96WkxuClUigz4cs4e1221219.shtml
