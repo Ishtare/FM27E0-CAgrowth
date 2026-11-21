@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
@@ -94,6 +95,71 @@ namespace Fm24Editor
                     button.Text+" resumes blue with white text when enabled");
             }
             finally {button.Enabled=original;}
+        }
+
+        static void CheckFinderRoutes(Action<bool,string> check,TabControl tabs,int finderPage,int profilePage,
+            object person,ListBox profileList,string searchName,string openName)
+        {
+            SelectPage(tabs,finderPage);
+            var page=tabs.SelectedTab;
+            var grid=page.Controls.OfType<WorkspaceGrid>().Single();
+            var search=(Button)Named(page,searchName);
+            var open=(Button)Named(page,openName);
+            check(!open.Enabled && open.TabStop && open.Text=="打开资料",openName+" is a keyboard-reachable action for selected rows");
+            search.Enabled=false;
+            int row=grid.Rows.Add(person.ToString());
+            grid.Rows[row].Tag=person;
+            grid.CurrentCell=grid.Rows[row].Cells[0];
+            grid.Rows[row].Selected=true;
+            check(!open.Enabled,openName+" waits until the result list finishes loading");
+            search.Enabled=true;
+            check(open.Enabled,openName+" becomes available for the selected result");
+
+            typeof(Button).GetMethod("OnClick",Private).Invoke(open,new object[]{EventArgs.Empty});
+            check(tabs.SelectedIndex==profilePage && profileList.SelectedItem==person,openName+" opens the existing profile for the selected row");
+            SelectPage(tabs,finderPage);
+            bool handled=(bool)typeof(WorkspaceGrid).GetMethod("ProcessDialogKey",Private).Invoke(grid,new object[]{Keys.Enter});
+            check(handled && tabs.SelectedIndex==profilePage && profileList.SelectedItem==person,openName+" opens the same profile on Enter");
+            SelectPage(tabs,finderPage);
+            typeof(DataGridView).GetMethod("OnCellDoubleClick",Private).Invoke(grid,new object[]{new DataGridViewCellEventArgs(0,row)});
+            check(tabs.SelectedIndex==profilePage && profileList.SelectedItem==person,openName+" shares the original double-click route");
+            SelectPage(tabs,finderPage);
+            grid.Rows.Clear();
+            check(!open.Enabled,openName+" is disabled when old results are cleared");
+        }
+
+        static void CheckRegistrationNavigation(Action<bool,string> check,MainForm form,TabControl workspace)
+        {
+            SelectPage(workspace,7);
+            var scopes=(TabControl)Named(form,"RegistrationScopeTabs");
+            SelectPage(scopes,1);
+            check(scopes.SelectedTab.Controls.Find("RegistrationPlayerPicker",true).Length==0 &&
+                Named(scopes.SelectedTab,"LeagueRuleScope").Text.Contains("影响所有参赛球队"),
+                "the competition scope page keeps player controls out and explains the effect of a write");
+            var reload=(Button)Named(form,"RegistrationReload");
+            typeof(Button).GetMethod("OnClick",Private).Invoke(reload,new object[]{EventArgs.Empty});
+            var refreshed=(TabControl)Named(form,"RegistrationScopeTabs");
+            check(refreshed!=scopes && refreshed.SelectedIndex==1,"reloading rebuilds the data in the currently selected competition scope");
+            SelectPage(refreshed,0);
+            typeof(Button).GetMethod("OnClick",Private).Invoke(reload,new object[]{EventArgs.Empty});
+            refreshed=(TabControl)Named(form,"RegistrationScopeTabs");
+            check(refreshed.SelectedIndex==0 && Named(refreshed,"RegistrationPlayerPicker").Parent==refreshed.SelectedTab,
+                "reloading the personal scope preserves its page and player picker");
+
+            using(var league=new TabPage())
+            using(var fixture=new FmProcess())
+            {
+                var competitions=new List<EligibilityCompetition>{
+                    new EligibilityCompetition{Name="赛事甲",Uid=1,Address=0x10000},
+                    new EligibilityCompetition{Name="赛事乙",Uid=2,Address=0x20000}};
+                typeof(MainForm).GetMethod("BuildLeagueEligibility",Private).Invoke(form,new object[]{league,fixture,competitions,0UL,form});
+                var selection=(ComboBox)Named(league,"LeagueCompetition");
+                var notice=Named(league,"LeagueRuleScope");
+                check(notice.Text.Contains("赛事甲 [1]"),"the competition scope identifies the initial selection");
+                selection.SelectedIndex=1;
+                check(notice.Text.Contains("赛事乙 [2]") && notice.Text.Contains("影响所有参赛球队"),
+                    "the competition scope updates the selected identity without changing the write scope");
+            }
         }
 
         public static void Run(Action<bool,string> check)
@@ -212,6 +278,7 @@ namespace Fm24Editor
                     CheckSearchGap(check,form,"txtSquadClubSearch","lstSquadClubs");
 
                     SelectPage(tabs,7);
+                    SelectPage(scopes,0);
                     var registrationActions=Named(form,"RegistrationActions");
                     var playerPicker=Named(form,"RegistrationPlayerPicker");
                     CheckToolbar(check,registrationActions,"registration actions "+size,registrationActions.Controls.Cast<Control>().ToArray());
@@ -230,6 +297,11 @@ namespace Fm24Editor
                     }
                     var growthActions=Named(form,"GrowthActions");
                     CheckToolbar(check,growthActions,"growth actions "+size,growthActions.Controls.Cast<Control>().ToArray());
+                    var commands=Named(form,"GrowthCommandBar");
+                    var singleActions=Named(form,"GrowthSingleActions");
+                    CheckToolbar(check,commands,"growth command groups "+size,singleActions,growthActions);
+                    check(Named(form,"GrowthEditPlayer").Parent==singleActions && Named(form,"GrowthStartStop").Parent==growthActions,
+                        "player and whole-queue commands are visibly separate at "+size);
                     var scopeToolbar=Named(form,"GrowthScopeToolbar");
                     CheckToolbar(check,scopeToolbar,"growth scope "+size,scopeToolbar.Controls.Cast<Control>().ToArray());
                     CheckSearchGap(check,form,"txtGrowClubSearch","lstGrowClubs");
@@ -321,11 +393,20 @@ namespace Fm24Editor
                     dialog.ClientSize=new Size(570,420);
                     var handle=dialog.Handle;
                     dialog.PerformLayout();
+                    SelectPage(scope,0);
                     var picker=Named(dialog,"RegistrationPlayerPicker");
                     CheckContained(check,picker,"compact registration picker",picker.Controls.Cast<Control>().ToArray());
                     var close=Named(dialog,"CloseRegistrationCenter");
-                    CheckContained(check,dialog,"compact registration dialog",close,picker.Parent);
+                    CheckContained(check,dialog,"compact registration dialog",close,scope.Parent);
+                    check(picker.Parent==scope.SelectedTab,"the compact dialog places the picker inside its personal tab");
                 }
+                var finderPlayer=new Player {Uid=901151,Name="Finder Test Player"};
+                Field<List<Player>>(form,"players").Add(finderPlayer);
+                CheckFinderRoutes(check,tabs,5,0,finderPlayer,Field<ListBox>(form,"lstPlayers"),"SearchPlayers","OpenPlayerFinderResult");
+                var finderStaff=new Staff {Uid=901152,Name="Finder Test Staff"};
+                Field<List<Staff>>(form,"staff").Add(finderStaff);
+                CheckFinderRoutes(check,tabs,6,1,finderStaff,Field<ListBox>(form,"lstStaff"),"SearchStaff","OpenStaffFinderResult");
+                CheckRegistrationNavigation(check,form,tabs);
             }
         }
     }

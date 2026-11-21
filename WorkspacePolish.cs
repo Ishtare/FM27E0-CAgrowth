@@ -9,6 +9,7 @@ namespace Fm24Editor
     sealed class WorkspaceGrid : DataGridView
     {
         static readonly Color FrameColor=Color.FromArgb(194,204,217);
+        internal Func<bool> OpenSelectedResult { get; set; }
 
         public WorkspaceGrid()
         {
@@ -23,6 +24,15 @@ namespace Fm24Editor
                 ControlPaint.DrawBorder(e.Graphics,ClientRectangle,SystemInformation.HighContrast?SystemColors.WindowFrame:FrameColor,
                     ButtonBorderStyle.Solid);
         }
+
+        protected override bool ProcessDialogKey(Keys keyData)
+        {return OpenResultOnEnter(keyData) || base.ProcessDialogKey(keyData);}
+
+        protected override bool ProcessDataGridViewKey(KeyEventArgs e)
+        {return OpenResultOnEnter(e.KeyData) || base.ProcessDataGridViewKey(e);}
+
+        bool OpenResultOnEnter(Keys key)
+        {return key==Keys.Enter && OpenSelectedResult!=null && OpenSelectedResult();}
     }
 
     partial class MainForm
@@ -178,6 +188,32 @@ namespace Fm24Editor
         {
             bar.BackColor=Color.FromArgb(247,249,252);bar.Padding=new Padding(10,4,10,4);
             StyleButton(search,true);search.Text="搜索名单";search.AutoSize=true;search.Width=110;
+        }
+
+        void AddFinderOpenButton<T>(FlowLayoutPanel bar,Button search,WorkspaceGrid results,string name,Action<T> open) where T:class
+        {
+            var button=new Button{Name=name,Text="打开资料",AutoSize=true,Width=100,Enabled=false};
+            StyleButton(button);bar.Controls.Add(button);
+            Func<T> selected=()=>results.CurrentRow!=null && results.CurrentRow.Selected?results.CurrentRow.Tag as T:null;
+            Action update=()=>button.Enabled=search.Enabled && selected()!=null;
+            results.CurrentCellChanged+=delegate{update();};
+            results.SelectionChanged+=delegate{update();};
+            results.RowsRemoved+=delegate{update();};
+            search.EnabledChanged+=delegate{update();};
+            results.OpenSelectedResult=()=>
+            {
+                var item=selected();
+                if(!button.Enabled || item==null)return false;
+                open(item);
+                return true;
+            };
+            button.Click+=delegate{results.OpenSelectedResult();};
+            results.CellDoubleClick+=(sender,args)=>
+            {
+                if(args.RowIndex<0)return;
+                var item=results.Rows[args.RowIndex].Tag as T;
+                if(item!=null)open(item);
+            };
         }
     }
 }

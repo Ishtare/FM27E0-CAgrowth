@@ -112,6 +112,16 @@ namespace Fm24Editor
             RefreshLocalClub(first);
             PerformanceMaintenanceTests.PumpUntil(()=>!rosterRefreshing);
             check(growWatch.Count==2 && growWatch.Values.Any(t=>t.P.Club==como.Addr),"refreshing one club preserves the other club's selection");
+            gridGrow.CurrentCell=row(102).Cells[1];
+            ClickGrowthTestButton(btnViewGrowthQueue);
+            gridGrow.CurrentCell=row(100).Cells[1];
+            ClickGrowthTestButton(btnBrowseGrowthClubs);
+            check(GrowthSelectedUid()==102 && txtGrowPlayerSearch.Text=="#102" && checkedGrowthClubs.Count==2,
+                "switching back restores the browsing selection and keeps both checked clubs");
+            ClickGrowthTestButton(btnViewGrowthQueue);
+            check(GrowthSelectedUid()==100 && visible().SequenceEqual(new[]{100,102}) && growWatch.Count==2,
+                "the queue restores its own selection with both enrolled players");
+            ClickGrowthTestButton(btnBrowseGrowthClubs);
             pick(first,false);pick(como,false);
             check(gridGrow.Rows.Count==0 && growWatch.Count==2,"clearing every club filter leaves both players enrolled");
             ClickGrowthTestButton(btnViewGrowthQueue);txtGrowPlayerSearch.Text="科莫";

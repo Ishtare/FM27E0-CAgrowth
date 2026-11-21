@@ -52,17 +52,19 @@ namespace Fm24Editor
                 AutoSize=true,Anchor=AnchorStyles.Left,Margin=new Padding(0,0,12,0)});
             lblGrow.Dock=DockStyle.None;lblGrow.AutoSize=true;lblGrow.Anchor=AnchorStyles.Left;
             lblGrow.Padding=Padding.Empty;lblGrow.ForeColor=UiMuted;title.Controls.Add(lblGrow);
-            growButtons=WrappingBar("GrowthActions");
             cmbGrowSpeed.Name="GrowthSpeed";cmbGrowSpeed.Width=90;cmbGrowSpeed.Margin=new Padding(3,4,8,4);
             for(int g=2;g<=10;g++)cmbGrowSpeed.Items.Add(g+" 倍");cmbGrowSpeed.SelectedIndex=2;
-            growButtons.Controls.Add(FieldGroup(FieldLabel("速度"),cmbGrowSpeed));
             var fill=new Button{Name="GrowthFillToPa",Text="直接到 PA",Width=100};StyleButton(fill);StyleButton(btnGrowEdit);StyleButton(btnGrowToggle,true);btnGrowToggle.Width=144;btnGrowToggle.Name="GrowthStartStop";
             StyleButton(btnGrowOptimize);
-            foreach(var button in new[]{btnGrowEdit,btnGrowOptimize,fill,btnGrowToggle})
-            {
-                button.AutoSize=true;
-                growButtons.Controls.Add(button);
-            }
+            foreach(var button in new[]{btnGrowEdit,btnGrowOptimize,fill,btnGrowToggle})button.AutoSize=true;
+            var singleActions=FieldGroup(FieldLabel("单人设置"),btnGrowEdit,btnGrowOptimize);
+            singleActions.Name="GrowthSingleActions";
+            growButtons=FieldGroup(FieldLabel("批量动作"),FieldLabel("速度"),cmbGrowSpeed,fill,btnGrowToggle);
+            growButtons.Name="GrowthActions";
+            var commands=WrappingBar("GrowthCommandBar");
+            commands.Dock=DockStyle.Bottom;
+            commands.Controls.Add(singleActions);
+            commands.Controls.Add(growButtons);
             splitGrow=new SplitContainer{Dock=DockStyle.Fill,Size=new Size(1100,500),SplitterWidth=5,FixedPanel=FixedPanel.Panel1,SplitterDistance=194};
             lstGrowClubs.BorderStyle=BorderStyle.FixedSingle;lstGrowClubs.HorizontalScrollbar=true;splitGrow.Panel1.Padding=new Padding(0,0,8,0);
             splitGrow.Panel1.Controls.Add(lstGrowClubs);splitGrow.Panel1.Controls.Add(growthClubChecks);
@@ -103,8 +105,8 @@ namespace Fm24Editor
             WrapDockedLabel(growthHint);
             root.Controls.Add(splitGrow);
             root.Controls.Add(growthHint);
+            root.Controls.Add(commands);
             root.Controls.Add(views);
-            root.Controls.Add(growButtons);
             root.Controls.Add(title);
             page.Controls.Add(root);
             ConnectGrowthEditor(growEditor);
@@ -200,11 +202,19 @@ namespace Fm24Editor
         static long DayKey(uint v) { return FromPacked(GrowthStep.DayOnly(v)).Ticks / TimeSpan.TicksPerDay; }
 
         void LoadGrow()
+        {LoadGrowthRows(GrowthSelectedUid());}
+
+        int GrowthSelectedUid()
+        {
+            var player=gridGrow.CurrentRow==null?null:gridGrow.CurrentRow.Tag as Player;
+            return player==null?0:player.Uid;
+        }
+
+        void LoadGrowthRows(int selectedUid)
         {
             if(RosterPageHidden(growPage)){growthRosterDirty=true;return;}
             growthRosterDirty=false;
             growthValuesDirty=false;
-            int selectedUid=gridGrow.CurrentRow!=null && gridGrow.CurrentRow.Tag is Player?((Player)gridGrow.CurrentRow.Tag).Uid:0;
             growFilling=true;
             try
             {
@@ -347,7 +357,7 @@ namespace Fm24Editor
             lblGrow.Text=(growOn?"成长中":"已暂停")+" · 当前显示 "+gridGrow.Rows.Count+" 人";
             btnViewGrowthQueue.Text="已选培养名单（"+growWatch.Count+"）";
             if(showGrowthQueue)
-                growthHint.Text=growWatch.Count==0?"培养名单为空。在“按俱乐部选人”中勾选球员。":
+                growthHint.Text=growWatch.Count==0?"培养名单为空。在“浏览筛选”中勾选球员。":
                     gridGrow.Rows.Count==0?"当前搜索没有匹配的已选球员。清空搜索可查看全部。":"开始成长将处理整份名单，每名球员使用自己的培养方案。";
             else growthHint.Text=growthMultiClub.Checked?"已选 "+checkedGrowthClubs.Count+" 家俱乐部。勾选球员即可加入培养名单。":"可切换俱乐部继续勾选球员，也可开启“多选俱乐部”合并浏览。";
             if(growPage!=null)growPage.Text=growWatch.Count==0?"CA 成长":"CA 成长（"+growWatch.Count+"）";
@@ -565,7 +575,8 @@ namespace Fm24Editor
         void SetGrowControlsLocked(bool locked)
         {
             foreach (Control c in growButtons.Controls)
-                if (c != btnGrowToggle && c != btnGrowEdit) c.Enabled = !locked;
+                if (c != btnGrowToggle) c.Enabled = !locked;
+            btnGrowOptimize.Enabled=!locked;
             btnGrowAll.Enabled = btnGrowNone.Enabled = !locked && fm != null && gridGrow.Rows.Count > 0;
             BindGrowthEditor();
             btnGrowToggle.Enabled = true;

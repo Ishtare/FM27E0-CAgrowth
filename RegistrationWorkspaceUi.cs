@@ -44,13 +44,21 @@ namespace Fm24Editor
             var reload=new Button{Name="RegistrationReload",Text="读取报名资料",Width=130};var window=new Button{Name="LeagueRegistrationButton",Text="独立窗口…",Width=110};StyleButton(reload,true);StyleButton(window);bar.Controls.Add(reload);bar.Controls.Add(window);
             bar.Controls.Add(new Label{Text="球员当季资格与赛事名额在同一处管理",AutoSize=true,ForeColor=UiMuted,Padding=new Padding(8,8,0,0)});
             registrationHost=new Panel{Name="RegistrationWorkspace",Dock=DockStyle.Fill};registration.Controls.Add(registrationHost);registration.Controls.Add(bar);page.Controls.Add(tabs);
-            reload.Click+=delegate{RefreshRegistrationWorkspace();};window.Click+=delegate{OpenRegistrationCenter(true);};RefreshRegistrationWorkspace();
+            reload.Click+=delegate{RefreshRegistrationWorkspace();};
+            window.Click+=delegate{OpenRegistrationCenter(PreferPersonalRegistrationPage());};
+            RefreshRegistrationWorkspace();
+        }
+        bool PreferPersonalRegistrationPage()
+        {
+            var scopes=registrationHost.Controls.Find("RegistrationScopeTabs",true).FirstOrDefault() as TabControl;
+            return scopes==null || scopes.SelectedIndex!=1;
         }
         void RefreshRegistrationWorkspace()
         {
             if(registrationHost==null)return;
+            bool preferPlayer=PreferPersonalRegistrationPage();
             foreach(Control old in registrationHost.Controls.Cast<Control>().ToArray()){registrationHost.Controls.Remove(old);old.Dispose();}
-            registrationHost.Controls.Add(BuildRegistrationContent(this,true));PolishWorkspace(registrationHost);
+            registrationHost.Controls.Add(BuildRegistrationContent(this,preferPlayer));PolishWorkspace(registrationHost);
         }
         Control BuildRegistrationContent(Form owner,bool preferPlayer)
         {
@@ -75,20 +83,23 @@ namespace Fm24Editor
             var read=new Button{Name="RegistrationPlayerReload",Text="重新读取",AutoSize=true,Enabled=supported};
             StyleButton(read);picker.Controls.Add(search,1,0);picker.Controls.Add(playerChoice,2,0);picker.Controls.Add(read,3,0);
             var tabs=new TabControl{Name="RegistrationScopeTabs",Dock=DockStyle.Fill};var personal=new TabPage("球员当季资格"){Name="PersonalEligibilityPage",Padding=new Padding(8)};var league=new TabPage("赛事名额与培养"){Name="CompetitionEligibilityPage",Padding=new Padding(8)};tabs.TabPages.Add(personal);tabs.TabPages.Add(league);
-            root.Controls.Add(tabs);root.Controls.Add(picker);
+            var personalContent=new Panel{Name="PersonalEligibilityContent",Dock=DockStyle.Fill};
+            personal.Controls.Add(personalContent);
+            personal.Controls.Add(picker);
+            root.Controls.Add(tabs);
             Action showEmpty=()=>
             {
-                foreach(Control child in personal.Controls.Cast<Control>().ToArray()){personal.Controls.Remove(child);child.Dispose();}
-                personal.Controls.Add(new Label{Name="PersonalEligibilityEmpty",Dock=DockStyle.Fill,Padding=new Padding(16),ForeColor=UiMuted,Text=supported?"按中文、英文或 UID 搜索并选择球员。\n\n球员登记、该国已核实的历史状态与赛事人数分别显示作用范围。选择赛事规则页可查看联赛的非欧、外援、报名总人数和培养要求。":unavailable});
+                foreach(Control child in personalContent.Controls.Cast<Control>().ToArray()){personalContent.Controls.Remove(child);child.Dispose();}
+                personalContent.Controls.Add(new Label{Name="PersonalEligibilityEmpty",Dock=DockStyle.Fill,Padding=new Padding(16),ForeColor=UiMuted,Text=supported?"按中文、英文或 UID 搜索并选择球员。\n\n球员登记、该国已核实的历史状态与赛事人数分别显示作用范围。选择赛事规则页可查看联赛的非欧、外援、报名总人数和培养要求。":unavailable});
             };
             bool changing=false;
             Action loadPlayer=()=>
             {
                 if(changing)return;var player=playerChoice.SelectedItem as Player;
                 if(!supported || player==null){showEmpty();return;}
-                foreach(Control child in personal.Controls.Cast<Control>().ToArray()){personal.Controls.Remove(child);child.Dispose();}
-                try{BuildPersonalEligibility(personal,attached,player,owner);}catch(Exception ex){personal.Controls.Add(new Label{Dock=DockStyle.Fill,Padding=new Padding(16),Text=ex.Message,ForeColor=UiMuted});}
-                PolishWorkspace(personal);
+                foreach(Control child in personalContent.Controls.Cast<Control>().ToArray()){personalContent.Controls.Remove(child);child.Dispose();}
+                try{BuildPersonalEligibility(personalContent,attached,player,owner);}catch(Exception ex){personalContent.Controls.Add(new Label{Dock=DockStyle.Fill,Padding=new Padding(16),Text=ex.Message,ForeColor=UiMuted});}
+                PolishWorkspace(personalContent);
             };
             search.TextChanged+=delegate
             {
@@ -105,10 +116,15 @@ namespace Fm24Editor
                 BuildLeagueEligibility(league,attached,EligibilityCompetitions(attached),team,owner);
                 if(loadedPlayer!=null){playerChoice.Items.Add(loadedPlayer);playerChoice.SelectedIndex=0;}else showEmpty();
             }
-            else{showEmpty();league.Controls.Add(new Label{Dock=DockStyle.Fill,Padding=new Padding(16),Text=unavailable,ForeColor=UiMuted});}
+            else
+            {
+                showEmpty();
+                league.Controls.Add(new Label{Name="LeagueRuleScope",Dock=DockStyle.Fill,Padding=new Padding(16),UseMnemonic=false,
+                    Text=LeagueScope(null)+"\r\n\r\n"+unavailable,ForeColor=UiMuted});
+            }
             tabs.SelectedIndex=preferPlayer?0:1;return root;
         }
-        void BuildPersonalEligibility(TabPage page,FmProcess attached,Player player,Form owner)
+        void BuildPersonalEligibility(Control page,FmProcess attached,Player player,Form owner)
         {
             if(fm!=attached)throw new InvalidOperationException("游戏连接已变化，请重新读取报名资料。");
             player=RefreshSelectedPlayer(player);

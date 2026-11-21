@@ -21,6 +21,11 @@ namespace Fm24Editor
                 :"这是人数上限。提高人数可放宽；设为 0 表示零名额。快捷按钮填入 1000 人，仍需点击应用，不会删除整套赛事规则。";
         }
 
+        static string LeagueScope(EligibilityCompetition contest)
+        {
+            return "所选赛事："+(contest==null?"尚未选择":contest.ToString())+"\r\n修改影响所有参赛球队。";
+        }
+
         void BuildLeagueEligibility(TabPage page,FmProcess attached,List<EligibilityCompetition> competitions,ulong team,Form dialog)
         {
             var layout=new TableLayoutPanel {Name="LeagueEligibilityForm",AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,
@@ -28,7 +33,8 @@ namespace Fm24Editor
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             foreach(float height in new[]{36f,44f,110f,150f})layout.RowStyles.Add(new RowStyle(SizeType.Absolute,height));
-            var note=new Label {AutoSize=true,Dock=DockStyle.Fill,Text="作用范围：所选赛事的所有球队。可调整非欧、外援、培养要求和报名总人数。\r\n球员当季认定和登记请切换到“球员当季资格”。工作许可和特殊条款分别判断。\r\n支持按中文、英文名称或 UID 查找已加载赛事。",UseMnemonic=false};
+            const string guidance="可调整非欧、外援、培养要求和报名总人数。\r\n球员当季认定和登记请切换到“球员当季资格”。工作许可和特殊条款分别判断。\r\n支持按中文、英文名称或 UID 查找已加载赛事。";
+            var note=new Label {Name="LeagueRuleScope",AutoSize=true,Dock=DockStyle.Fill,Text=LeagueScope(null)+"\r\n"+guidance,UseMnemonic=false};
             layout.Controls.Add(note,0,0);
             var selector=new TableLayoutPanel {Dock=DockStyle.Fill,ColumnCount=3,RowCount=1,Margin=Padding.Empty};
             selector.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,82));selector.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,145));selector.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
@@ -78,6 +84,7 @@ namespace Fm24Editor
             {
                 changing=true;ruleType.Items.Clear();overview.Clear();
                 var competition=selected.SelectedItem as EligibilityCompetition;
+                note.Text=LeagueScope(competition)+"\r\n"+guidance;
                 if(competition!=null)
                 {
                     try{overview.Text=LeagueEligibilitySnapshot.Overview(attached.Read,attached.Base,competition);}

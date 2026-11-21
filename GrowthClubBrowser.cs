@@ -9,7 +9,7 @@ namespace Fm24Editor
 {
     partial class MainForm
     {
-        readonly Button btnBrowseGrowthClubs=new Button{Name="GrowthBrowseClubs",Text="按俱乐部选人",Width=130};
+        readonly Button btnBrowseGrowthClubs=new Button{Name="GrowthBrowseClubs",Text="浏览筛选",Width=130};
         readonly Button btnViewGrowthQueue=new Button{Name="GrowthViewQueue",Text="已选培养名单（0）",AutoSize=true,MinimumSize=new Size(160,32)};
         readonly Button btnRemoveGrowthPlayer=new Button{Name="GrowthRemovePlayer",Text="移出此球员",Width=105};
         readonly CheckBox growthMultiClub=new CheckBox{Name="GrowthMultiClub",Text="多选俱乐部",Dock=DockStyle.Top,Height=28};
@@ -20,7 +20,7 @@ namespace Fm24Editor
         Control growthScopeToolbar;
         bool showGrowthQueue,switchingGrowthView,growthFilterReloadPosted;
         string browsePlayerQuery="",combinedGrowthScopeKey="";
-        int combinedGrowthLoan;
+        int browsePlayerUid,queuePlayerUid,combinedGrowthLoan;
 
         static long GrowthClubKey(Club club)
         {
@@ -77,10 +77,16 @@ namespace Fm24Editor
         void SwitchGrowthView(bool queue)
         {
             if(showGrowthQueue==queue)return;
+            int currentUid=GrowthSelectedUid();
+            if(showGrowthQueue)queuePlayerUid=currentUid;
+            else
+            {
+                browsePlayerQuery=txtGrowPlayerSearch.Text;
+                browsePlayerUid=currentUid;
+            }
             switchingGrowthView=true;
             try
             {
-                if(queue)browsePlayerQuery=txtGrowPlayerSearch.Text;
                 showGrowthQueue=queue;
                 splitGrow.Panel1Collapsed=queue;
                 growthScopeToolbar.Visible=!queue;
@@ -92,7 +98,9 @@ namespace Fm24Editor
                 UpdateGrowthColumns();
             }
             finally{switchingGrowthView=false;}
-            LoadGrow();LayoutGrowthWorkspace();
+            int restoreUid=queue?queuePlayerUid:browsePlayerUid;
+            LoadGrowthRows(restoreUid==0?currentUid:restoreUid);
+            LayoutGrowthWorkspace();
         }
 
         void UpdateGrowthColumns()

@@ -1977,7 +1977,7 @@ CurrentDateRva = 0x56237C8
         // Grey hint text shown while the box is empty (EM_SETCUEBANNER)
         static void SetHint(TextBox t, string hint) { SendMessage(t.Handle, 0x1501, (IntPtr)1, hint); }
 
-        static DataGridView NewGrid()
+        static WorkspaceGrid NewGrid()
         {
             var g = new WorkspaceGrid
             {
@@ -2333,7 +2333,7 @@ CurrentDateRva = 0x56237C8
         TextBox fNation = new TextBox { Width = 110 }, fClub = new TextBox { Width = 130 };
         NumericUpDown fExpires = new NumericUpDown { Minimum = 0, Maximum = 2100, Width = 60 };
         CheckBox fListed = new CheckBox { Text = "已挂牌", AutoSize = true }, fFree = new CheckBox { Text = "自由球员", AutoSize = true };
-        DataGridView gridFind = NewGrid();
+        WorkspaceGrid gridFind = NewGrid();
         Label lblFind = new Label { Dock = DockStyle.Top, Height = 22, Padding = new Padding(4, 4, 0, 0), UseMnemonic = false };
 
         // ---------- prize money ----------
@@ -2460,18 +2460,16 @@ CurrentDateRva = 0x56237C8
             gridFind.ReadOnly = true; gridFind.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             gridFind.Columns[0].FillWeight = 170; gridFind.Columns[2].FillWeight = 140;
             gridFind.Columns[8].DefaultCellStyle.Format = "N0"; gridFind.Columns[8].DefaultCellStyle.FormatProvider = CultureInfo.InvariantCulture;
-            lblFind.Text = "Set filters and click Search. Double-click a player to edit him. Up to 1,000 results, best potential first.";
+            lblFind.Text = "最多显示 1,000 名球员，按潜力排序。选中结果后点击「打开资料」、双击或按 Enter。";
             WrapDockedLabel(lblFind);
             page.Controls.Add(gridFind); page.Controls.Add(lblFind); page.Controls.Add(bar);
             OrganizeFinderToolbar(bar,btn);
             btn.Click += delegate { RunFinder(btn); };
-            gridFind.CellDoubleClick += (o, e) =>
+            AddFinderOpenButton<Player>(bar,btn,gridFind,"OpenPlayerFinderResult",p=>
             {
-                if (e.RowIndex < 0) return;
-                var p = gridFind.Rows[e.RowIndex].Tag as Player; if (p == null) return;
                 txtPlayerSearch.Text = p.Name; ((TabControl)page.Parent).SelectedIndex = 0;
                 lstPlayers.SelectedItem = p; LoadPlayer(p);
-            };
+            });
             return page;
         }
 
@@ -2534,7 +2532,7 @@ CurrentDateRva = 0x56237C8
                         gridFind.Rows[i].Tag = r.P;
                         if (r.Pa < 0) gridFind.Rows[i].Cells[6].ToolTipText = "随机区间 " + Math.Max(1, -2 * r.Pa - 30) + "-" + PaTop(r.Pa) + "（存储值为 " + r.Pa + ")";
                     }
-                    lblFind.Text = res.Count.ToString("N0", CultureInfo.InvariantCulture) + " 名球员符合条件" + (res.Count > 1000 ? "，显示排名靠前的 1000 人" : "") + "。双击球员即可编辑。";
+                    lblFind.Text = res.Count.ToString("N0", CultureInfo.InvariantCulture) + " 名球员符合条件" + (res.Count > 1000 ? "，显示排名靠前的 1000 人" : "") + "。选中结果后可打开资料。";
                     btn.Enabled = true;
                 }));
             });
@@ -2550,7 +2548,7 @@ CurrentDateRva = 0x56237C8
         NumericUpDown sfAgeMin = new NumericUpDown { Minimum = 16, Maximum = 90, Value = 16, Width = 50 }, sfAgeMax = new NumericUpDown { Minimum = 16, Maximum = 90, Value = 90, Width = 50 };
         TextBox sfClub = new TextBox { Width = 130 };
         CheckBox sfFree = new CheckBox { Text = "仅无业", AutoSize = true };
-        DataGridView gridStaffFind = NewGrid();
+        WorkspaceGrid gridStaffFind = NewGrid();
         Label lblStaffFind = new Label { Dock = DockStyle.Top, Height = 22, Padding = new Padding(4, 4, 0, 0), UseMnemonic = false };
 
         TabPage BuildStaffFinderTab()
@@ -2573,19 +2571,17 @@ CurrentDateRva = 0x56237C8
             gridStaffFind.ReadOnly = true; gridStaffFind.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             gridStaffFind.Columns[0].FillWeight = 170; gridStaffFind.Columns[2].FillWeight = 140; gridStaffFind.Columns[3].FillWeight = 130;
             gridStaffFind.Columns[7].DefaultCellStyle.Format = "N0"; gridStaffFind.Columns[7].DefaultCellStyle.FormatProvider = CultureInfo.InvariantCulture;
-            lblStaffFind.Text = "Set filters and click Search. Double-click someone to edit them on the Staff tab. Up to 1,000 results, best first.";
+            lblStaffFind.Text = "最多显示 1,000 名职员。选中结果后点击「打开资料」、双击或按 Enter。";
             WrapDockedLabel(lblStaffFind);
             page.Controls.Add(gridStaffFind); page.Controls.Add(lblStaffFind); page.Controls.Add(bar);
             OrganizeFinderToolbar(bar,btn);
             btn.Click += delegate { RunStaffFinder(btn); };
-            gridStaffFind.CellDoubleClick += (o, e) =>
+            AddFinderOpenButton<Staff>(bar,btn,gridStaffFind,"OpenStaffFinderResult",st=>
             {
-                if (e.RowIndex < 0) return;
-                var st = gridStaffFind.Rows[e.RowIndex].Tag as Staff; if (st == null) return;
                 txtStaffSearch.Text = "UID " + st.Uid;
                 ((TabControl)page.Parent).SelectedIndex = 1;
                 lstStaff.SelectedItem = st;
-            };
+            });
             return page;
         }
 
@@ -2649,7 +2645,7 @@ CurrentDateRva = 0x56237C8
                         int i = gridStaffFind.Rows.Add(st.DisplayName, r[1], r[2], r[3], r[4], r[5], r[6], r[7]);
                         gridStaffFind.Rows[i].Tag = st;
                     }
-                    lblStaffFind.Text = res.Count.ToString("N0", CultureInfo.InvariantCulture) + " 名职员符合条件" + (res.Count > 1000 ? "，显示排名靠前的 1000 人" : "") + "。双击职员即可编辑。";
+                    lblStaffFind.Text = res.Count.ToString("N0", CultureInfo.InvariantCulture) + " 名职员符合条件" + (res.Count > 1000 ? "，显示排名靠前的 1000 人" : "") + "。选中结果后可打开资料。";
                 }));
             });
             th.IsBackground = true; th.Start();
@@ -2728,6 +2724,7 @@ CurrentDateRva = 0x56237C8
                 if(closingEditor || IsDisposed)return;
                 growthDirectory=r.Growth;growthSquadViews.Clear();growthLoanViews.Clear();
                 checkedGrowthClubs.Clear();combinedGrowthScopeKey="";combinedGrowthLoan=0;
+                browsePlayerUid=queuePlayerUid=0;
                 scannedSaveLoads=r.SaveLoads;
                 genderFilterVerified=r.GenderVerified;
                 retirementManager = r.RetirementManager;
