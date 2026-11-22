@@ -21,6 +21,7 @@ namespace Fm24Editor
         readonly Button btnGrowNone=new Button{Name="GrowthUnselectVisible",Text="取消勾选当前筛选结果",AutoSize=true};
         readonly Button btnGrowEdit=new Button{Name="GrowthEditPlayer",Text="球员设置…",Width=100};
         readonly Button btnGrowOptimize=new Button{Name="GrowthOptimizeAttributes",Text="属性优化…",Width=105};
+        readonly Button btnGrowBatch=new Button{Name="GrowthBatchSettings",Text="批量设置整份培养名单…",AutoSize=true,Enabled=false};
         SplitContainer growContent;
         bool growClubFilling,growLayoutBusy;
         readonly System.Windows.Forms.Timer growthBatchTimer=new System.Windows.Forms.Timer{Interval=15};
@@ -65,6 +66,10 @@ namespace Fm24Editor
             commands.Dock=DockStyle.Bottom;
             commands.Controls.Add(singleActions);
             commands.Controls.Add(growButtons);
+            StyleButton(btnGrowBatch,WorkspaceButtonRole.Secondary);
+            var batchSettings=FieldGroup(btnGrowBatch);
+            batchSettings.Name="GrowthBatchSettingsGroup";
+            commands.Controls.Add(batchSettings);
             splitGrow=new SplitContainer{Dock=DockStyle.Fill,Size=new Size(1100,500),SplitterWidth=5,FixedPanel=FixedPanel.Panel1,SplitterDistance=194};
             lstGrowClubs.BorderStyle=BorderStyle.FixedSingle;lstGrowClubs.HorizontalScrollbar=true;splitGrow.Panel1.Padding=new Padding(0,0,8,0);
             splitGrow.Panel1.Controls.Add(lstGrowClubs);splitGrow.Panel1.Controls.Add(growthClubChecks);
@@ -123,6 +128,7 @@ namespace Fm24Editor
             btnGrowNone.Click+=delegate{if(growOn)return;foreach(DataGridViewRow row in gridGrow.Rows)RemoveGrowthPlayer(row.Tag as Player);LoadGrow();};
             btnRemoveGrowthPlayer.Click+=delegate{if(growOn || gridGrow.CurrentRow==null)return;RemoveGrowthPlayer(gridGrow.CurrentRow.Tag as Player);LoadGrow();};
             btnGrowEdit.Click+=delegate{OpenGrowthEditor();};fill.Click+=delegate{GrowFill();};btnGrowToggle.Click+=delegate{ToggleGrow();};
+            btnGrowBatch.Click+=delegate{OpenGrowthBatchSettings();};
             btnGrowOptimize.Click+=delegate{var player=gridGrow.CurrentRow==null?null:gridGrow.CurrentRow.Tag as Player;if(player!=null){GrowTarget target;growWatch.TryGetValue(player.Person,out target);OpenAttributeOptimizer(player,target==null?OptionsFor(player):target.Options);}};
             growContent.SizeChanged+=delegate{LayoutGrowthWorkspace();};splitGrow.SizeChanged+=delegate{LayoutGrowthWorkspace();};
             growthBatchTimer.Tick+=delegate{RunGrowthSlice();};
@@ -279,9 +285,9 @@ namespace Fm24Editor
         // the selected gear m: K = 40 / m in-game days per CA point (4x -> K=10). A player's time depends only on
         // his gap, not his age, with a 21-day floor and no upper cap
         int GrowGear() { return cmbGrowSpeed.SelectedIndex + 2; }
-        int GrowSpanFor(int ca, int cap)
+        int GrowSpanFor(int ca, int cap,int gear)
         {
-            double k = 40.0 / GrowGear();
+            double k = 40.0 / gear;
             return Math.Max(21, (int)Math.Round((cap - ca) * k));
         }
 
@@ -364,6 +370,7 @@ namespace Fm24Editor
             btnGrowToggle.Text=(growOn?"停止成长":"开始成长")+"（"+growWatch.Count+" 人）";btnGrowToggle.Enabled=growOn || fm!=null && growWatch.Count>0 && Safety.On("ability");
             btnGrowAll.Enabled=btnGrowNone.Enabled=!growOn && fm!=null && gridGrow.Rows.Count>0;btnGrowEdit.Enabled=gridGrow.CurrentRow!=null && gridGrow.CurrentRow.Tag is Player;
             btnRemoveGrowthPlayer.Enabled=!growOn && btnGrowEdit.Enabled;
+            btnGrowBatch.Enabled=CanSetGrowthBatch;
             btnGrowOptimize.Enabled=!growOn && fm!=null && btnGrowEdit.Enabled && Safety.On("core") && Safety.On("ability") && Safety.On("date");
         }
         bool ValidateGrowthQueue()
@@ -547,7 +554,7 @@ namespace Fm24Editor
             RebuildGrowthLimitSchedule();
             SetGrowControlsLocked(true);
             string limits=growthLimitTargets.Length>0?"，"+growthLimitTargets.Length+" 人启用属性上限":"";
-            LogLine("CA 成长已开启：" + n + " 名球员，" + (growWatch.Values.Any(t => t.UseFocus) ? "按各球员培养设置" : "仅提升 CA") + "，速度档位 " + GrowGear() + " 倍，各球员独立计算时长，上限为 PA"+limits);
+            LogLine("CA 成长已开启：" + n + " 名球员，" + (growWatch.Values.Any(t => t.UseFocus) ? "按各球员培养设置" : "仅加速成长（系统自动分配属性）") + "，速度档位 " + GrowGear() + " 倍，各球员独立计算时长，上限为 PA"+limits);
             RefreshGrow();
             lblStatus.Text = "成长运行中：" + n + " 人，" + GrowGear() + " 倍加速"+limits+"。保持修改器开启。";
         }
@@ -576,6 +583,7 @@ namespace Fm24Editor
             foreach (Control c in growButtons.Controls)
                 if (c != btnGrowToggle) c.Enabled = !locked;
             btnGrowOptimize.Enabled=!locked;
+            btnGrowBatch.Enabled=!locked && CanSetGrowthBatch;
             btnGrowAll.Enabled = btnGrowNone.Enabled = !locked && fm != null && gridGrow.Rows.Count > 0;
             BindGrowthEditor();
             btnGrowToggle.Enabled = true;

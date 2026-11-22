@@ -9,6 +9,8 @@ namespace Fm24Editor
 
     sealed class GrowthOptions
     {
+        internal static readonly string[] ModeNames=
+            {"按位置或角色定向","自定义勾选属性","仅加速成长（系统自动分配属性）"};
         public GrowthMode Mode = GrowthMode.Position;
         public int Profile = -1;
         public int DefendingProfile = -1, PossessionWeight = 50;
@@ -41,7 +43,7 @@ namespace Fm24Editor
         {
             get
             {
-                if (Mode == GrowthMode.CaOnly) return "仅提升 CA";
+                if (Mode == GrowthMode.CaOnly) return "系统分配属性";
                 if (Mode == GrowthMode.SelectedAttributes) return "自选 " + (Attributes == null ? 0 : Attributes.Distinct().Count()) + " 项";
                 if(DefendingProfile!=-2 && (Profile>=0 || DefendingProfile>=0))return "有球 / 无球综合";
                 return Profile < 0 ? "按主要位置" : Profile < GrowthProfile.All.Length ? GrowthProfile.All[Profile].Name : "方向无效";

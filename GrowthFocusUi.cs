@@ -92,7 +92,7 @@ namespace Fm24Editor
             foreach(var target in growWatch.Values)
             {target.Options=prepared[target.P.Uid];ResetGrowthTarget(target);growthPreferences[target.P.Uid]=target.Options.Clone();}
             RefreshGrow();BindGrowthEditor();
-            ShowOperationFeedback(FeedbackKind.Success,"培养设置已应用到 "+growWatch.Count+" 名已勾选球员。开始成长后才写入游戏。");
+            ShowOperationFeedback(FeedbackKind.Success,"培养方案已应用到整份名单的 "+growWatch.Count+" 人。开始成长后才写入游戏。");
         }
         void BindGrowthEditor()
         {
@@ -153,7 +153,7 @@ namespace Fm24Editor
             dialog.Load+=delegate{FitWindowToWorkArea(dialog,this);};
             return dialog;
         }
-        bool ResetGrowthTarget(GrowTarget target)
+        bool ResetGrowthTarget(GrowTarget target,int? gear=null)
         {
             if(target.Options==null)target.Options=OptionsFor(target.P);
             target.Focus=null;target.UseFocus=target.Options.UsesAttributes;target.AttributeRawAdded=0;
@@ -176,7 +176,7 @@ namespace Fm24Editor
                     target.StartCa=BitConverter.ToInt16(value,0);target.Cap=PaTop(BitConverter.ToInt16(value,2));
                     if(target.StartCa<1 || target.StartCa>200 || target.Cap<1 || target.Cap>200)throw new InvalidOperationException("CA/PA 超出范围。");
                 }
-                target.Span=GrowSpanFor(target.StartCa,target.Cap);target.Done=target.StartCa>=target.Cap;target.Note=target.Done?"已在 PA":"";return true;
+                target.Span=GrowSpanFor(target.StartCa,target.Cap,gear??GrowGear());target.Done=target.StartCa>=target.Cap;target.Note=target.Done?"已在 PA":"";return true;
             }
             catch(Exception ex){target.Done=true;target.Note="已停止："+ex.Message;return false;}
         }
@@ -257,7 +257,7 @@ namespace Fm24Editor
         {
             var player=GrowthPlayer(uid);
             if(player==null || fm==null){MessageBox.Show("先连接游戏并选择球员。","成长预览");return;}
-            if(!options.UsesAttributes){MessageBox.Show("当前为仅提升 CA 模式，具体属性由游戏训练处理。","成长预览");return;}
+            if(!options.UsesAttributes){MessageBox.Show("当前为仅加速成长模式。修改器只推进 CA，属性由 FM 系统分配。","成长预览");return;}
             try
             {
                 if(!Safety.On("ability") || !Safety.On("date"))throw new InvalidOperationException("CA/PA 或日期尚未通过检查。");

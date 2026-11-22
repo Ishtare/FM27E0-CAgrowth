@@ -82,6 +82,17 @@ namespace Fm24Editor
                 editor.ClearAttributes.PerformClick();check(editor.Value.Mode==GrowthMode.SelectedAttributes && editor.Value.Attributes.Length==0,"clearing checkboxes stays explicitly empty");
                 editor.Bind(202,"Another player",new GrowthOptions{Mode=GrowthMode.CaOnly},Positions(3),true,false);
                 check(editor.Value.Mode==GrowthMode.CaOnly && !editor.Direction.Enabled,"selecting a different player loads that player's own options");
+                check(editor.Mode.Text.Contains("系统自动分配属性") && !editor.LowSupport.Enabled && !editor.LimitUnselected.Enabled &&
+                    editor.AttributeTabs.TabPages.Cast<TabPage>().SelectMany(p=>p.Controls.OfType<CheckedListBox>()).All(list=>list.CheckedItems.Count==0),
+                    "system allocation clearly disables the editor's role, support, cap and attribute checks");
+                editor.Bind(203,"Mode round trip",new GrowthOptions{Mode=GrowthMode.SelectedAttributes,Attributes=new[]{7,34},LimitUnselected=true},
+                    Positions(),true,false);
+                editor.Mode.SelectedIndex=(int)GrowthMode.CaOnly;
+                check(editor.Value.Attributes.SequenceEqual(new[]{7,34}) && !editor.Value.LimitsUnselected && !editor.LimitUnselected.Checked,
+                    "a single player's automatic mode keeps the custom choices while disabling the cap");
+                editor.Mode.SelectedIndex=(int)GrowthMode.SelectedAttributes;
+                check(editor.Mode.Text=="自定义勾选属性" && editor.Value.Attributes.SequenceEqual(new[]{7,34}) && editor.LimitUnselected.Checked,
+                    "switching back restores the single player's selection and cap");
                 editor.Bind(101,"Offline player",new GrowthOptions{Mode=GrowthMode.SelectedAttributes,Attributes=new[]{7,10}},Positions(),true,true);
                 check(!editor.Mode.Enabled && !editor.Speed.Enabled && editor.Preview.Enabled,"a running plan prevents edits while retaining read-only preview");
             }

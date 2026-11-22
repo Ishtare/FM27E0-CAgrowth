@@ -122,6 +122,41 @@ namespace Fm24Editor
             }
             setTitle.Invoke(form,new[]{kinds.GetValue(0)});
             CheckButtonRoles(check,form);
+            var batchEntry=Named<Button>(form,"GrowthBatchSettings");
+            bool batchEnabled=batchEntry.Enabled;
+            try
+            {
+                batchEntry.Enabled=true;
+                CheckContrast(check,batchEntry.ForeColor,batchEntry.BackColor,"batch setting entry");
+                check(batchEntry.BackColor==Color.White,"opening batch settings is a secondary command");
+            }
+            finally{batchEntry.Enabled=batchEnabled;}
+            using(var batch=form.BuildGrowthBatchSettingsDialog())
+            {
+                var mode=Named<ComboBox>(batch,"GrowthBatchMode");
+                var limit=Named<ComboBox>(batch,"GrowthBatchLimit");
+                var speed=Named<ComboBox>(batch,"GrowthBatchSpeed");
+                var apply=Named<Button>(batch,"ApplyGrowthBatchSettings");
+                CheckDialog(check,batch,apply,mode,form.Font);
+                check(mode.TabIndex<limit.TabIndex && limit.TabIndex<speed.TabIndex && !apply.Enabled,
+                    "batch settings order mode, cap and speed, with an idle Apply action until there is a choice");
+                foreach(var input in new[]{mode,limit,speed})
+                    CheckContrast(check,input.ForeColor,input.BackColor,input.Name);
+                foreach(var label in Named<Control>(batch,"GrowthBatchFields").Controls.OfType<Label>())
+                    CheckContrast(check,label.ForeColor,label.BackColor,"batch form label "+label.Text);
+                apply.Enabled=true;
+                CheckContrast(check,apply.ForeColor,apply.BackColor,"apply full queue settings");
+                check(apply.BackColor==Color.FromArgb(37,99,210),"applying queue settings is the primary command");
+                check(mode.Items.Cast<string>().Contains("仅加速成长（系统自动分配属性）") &&
+                    mode.Items.Cast<string>().Contains("自定义勾选属性"),"both modes are explicitly labeled in bulk settings");
+                var key=typeof(Form).GetMethod("ProcessDialogKey",fields);
+                check(mode.TabStop && limit.TabStop && speed.TabStop && apply.TabStop,
+                    "all batch settings and the apply action are reachable by Tab");
+                check(!(bool)key.Invoke(batch,new object[]{Keys.Enter}) && batch.DialogResult==DialogResult.None,
+                    "Enter in the mode field does not apply an enabled batch action");
+                check((bool)key.Invoke(batch,new object[]{Keys.Escape}) && batch.CancelButton.DialogResult==DialogResult.Cancel,
+                    "Escape is routed to the batch cancel action");
+            }
 
             var source=new Club{Addr=1,Team=2,Name="Source Club"};
             var origin=new StaffTransferOrigin{Person=new Staff{Name="Test Staff"},Employment=new StaffEmployment{Job=12}};

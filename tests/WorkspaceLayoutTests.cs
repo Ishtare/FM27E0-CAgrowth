@@ -82,6 +82,50 @@ namespace Fm24Editor
                 "scrollable feedback shows at most two lines of text by default");
         }
 
+        static void CheckGrowthBatchLayout(Action<bool,string> check,MainForm form,Size size,float fontScale)
+        {
+            using(var dialog=form.BuildGrowthBatchSettingsDialog())
+            using(var font=new Font(dialog.Font.FontFamily,dialog.Font.SizeInPoints*fontScale))
+            {
+                dialog.Font=font;
+                dialog.ClientSize=size;
+                var handle=dialog.Handle;
+                dialog.PerformLayout();
+                string context="batch settings at "+size+" and font "+fontScale;
+                var scroll=Named(dialog,"GrowthBatchScroll");
+                var footer=Named(dialog,"DialogActions");
+                var fields=Named(scroll,"GrowthBatchFields");
+                CheckContained(check,dialog,context,scroll,footer);
+                CheckContained(check,footer,context+" actions",footer.Controls.Cast<Control>().ToArray());
+                CheckContained(check,fields,context+" fields",
+                    fields.Controls.Cast<Control>().Where(control=>control.Name!="GrowthBatchProblem").ToArray());
+                check(((Panel)scroll).AutoScroll && fields.Right<=scroll.ClientSize.Width,
+                    context+" fits horizontally and can scroll vertically");
+                var table=(TableLayoutPanel)fields;
+                var rowHeights=table.GetRowHeights();
+                foreach(var input in fields.Controls.OfType<ComboBox>())
+                {
+                    int textWidth=input.Items.Cast<object>().Max(item=>TextRenderer.MeasureText(item.ToString(),input.Font).Width);
+                    check(input.Height>=input.PreferredHeight && input.Width>=textWidth+SystemInformation.VerticalScrollBarWidth,
+                        context+" shows the full "+input.Name+" font and choices");
+                    check(rowHeights[table.GetRow(input)]>=input.Height+input.Margin.Vertical,
+                        context+" reserves the full native input height and margins for "+input.Name);
+                }
+                if(fontScale>1f)
+                {
+                    var fixedFooter=footer.Bounds;
+                    var problem=Named(fields,"GrowthBatchProblem");
+                    problem.Text=string.Join(Environment.NewLine,Enumerable.Repeat("培养设置需要检查。请选择适用的自选属性后再提交。",8));
+                    problem.Visible=true;
+                    fields.PerformLayout();
+                    dialog.PerformLayout();
+                    CheckContained(check,fields,context+" with validation details",fields.Controls.Cast<Control>().ToArray());
+                    check(fields.Height>scroll.ClientSize.Height && footer.Bounds==fixedFooter,
+                        context+" keeps the footer fixed when wrapped validation details require scrolling");
+                }
+            }
+        }
+
         static void CheckAccentStates(Action<bool,string> check,Button button)
         {
             var original=button.Enabled;
@@ -300,6 +344,12 @@ namespace Fm24Editor
                     var commands=Named(form,"GrowthCommandBar");
                     var singleActions=Named(form,"GrowthSingleActions");
                     CheckToolbar(check,commands,"growth command groups "+size,singleActions,growthActions);
+                     var batchGroup=Named(form,"GrowthBatchSettingsGroup");
+                     var batchButton=Named(batchGroup,"GrowthBatchSettings");
+                     CheckContained(check,commands,"growth with batch settings "+size,singleActions,growthActions,batchGroup);
+                     CheckContained(check,batchGroup,"batch entry "+size,batchButton);
+                     check(batchButton.Width>=batchButton.PreferredSize.Width && batchButton.Height>=batchButton.PreferredSize.Height,
+                         "the full-queue batch label has room at "+size);
                     check(Named(form,"GrowthEditPlayer").Parent==singleActions && Named(form,"GrowthStartStop").Parent==growthActions,
                         "player and whole-queue commands are visibly separate at "+size);
                     var scopeToolbar=Named(form,"GrowthScopeToolbar");
@@ -407,6 +457,9 @@ namespace Fm24Editor
                 Field<List<Staff>>(form,"staff").Add(finderStaff);
                 CheckFinderRoutes(check,tabs,6,1,finderStaff,Field<ListBox>(form,"lstStaff"),"SearchStaff","OpenStaffFinderResult");
                 CheckRegistrationNavigation(check,form,tabs);
+                CheckGrowthBatchLayout(check,form,new Size(428,380),1.4f);
+                CheckGrowthBatchLayout(check,form,new Size(550,460),1f);
+                CheckGrowthBatchLayout(check,form,new Size(720,540),1f);
                 WorkspaceThemeTests.Run(check,form);
             }
         }

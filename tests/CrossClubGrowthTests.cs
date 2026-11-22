@@ -145,7 +145,108 @@ namespace Fm24Editor
             ClickGrowthTestButton(btnGrowToggle);
             ClickGrowthTestButton(btnViewGrowthQueue);
             check(!growOn && visible().SequenceEqual(new[]{100,102}),"stopping and reopening the queue retains all valid participants");
+            CheckCrossClubBatchSettings(check,today,date=>integer(start+8,(int)date),row);
             CheckOverlapAndClubRebinding(check,first,como);
+        }
+
+        DialogResult SubmitGrowthBatch(GrowthMode? mode,bool? limit,int? gear,out string feedback)
+        {
+            using(var dialog=BuildGrowthBatchSettingsDialog())
+            {
+                ((ComboBox)dialog.Controls.Find("GrowthBatchMode",true).Single()).SelectedIndex=mode.HasValue?(int)mode.Value+1:0;
+                ((ComboBox)dialog.Controls.Find("GrowthBatchLimit",true).Single()).SelectedIndex=limit.HasValue?(limit.Value?1:2):0;
+                ((ComboBox)dialog.Controls.Find("GrowthBatchSpeed",true).Single()).SelectedIndex=gear.HasValue?gear.Value-1:0;
+                ClickGrowthTestButton((Button)dialog.Controls.Find("ApplyGrowthBatchSettings",true).Single());
+                feedback=dialog.Controls.Find("GrowthBatchProblem",true).Single().Text;
+                return dialog.DialogResult;
+            }
+        }
+
+        void CheckCrossClubBatchSettings(Action<bool,string> check,uint today,Action<uint> setDate,Func<int,DataGridViewRow> row)
+        {
+            var runners=new[]{GrowthPlayer(100),GrowthPlayer(102)};
+            var order=new[]{34,38};
+            Func<Player,GrowTarget> target=p=>growWatch[p.Person];
+            check(btnGrowBatch.Enabled && btnGrowBatch.Text.Contains("整份培养名单"),
+                "the queued players enable the action with an explicit full-queue label");
+            gridGrow.CurrentCell=row(100).Cells[1];
+            int history=changes.Count;
+            string problem;
+            check(SubmitGrowthBatch(GrowthMode.SelectedAttributes,true,6,out problem)==DialogResult.None &&
+                problem.Contains("至少勾选") && GrowGear()==4 &&
+                target(runners[0]).Options.Mode==GrowthMode.CaOnly && !target(runners[1]).Options.LimitsUnselected,
+                "a missing custom selection leaves both clubs and the speed untouched");
+
+            txtGrowPlayerSearch.Text="科莫";
+            gridGrow.CurrentCell=row(102).Cells[1];
+            check(SubmitGrowthBatch(GrowthMode.SelectedAttributes,true,6,out problem)==DialogResult.OK &&
+                runners.All(p=>target(p).Options.Attributes.SequenceEqual(order) && target(p).Options.LimitsUnselected && target(p).Focus.HasLimits),
+                "one batch uses the selected custom template where missing and enables caps across both clubs");
+            check(growWatch.Count==2 && !growthPreferences.ContainsKey(103) && changes.Count==history &&
+                GrowthSelectedUid()==102 && txtGrowPlayerSearch.Text=="科莫",
+                "the batch affects only the full watched set and preserves the queue search, selection and game data");
+            check(GrowGear()==6 && runners.All(p=>target(p).Span==GrowSpanFor(target(p).StartCa,target(p).Cap,6)),
+                "the selected rate is shared by both players' next run");
+
+            setDate(today);autoMonthKey=MonthKey(today);
+            ClickGrowthTestButton(btnGrowToggle);
+            check(growOn && !btnGrowBatch.Enabled && growthLimitTargets.Length==2,
+                "the batch is locked during a run and both opted-in caps are scheduled");
+            var before=runners.Select(p=>fm.Read(p.Block+15,54)).ToArray();
+            setDate(today+10);GrowTick();
+            PerformanceMaintenanceTests.PumpUntil(()=>pendingGrowth==null);
+            for(int player=0;player<runners.Length;player++)
+            {
+                var after=fm.Read(runners[player].Block+15,54);
+                var changed=Enumerable.Range(0,54).Where(i=>after[i]!=before[player][i]).ToArray();
+                check(changed.Length>0 && changed.All(order.Contains),"a batched custom plan writes only its selected attributes");
+            }
+            ClickGrowthTestButton(btnGrowToggle);
+
+            check(SubmitGrowthBatch(null,false,null,out problem)==DialogResult.OK && runners.All(p=>!target(p).Focus.HasLimits &&
+                target(p).Options.Mode==GrowthMode.SelectedAttributes && !target(p).Options.LimitsUnselected),
+                "one batch turns off the ceiling across clubs while preserving custom mode and its selection");
+            check(SubmitGrowthBatch(GrowthMode.CaOnly,true,8,out problem)==DialogResult.OK &&
+                runners.All(p=>!target(p).UseFocus && target(p).Focus==null && !target(p).Options.LimitsUnselected &&
+                    target(p).Options.Attributes.SequenceEqual(order)),
+                "switching to system allocation ignores the cap request and retains custom selections for a later switch");
+
+            setDate(today);
+            ClickGrowthTestButton(btnGrowToggle);
+            check(growOn && GrowGear()==8 && growthLimitTargets.Length==0,"the new rate starts automatic growth without a cap schedule");
+            history=changes.Count;
+            var positionsAndAttributes=runners.Select(p=>fm.Read(p.Block,69)).ToArray();
+            setDate(today+10);GrowTick();
+            PerformanceMaintenanceTests.PumpUntil(()=>pendingGrowth==null);
+            var abilityAddresses=runners.Select(p=>p.Tail-FmLayout.AbilityBeforePerson).ToArray();
+            var edits=changes.Skip(history).ToArray();
+            check(edits.Length==2 && edits.All(c=>abilityAddresses.Contains(c.Addr) && c.New.Length==2) &&
+                runners.Select((p,index)=>fm.Read(p.Block,69).SequenceEqual(positionsAndAttributes[index])).All(same=>same),
+                "the same two players' automatic run writes only CA and leaves every attribute and position byte unchanged");
+            ClickGrowthTestButton(btnGrowToggle);
+
+            var custom=new[]{new[]{34},new[]{38}};
+            for(int i=0;i<runners.Length;i++)
+            {
+                var options=target(runners[i]).Options.Clone();
+                options.Attributes=custom[i];
+                SaveGrowthOptions(runners[i].Uid,options);
+            }
+            Func<bool> sameSelections=()=>runners
+                .Select((p,index)=>target(p).Options.Attributes.SequenceEqual(custom[index])).All(same=>same);
+            check(SubmitGrowthBatch(GrowthMode.SelectedAttributes,null,null,out problem)==DialogResult.OK && sameSelections() &&
+                runners.All(p=>target(p).Options.Mode==GrowthMode.SelectedAttributes),
+                "batch mode switching restores both existing, different attribute selections without copying the visible template");
+            check(SubmitGrowthBatch(null,true,null,out problem)==DialogResult.OK && sameSelections() &&
+                runners.All(p=>target(p).Options.LimitsUnselected && target(p).Focus.HasLimits),
+                "toggling caps on preserves each player's own selection across clubs");
+            check(SubmitGrowthBatch(null,null,5,out problem)==DialogResult.OK && sameSelections() &&
+                runners.All(p=>target(p).Options.LimitsUnselected && target(p).Span==GrowSpanFor(target(p).StartCa,target(p).Cap,5)),
+                "a speed-only change keeps each player's attributes, cap and mode");
+            check(SubmitGrowthBatch(null,false,null,out problem)==DialogResult.OK && sameSelections() &&
+                runners.All(p=>!target(p).Options.LimitsUnselected && target(p).Options.Mode==GrowthMode.SelectedAttributes) &&
+                gridGrow.Rows.Count==1 && GrowthSelectedUid()==102 && btnViewGrowthQueue.Text.Contains("2"),
+                "toggling caps off preserves distinct selections for the visible and filtered-out queued players");
         }
 
         void CheckOverlapAndClubRebinding(Action<bool,string> check,Club parent,Club borrower)

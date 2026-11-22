@@ -26,7 +26,7 @@ namespace Fm24Editor
         internal readonly Button Speed = new Button { Name="GrowthSpeedPreset", Text="只练爆发力和速度", Dock=DockStyle.Fill };
         internal readonly Button ClearAttributes = new Button { Name="GrowthClearAttributes", Text="清空", Dock=DockStyle.Fill };
         internal readonly Button Watch = new Button { Name="GrowthWatchPlayer", Text="勾选该球员", Dock=DockStyle.Fill };
-        internal readonly Button ApplyChecked = new Button { Name="GrowthApplyChecked", Text="将此设置应用到已勾选球员", Dock=DockStyle.Fill };
+        internal readonly Button ApplyChecked = new Button { Name="GrowthApplyChecked", Text="将本方案应用到整份培养名单", Dock=DockStyle.Fill };
         internal readonly Button Preview = new Button { Name="GrowthPreviewButton", Text="成长预览…", Dock=DockStyle.Fill };
         internal readonly CheckBox LowSupport = new CheckBox {Name="GrowthLowSupport",Text="低值属性补强",AutoSize=true};
         internal readonly CheckBox LimitUnselected = new CheckBox
@@ -61,7 +61,7 @@ namespace Fm24Editor
             selectors.RowStyles.Add(new RowStyle(SizeType.Absolute,32));selectors.RowStyles.Add(new RowStyle(SizeType.Percent,100));
             selectors.Controls.Add(new Label {Text="模式",Dock=DockStyle.Fill,TextAlign=ContentAlignment.MiddleLeft},0,0);selectors.Controls.Add(Mode,1,0);
             selectors.Controls.Add(roles,0,1);selectors.SetColumnSpan(roles,2);body.Controls.Add(selectors,0,2);body.RowStyles[2].Height=180;
-            Mode.Items.AddRange(new object[]{"保留特点（按角色成长）","自选属性成长","仅提升 CA（游戏分配）"});
+            Mode.Items.AddRange(GrowthOptions.ModeNames);
             selection.AutoEllipsis=true;
             var quick=new TableLayoutPanel {Dock=DockStyle.Fill,ColumnCount=2,RowCount=1,Margin=Padding.Empty};
             quick.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));quick.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,58));quick.Controls.Add(Speed,0,0);quick.Controls.Add(ClearAttributes,1,0);body.Controls.Add(quick,0,3);
@@ -177,7 +177,7 @@ namespace Fm24Editor
             {
                 Mode.SelectedIndex=(int)options.Mode;
                 var profile=Context();bool active=uid>0;roles.Bind(options,positions,active && !running && options.UsesAttributes);
-                var checkedValues=options.Mode==GrowthMode.SelectedAttributes?options.Attributes:profile.AutomaticTargets.ToArray();
+                var checkedValues=!options.UsesAttributes?new int[0]:options.Mode==GrowthMode.SelectedAttributes?options.Attributes:profile.AutomaticTargets.ToArray();
                 foreach(var list in lists)list.Items.Clear();
                 for(int i=0;i<54;i++)if(GrowthProfile.Developable(i) && profile.Cost(i)>0)lists[Category(i)].Items.Add(new AttributeItem{Index=i},checkedValues.Contains(i));
                 Mode.Enabled=active && !running;
@@ -200,11 +200,12 @@ namespace Fm24Editor
         void RefreshSummary()
         {
             var profile=Context();
-            selection.Text=options.Mode==GrowthMode.CaOnly?"属性由游戏训练处理":options.Mode==GrowthMode.SelectedAttributes?"已选 "+options.Attributes.Length+" 项属性":options.DefendingProfile==-2?profile.DisplayName:"有球 "+options.PossessionWeight+"% / 无球 "+(100-options.PossessionWeight)+"% 综合成长";
+            selection.Text=options.Mode==GrowthMode.CaOnly?"属性由 FM 系统分配":options.Mode==GrowthMode.SelectedAttributes?"已选 "+options.Attributes.Length+" 项属性":options.DefendingProfile==-2?profile.DisplayName:"有球 "+options.PossessionWeight+"% / 无球 "+(100-options.PossessionWeight)+"% 综合成长";
             bool invalid=options.Mode==GrowthMode.SelectedAttributes && (options.Attributes.Length==0 || options.Attributes.Any(i=>!GrowthProfile.Developable(i) || profile.Cost(i)<=0));
             selection.ForeColor=invalid?MainForm.UiErrorInk:MainForm.UiInk;
             if(uid==0)help.Text="连接后选择球员，即可单独设置培养方式。";
             else if(running)help.Text="成长运行中，停止后可调整设置。预览可随时查看。";
+            else if(!options.UsesAttributes)help.Text="修改器只按倍率推进 CA。FM 训练与平衡仍可调整属性。";
             else if(invalid)help.Text="请勾选至少一项可用属性，再开始成长。";
             else if(options.LimitsUnselected)help.Text="上限取本轮开始时的数值，允许自然下滑。低值补强限于已勾选项。";
             else if(options.UsesAttributes && options.Support.Enabled)help.Text="额外补强已启用，最多使用新增预算的 "+options.Support.BudgetPercent+"%。可在设置与预览中核对目标。";
