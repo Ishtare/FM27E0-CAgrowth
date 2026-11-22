@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1.30 (modified release, 2026-11-22)
+
+- Match club names entered with full-width Latin characters or without accents. Show club type hits, record checks, filtering, and the final catalog count in the connection report.
+- Default new growth plans to CA-only acceleration and let FM distribute attributes. Check directed growth against estimated recommended CA for the player's actual positions and limit the proposed increases to the available budget.
+- Set growth mode, speed, and unchecked-attribute ceilings for the full watched queue, including players from other clubs or hidden by filters. Preserve each player's existing custom attribute selections.
+
 ## v1.1.29 (modified release, 2026-11-21)
 
 - Validate all edited club finance fields before writing. Reject non-finite currency conversions and rounded values outside the signed 32-bit range. Check the selected club and the original field values at submission.
