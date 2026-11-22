@@ -390,11 +390,11 @@ namespace Fm24Editor
             var t=batch.Targets[batch.Next++];
             GrowTarget current;
             if(t.Done || !growWatch.TryGetValue(t.P.Person,out current) || current!=t)return true;
-            bool ok = true;
-            foreach (var g in PlayerGuards(t.P)) { var cur = fm.Read(g.Key, g.Value.Length); if (cur == null || !cur.SequenceEqual(g.Value)) { ok = false; break; } }
-            if (!ok) { t.Done = true; t.Note = "已停止：对象被移动"; batch.Stopped++; return true; }
-            var ab = fm.Read(t.P.Tail - FmLayout.AbilityBeforePerson, 4);
-            if (ab == null) { t.Done = true; t.Note = "已停止：读取失败"; batch.Stopped++; return true; }
+            var guards=PlayerGuards(t.P);
+            if(!RosterPlayerIdentity.Matches(fm.Read,guards))
+            { t.Done=true; t.Note="已停止：对象被移动"; batch.Stopped++; return true; }
+            var ab=fm.Read(t.P.Tail-FmLayout.AbilityBeforePerson,4);
+            if(ab==null || ab.Length!=4) { t.Done=true; t.Note="已停止：读取失败"; batch.Stopped++; return true; }
             int ca = BitConverter.ToInt16(ab, 0), pa = BitConverter.ToInt16(ab, 2), cap = PaTop(pa);
             t.Cap = cap;
             if (ca < 1 || ca > 200 || cap < 1 || cap > 200) { t.Done = true; t.Note = "已停止：CA/PA 超出范围"; batch.Stopped++; return true; }
@@ -411,10 +411,9 @@ namespace Fm24Editor
             if (want > cap) want = cap;
             if (want <= ca) return true;
             int gain = want - ca;
-            string focusError = null;
-            bool applied = t.UseFocus ? ApplyFocusGrowth(t,ab,want,!batch.Fill,out focusError) :
-                WriteLogged(t.P.Tail - FmLayout.AbilityBeforePerson, BitConverter.GetBytes((short)want),
-                    t.P.Name + "：CA 成长 " + ca + " -> " + want + (batch.Fill ? " (to PA)" : " (+" + gain + ")"));
+            string error;
+            bool applied=t.UseFocus?ApplyFocusGrowth(t,ab,want,!batch.Fill,out error):
+                ApplyCaOnlyGrowth(t.P,guards,ab,want,out error);
             if (applied)
             {
                 t.Added += gain; batch.Written++;
@@ -422,9 +421,9 @@ namespace Fm24Editor
             }
             else
             {
-                t.Done = true; t.Note = "已停止：" + (focusError ?? "写入失败"); batch.Stopped++;
+                t.Done = true; t.Note = "已停止：" + (error ?? "写入失败"); batch.Stopped++;
                 LogLine(t.P.DisplayName + "：" + t.Note);
-                if (focusError != null && focusError.Contains("重载")) { StopGrow("部分数据无法恢复，请重载修改前的存档"); return false; }
+                if (error != null && error.Contains("重载")) { StopGrow("部分数据无法恢复，请重载修改前的存档"); return false; }
             }
             return true;
         }

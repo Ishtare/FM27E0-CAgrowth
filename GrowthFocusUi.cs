@@ -13,7 +13,11 @@ namespace Fm24Editor
         readonly GrowthEditorPanel growEditor = new GrowthEditorPanel();
 
         GrowthOptions OptionsFor(Player player)
-        { GrowthOptions value; return player != null && growthPreferences.TryGetValue(player.Uid,out value) ? value.Clone() : new GrowthOptions(); }
+        {
+            GrowthOptions value;
+            return player!=null && growthPreferences.TryGetValue(player.Uid,out value) ? value.Clone() :
+                new GrowthOptions{Mode=GrowthMode.CaOnly};
+        }
         Player GrowthPlayer(int uid)
         {
             return RosterIndex.Unique(uid);
@@ -203,21 +207,46 @@ namespace Fm24Editor
             }
             catch (Exception ex) { error = ex.Message; return false; }
         }
+        bool ApplyCaOnlyGrowth(Player player,List<KeyValuePair<ulong,byte[]>> guards,byte[] ability,int wanted,out string error)
+        {
+            var attached=fm;
+            ulong? save=scannedSaveLoads;
+            ulong address=player.Tail-FmLayout.AbilityBeforePerson;
+            var before=ability.Take(2).ToArray();
+            var expectedPa=ability.Skip(2).ToArray();
+            var edit=new EligibilityEdit{Address=address,Before=before,After=BitConverter.GetBytes((short)wanted),
+                Label=player.DisplayName+"：CA 成长 "+BitConverter.ToInt16(before,0)+" → "+wanted};
+            Func<bool> identity=()=>fm==attached && Safety.On("ability") &&
+                (!save.HasValue || SaveLoadCount(attached)==save) && RosterPlayerIdentity.Matches(attached.Read,guards);
+            Func<bool> current=()=>
+            {
+                if(!identity())return false;
+                var pa=attached.Read(address+2,2);
+                return pa!=null && pa.SequenceEqual(expectedPa);
+            };
+            return CommitGrowthEdits(attached,new[]{edit},current,identity,out error);
+        }
+
         bool CommitGrowthStep(FmProcess attached,GrowthStep frame,out string error)
         {
-            error=null;
-            if(frame.Edits.Count==0)return true;
             ulong? save=scannedSaveLoads;
             Func<bool> currentConnection=()=>fm==attached && Safety.On("core") && Safety.On("ability") &&
                 (!save.HasValue || SaveLoadCount(attached)==save);
             Func<bool> guard=()=>currentConnection() && Safety.On("date") && frame.Matches(attached.Read,attached.ReadGameDate);
             Func<bool> identity=()=>currentConnection() && frame.IdentityMatches(attached.Read);
-            if(!EligibilityTransaction.Apply(attached.Read,attached.Write,frame.Edits,guard,out error,identity))
+            return CommitGrowthEdits(attached,frame.Edits,guard,identity,out error);
+        }
+
+        bool CommitGrowthEdits(FmProcess attached,IList<EligibilityEdit> edits,Func<bool> guard,Func<bool> identity,out string error)
+        {
+            error=null;
+            if(edits.Count==0)return true;
+            if(!EligibilityTransaction.Apply(attached.Read,attached.Write,edits,guard,out error,identity))
             {
                 error=(error??"成长写入失败。").Replace("注册资格","成长").Replace("注册","成长");
                 return false;
             }
-            RecordGrowthChanges(frame.Edits,identity);
+            RecordGrowthChanges(edits,identity);
             return true;
         }
         void RecordGrowthChanges(IList<EligibilityEdit> edits,Func<bool> undoGuard)

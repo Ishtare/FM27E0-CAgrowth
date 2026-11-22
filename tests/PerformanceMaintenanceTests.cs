@@ -104,6 +104,67 @@ namespace Fm24Editor
 
     partial class MainForm
     {
+        void CheckDefaultCaGrowth(Action<bool,string> check,Club club,uint today,Action<uint> setDate,Action<ulong,int> putInt)
+        {
+            const int marking=5;
+            growWatch.Clear();growthPreferences.Clear();
+            var player=GrowthPlayer(100);
+            var original=fm.Read(player.Block,69);
+            var wing=(byte[])original.Clone();
+            wing[12]=1;wing[9]=20;wing[15+marking]=35;
+            Marshal.Copy(wing,0,new IntPtr((long)player.Block),wing.Length);
+            ulong ability=player.Tail-FmLayout.AbilityBeforePerson;
+            lstGrowClubs.SelectedItem=club;
+            LoadGrow();
+            var row=gridGrow.Rows.Cast<DataGridViewRow>().Single(r=>((Player)r.Tag).Uid==player.Uid);
+            row.Cells[0].Value=true;
+            var target=growWatch.Values.Single();
+            check(!growthPreferences.ContainsKey(player.Uid) && GrowGear()==4 &&
+                target.Options.Mode==GrowthMode.CaOnly && !target.UseFocus && target.Focus==null,
+                "a newly checked winger at the default four-times rate starts with no directed plan");
+
+            autoMonthKey=MonthKey(today);
+            int firstEdit=changes.Count;
+            ToggleGrow();
+            check(growOn && growthLimitTargets.Length==0 && target.Span==600,
+                "starting default growth leaves the caps off and uses the four-times curve");
+            setDate(today+3);
+            GrowTick();
+            PerformanceMaintenanceTests.PumpUntil(()=>pendingGrowth==null);
+            check(fm.ReadI32(ability)==((160<<16)|101) && fm.Read(player.Block,69).SequenceEqual(wing),
+                "a daily automatic-mode tick increases CA and keeps every position and attribute byte including marking seven");
+            check(changes.Count==firstEdit+1 && changes[firstEdit].Addr==ability && changes[firstEdit].New.Length==2,
+                "the whole initial four-times growth writes only the two-byte CA field");
+
+            // Simulate an independent game update from marking 7 to 3.
+            var afterGame=(byte[])wing.Clone();afterGame[15+marking]=15;
+            Marshal.Copy(afterGame,0,new IntPtr((long)player.Block),afterGame.Length);
+            setDate(today+9);
+            GrowTick();
+            PerformanceMaintenanceTests.PumpUntil(()=>pendingGrowth==null);
+            check(fm.ReadI32(ability)==((160<<16)|102) && fm.Read(player.Block,69).SequenceEqual(afterGame) &&
+                changes.Skip(firstEdit).All(c=>c.Addr==ability),
+                "the subsequent tick preserves an independently changed marking value without writing any attributes");
+
+            var stale=fm.Read(ability,4);
+            putInt(ability,(160<<16)|106);
+            string error;
+            int count=changes.Count;
+            check(!ApplyCaOnlyGrowth(player,PlayerGuards(player),stale,103,out error) &&
+                fm.ReadI32(ability)==((160<<16)|106) && changes.Count==count,
+                "a stale day cannot overwrite a newer higher CA");
+            putInt(ability,(101<<16)|102);
+            check(!ApplyCaOnlyGrowth(player,PlayerGuards(player),stale,103,out error) &&
+                fm.ReadI32(ability)==((101<<16)|102) && changes.Count==count,
+                "a stale PA cannot permit an edit above the game's new limit");
+
+            StopGrow(null);
+            growWatch.Clear();
+            setDate(today);
+            putInt(ability,(160<<16)|100);
+            Marshal.Copy(original,0,new IntPtr((long)player.Block),original.Length);
+        }
+
         internal void CheckRosterAndGrowthMaintenance(Action<bool,string> check)
         {
             freezeTimer.Stop();
@@ -220,6 +281,7 @@ namespace Fm24Editor
                     Marshal.Copy(block,0,new IntPtr((long)player.Block),block.Length);
                 }
                 RefreshGrow();
+                CheckDefaultCaGrowth(check,club,today,date=>integer(start+8,(int)date),integer);
                 CheckGrowthLimitRuntime(check,club,today,date=>integer(start+8,(int)date));
                 CheckCrossClubGrowth(check,club,team,start,today,ptr,integer,vector);
             }

@@ -11,12 +11,12 @@ namespace Fm24Editor
         internal Form BuildGrowthPreview(Player player,GrowthStep frame,GrowthFocusState focus)
         {
             bool hasRoom=frame.Ca<frame.Cap;
-            var allocation=hasRoom?focus.Allocate(focus.WithLimits(frame.Attributes),frame.Cap,frame.Cap):
+            var allocation=hasRoom?focus.AllocateForGrowth(focus.WithLimits(frame.Attributes),frame.Cap,frame.Cap):
                 new GrowthAllocation{After=(byte[])frame.Attributes.Clone()};
             var dialog=new Form{Name="GrowthPreview",Width=880,Height=650,MinimumSize=new Size(760,540)};
             StyleWorkspaceDialog(dialog,"成长预览 · "+player.DisplayName);
             var note=new Label{Dock=DockStyle.Top,Height=100,Padding=new Padding(4),UseMnemonic=false,ForeColor=UiMuted,Text="方案："+(focus.CustomSelection?"自选 "+focus.TargetAttributes.Length+" 项属性":focus.Profile.Name)+"；CA "+frame.Ca+" → "+frame.Cap+"。\n"+
-                (hasRoom?"下表为达到 PA 时的估算最终值，按档位逐步执行。":"当前 CA 已达 PA，没有新增成长空间。")+"\n主要培养与低值补强共用预算，未补到目标表示额度不足。\n"+
+                (hasRoom?"下表为达到 PA 时的估算最终值，按档位逐步执行。":"当前 CA 已达 PA，没有新增成长空间。")+"\n主要培养与低值补强共用预算，按实际位置核对估算推荐 CA。\n"+
                 (focus.HasLimits?"持续成长时回调未勾选项超过上限的部分。停止成长或达到 PA 后解除。":
                     "游戏自身训练仍可能调整其他属性。")};
             var tabs=new TabControl{Name="GrowthPreviewSections",Dock=DockStyle.Fill,TabIndex=0};var primary=new TabPage("主要培养");var support=new TabPage("低值补强");tabs.TabPages.Add(primary);tabs.TabPages.Add(support);

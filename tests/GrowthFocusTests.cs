@@ -53,8 +53,49 @@ namespace Fm24Editor
         { bool rejected = false; try { action(); } catch { rejected = true; } check(rejected, message); }
         static byte[] Positions(int main)
         { var result = Enumerable.Repeat((byte)1, 15).ToArray(); result[main] = 20; return result; }
+        static void CheckWingerRecommendation(Action<bool,string> check)
+        {
+            const int marking=5, targetCa=109;
+            var fixture=new Fixture(0,9);
+            ulong attributes=fixture.Player.Block+15;
+            ulong ability=fixture.Player.Tail-FmLayout.AbilityBeforePerson;
+            var values=Enumerable.Repeat((byte)56,54).ToArray();
+            values[marking]=35;
+            fixture.Put(attributes,values);
+            fixture.Put(ability,BitConverter.GetBytes((short)103));
+            var frame=fixture.Capture();
+            var model=new PositionAbility(frame.Positions);
+            var focus=new GrowthFocusState(frame.Positions,frame.Attributes,frame.Ca,-1);
+            var candidate=focus.Allocate(frame.Attributes,targetCa,frame.Cap);
+            check(model.Estimate(frame.Attributes)==103 && model.Estimate(candidate.After)>targetCa,
+                "a winger with marking seven reproduces the relative budget exceeding estimated recommended CA");
+            frame.Plan(focus,targetCa);
+            check(frame.Allocation.RawAdded>0 && frame.Allocation.RawAdded<candidate.RawAdded &&
+                model.Estimate(frame.Allocation.After)<=targetCa,
+                "the directed write retains improvements within estimated recommended CA");
+            check(frame.Allocation.After[marking]==35 &&
+                frame.Allocation.After.Zip(values,(after,before)=>after>=before).All(preserved=>preserved),
+                "fitting directed increases keeps marking and all existing attributes intact");
+            string error;
+            check(fixture.Apply(frame,out error),"apply the fitted winger plan to offline memory");
+            frame=fixture.Capture();
+            check(frame.Ca==targetCa && model.Estimate(frame.Attributes)<=frame.Ca && frame.Attributes[marking]==35,
+                "read back the new CA and recommendation without a regression to marking");
+
+            var overspent=Enumerable.Repeat((byte)62,54).ToArray();
+            overspent[marking]=35;
+            fixture.Put(attributes,overspent);
+            frame=fixture.Capture();
+            focus=new GrowthFocusState(frame.Positions,frame.Attributes,frame.Ca,-1);
+            frame.Plan(focus,targetCa+1);
+            check(model.Estimate(overspent)>targetCa+1 && frame.Edits.Count==1 &&
+                frame.Edits[0].Address==ability && frame.Allocation.After.SequenceEqual(overspent),
+                "when original attributes already exceed the next budget, CA may catch up without adding or taking away attributes");
+        }
+
         public static void Run(Action<bool,string> check)
         {
+            CheckWingerRecommendation(check);
             var values = Enumerable.Repeat((byte)50, 54).ToArray();
             var striker = new GrowthFocusState(Positions(12), values, 100, -1);
             var defender = new GrowthFocusState(Positions(3), values, 100, -1);

@@ -95,6 +95,7 @@ namespace Fm24Editor
         readonly int[] costs = new int[54], priorities = new int[54];
         readonly long baselineScore;
         readonly long selectedBaselineScore;
+        readonly PositionAbility recommendation;
         public readonly GrowthSupportItem[] SupportItems;
         readonly int supportPercent;
         public GrowthFocusState(byte[] positionValues, byte[] attributes, int ca, int selectedProfile,
@@ -113,6 +114,7 @@ namespace Fm24Editor
                     throw new InvalidDataException("所选属性不适用于当前培养方向，惯用脚与隐藏属性不参与成长。");
             }
             StartCa = ca; positions = (byte[])positionValues.Clone(); baseline = (byte[])attributes.Clone();
+            if(positions.Any(v=>v>=2))recommendation=new PositionAbility(positions);
             limitUnselected=limitUnselected && selected!=null;
             limitedAttributes=limitUnselected?Enumerable.Range(0,baseline.Length)
                 .Where(i=>GrowthProfile.Developable(i) && Profile.Cost(i)>0 && !selected.Contains(i)).ToArray():new int[0];
@@ -204,6 +206,48 @@ namespace Fm24Editor
             result.ScoreAfter = Score(result.After);
             result.SelectedScoreAfter = SelectedScore(result.After);
             result.ChangedAttributes = Enumerable.Range(0, 54).Count(i => result.Before[i] != result.After[i]);
+            return result;
+        }
+
+        internal GrowthAllocation AllocateForGrowth(byte[] current,int targetCa,int cap)
+        {
+            var result=Allocate(current,targetCa,cap);
+            if(result.RawAdded==0 || recommendation!=null && recommendation.Estimate(result.After)<=targetCa)return result;
+
+            // Keep the relative priorities, but only retain gains that fit the
+            // estimated CA at the player's actual positions. Never lower the input.
+            var proposed=result.After;
+            var fitted=(byte[])current.Clone();
+            if(recommendation!=null && recommendation.Estimate(current)<=targetCa)
+            {
+                var trial=new byte[current.Length];
+                int low=0,high=100;
+                while(high-low>1)
+                {
+                    int fraction=low+(high-low)/2;
+                    for(int i=0;i<trial.Length;i++)trial[i]=(byte)(current[i]+(proposed[i]-current[i])*fraction/100);
+                    if(recommendation.Estimate(trial)<=targetCa)
+                    {
+                        low=fraction;
+                        Array.Copy(trial,fitted,trial.Length);
+                    }
+                    else high=fraction;
+                }
+            }
+
+            result.After=fitted;
+            result.RawAdded=result.SupportRawAdded=result.ChangedAttributes=0;
+            for(int i=0;i<fitted.Length;i++)
+            {
+                int gain=fitted[i]-current[i], support=Math.Min(gain,result.SupportAdded[i]);
+                result.SupportSpent-=(long)(result.SupportAdded[i]-support)*costs[i];
+                result.SupportAdded[i]=support;
+                result.SupportRawAdded+=support;
+                result.RawAdded+=gain;
+                if(gain>0)result.ChangedAttributes++;
+            }
+            result.ScoreAfter=Score(fitted);
+            result.SelectedScoreAfter=SelectedScore(fitted);
             return result;
         }
     }
@@ -326,7 +370,7 @@ namespace Fm24Editor
                 throw new InvalidDataException("本次 CA 必须提高且不超过当前 PA。");
             if (!focus.SamePositions(Positions)) throw new InvalidDataException("位置数据已变化，请停止后重新开始培养。");
             var input=enforceLimits?focus.WithLimits(Attributes):Attributes;
-            Allocation=focus.Allocate(input,targetCa,Cap);
+            Allocation=focus.AllocateForGrowth(input,targetCa,Cap);
             if(Enumerable.Range(0,Attributes.Length).Any(i=>Allocation.After[i]<input[i]))
                 throw new InvalidDataException("成长方案出现低于当前值的属性，已停止应用。");
             AddCaEdit(targetCa,PlayerName+"：CA 成长 "+Ca+" → "+targetCa);
