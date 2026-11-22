@@ -2060,18 +2060,18 @@ CurrentDateRva = 0x56237C8
             {
                 FitWindowToWorkArea(this,this);
                 SetHint(txtPlayerSearch, "中文 / 英文 / UID（如 #735216）");
-                SetHint(txtClubSearch, "俱乐部名称／UID…");
+                SetHint(txtClubSearch, ClubSearch.Cue);
                 SetInitialSplitter(splitPlayers,260);
                 SetInitialSplitter(splitClubs,230);
                 SetInitialSplitter(splitStaff,260);
                 SetHint(txtStaffSearch, "姓名 / 俱乐部 / UID…");
                 SetInitialSplitter(splitSquad,230);
-                SetHint(txtGrowClubSearch, "俱乐部名称／UID…");
+                SetHint(txtGrowClubSearch, ClubSearch.Cue);
                 SetHint(txtGrowPlayerSearch, "搜索球员姓名或 UID…");
                 SetInitialSplitter(splitGrow,194);
                 LayoutGrowthWorkspace();
                 SetInitialSplitter(splitPrize,380);
-                SetHint(txtSquadClubSearch, "俱乐部名称／UID…");
+                SetHint(txtSquadClubSearch, ClubSearch.Cue);
                 SetInitialSplitter(splitAttrs,Math.Max(200,splitAttrs.Width-290),0.64);
                 Zh.Tree(this);
             };
@@ -2949,9 +2949,11 @@ CurrentDateRva = 0x56237C8
             }
             r.RetirementManager = fm.VerifiedCurrentBuild ? CurrentBuildProfile.RetirementManager(fm.Read, fm.Base) : retirementManagers.Count == 1 ? retirementManagers[0] : 0;
             r.Diagnostics.Add("球员扫描：类型命中 "+personHits.Count+"，属性检查排除 "+invalidBlocks+"，资料无法读取 "+unreadableHeads+"，姓名无法读取 "+unnamedPlayers+"，双重身份候选 "+coachHits.Count+"。球员类型位置：0x"+FmProcess.PersonVtRva.ToString("X"));
+            int verifiedClubs=r.Clubs.Count;
             GenderFilter.Apply(fm, r);
             int fullClubs=r.Clubs.Count(c=>c.HasFullFinance),compactClubs=r.Clubs.Count(c=>c.CompactFinance);
-            r.Diagnostics.Add("俱乐部扫描：类型命中 "+clubHits.Count+"，收录 "+r.Clubs.Count+" 家，其中完整财务 "+fullClubs+
+            r.Diagnostics.Add("俱乐部扫描：类型命中 "+clubHits.Count+"，通过资料核对 "+verifiedClubs+" 家，隐藏女足 "+r.HiddenWomenClubs+
+                " 家，收录 "+r.Clubs.Count+" 家，其中完整财务 "+fullClubs+
                 " 家、简化财务 "+compactClubs+" 家、其他已核对球队归属 "+(r.Clubs.Count-fullClubs-compactClubs)+" 家。");
             int contractOnlyStaff = r.Staff.Count(s => s.ContractOnly);
             if (contractOnlyStaff > 0) r.Diagnostics.Add("职员扫描：另有 " + contractOnlyStaff + " 名职员通过身份及合同核对，可查找；属性不可编辑。");

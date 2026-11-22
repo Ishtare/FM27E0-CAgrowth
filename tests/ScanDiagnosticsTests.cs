@@ -44,8 +44,14 @@ namespace Fm24Editor
             var good = new ScanResult();
             for (int i = 0; i < 1000; i++) good.Players.Add(new Player { Name = "Test Person " + i, Born = new DateTime(2000, 1, 1) });
             check(ScanRecovery.PlayerIssue(good) == null, "minimum valid player sample remains sufficient without clubs or staff");
+            good.Diagnostics.Add("俱乐部扫描：类型命中 17，通过资料核对 2 家，隐藏女足 2 家，收录 0 家。");
             report = AttachReport.Build("27.0.1+2503222", false, good, new Dictionary<string,string>(), false, recovery);
             check(report.Contains("本次检查通过，可以编辑") && !report.Contains("全部编辑功能保持只读") && !report.Contains("扫描诊断摘要"), "unlisted version does not block a valid player scan or show failure-only diagnostics");
+            check(report.Contains("本次扫描未收录俱乐部") && report.Contains("类型命中 17") && report.Contains("隐藏女足 2 家"),
+                "a usable player scan distinguishes an empty club catalog and includes the club scan counts");
+            good.Clubs.Add(new Club { Name = "Test Club" });
+            report = AttachReport.Build("27.0.1+2503222", false, good, new Dictionary<string,string>(), false);
+            check(!report.Contains("本次扫描未收录俱乐部"),"an available catalog is never reported missing due to a search filter");
             result.RawPlayers = 1000; result.HiddenWomen = 1000;
             report = AttachReport.Build("27.0.1+2503222", true, result, blocked, false, recovery);
             check(report.Contains("筛选前识别到 1000 人，其中隐藏女足球员 1000 人"), "filtering remains distinguishable from an entirely unread player list");

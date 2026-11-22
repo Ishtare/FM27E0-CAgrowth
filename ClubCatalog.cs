@@ -1,6 +1,7 @@
 // Modified build v1.1.24, 2026-11-20. GPL-3.0-or-later with ADDITIONAL-TERMS.txt.
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 
@@ -127,25 +128,32 @@ namespace Fm24Editor
 
     static class ClubSearch
     {
+        public const string Cue="俱乐部名称／UID…";
+        static readonly CompareInfo NameComparison=CultureInfo.InvariantCulture.CompareInfo;
+        const CompareOptions NameOptions=CompareOptions.IgnoreCase|CompareOptions.IgnoreNonSpace|CompareOptions.IgnoreWidth;
         // The patch author uses 东方巨龙. The full and abbreviated names are also in FPF records.
         static readonly string[] DragonNames={"东方巨龙","东方巨龙足球俱乐部","东方龙","东方龙足球俱乐部",
             "Oriental Dragon","Oriental Dragon FC","Oriental Dragon F.C.","Oriental Dragon Football Club"};
 
         static bool Contains(string value,string query)
         {
-            return !string.IsNullOrEmpty(value) && value.IndexOf(query,StringComparison.CurrentCultureIgnoreCase)>=0;
+            return !string.IsNullOrEmpty(value) && NameComparison.IndexOf(value,query,NameOptions)>=0;
         }
 
         public static bool Matches(Club club,string query)
         {
-            if(string.IsNullOrEmpty(query))return true;
+            query=(query??"").Trim();
+            if(query.Length==0)return true;
             int uid;
-            if(PlayerNames.TryUid(query,out uid) && uid==club.Uid)return true;
+            // Preserve number fragments such as 1907 in club names. Explicit UID queries are exact.
+            if(PlayerNames.TryUid(query,out uid) && (uid==club.Uid || !query.All(char.IsDigit)))return uid==club.Uid;
             return MatchesName(club.Name,club.ShortName,query);
         }
 
         public static bool MatchesName(string fullName,string shortName,string query)
         {
+            query=(query??"").Trim();
+            if(query.Length==0)return true;
             if(Contains(fullName,query) || Contains(shortName,query))return true;
             if(!DragonNames.Contains(fullName,StringComparer.OrdinalIgnoreCase) &&
                 !DragonNames.Contains(shortName,StringComparer.OrdinalIgnoreCase))return false;

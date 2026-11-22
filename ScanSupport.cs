@@ -97,6 +97,13 @@ namespace Fm24Editor
                     text.AppendLine();
                 }
             }
+            if(result.Clubs.Count==0)
+            {
+                text.AppendLine("本次扫描未收录俱乐部。俱乐部管理、球队名单和 CA 成长的俱乐部搜索使用本次扫描的名单。");
+                var clubScan=result.Diagnostics.FirstOrDefault(line=>line!=null && line.StartsWith("俱乐部扫描：",StringComparison.Ordinal));
+                if(clubScan!=null)text.AppendLine(clubScan);
+                text.AppendLine("请在 FM 载入存档后重新挂接。仍为 0 家时，请从「连接详情…」复制引擎版本与俱乐部扫描诊断。\n");
+            }
             if(!disabled.ContainsKey("core") && !string.IsNullOrEmpty(result.FacilityNote))text.AppendLine(result.FacilityNote+"\n");
             if(!listed)text.AppendLine("此构建未列入整套功能验证清单；该提示本身不会阻止扫描或编辑，可用功能以本次逐项检查为准。\n");
             text.Append("详细结果见「连接详情…」或「变更记录」。");return text.ToString();

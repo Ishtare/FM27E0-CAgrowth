@@ -18,6 +18,22 @@ namespace Fm24Editor
 
     partial class MainForm
     {
+        static void CheckClubSearchInput(Action<bool,string> check,TextBox search,ListBox results,Club expected,int count,string page)
+        {
+            search.Clear();
+            SetHint(search,ClubSearch.Cue);
+            check(search.TextLength==0 && results.Items.Count==count,page+" shows the complete list while the native cue is visible");
+            foreach(string query in new[]{"东方巨龙","oRIENTAL Dragon","ＯＲＩＥＮＴＡＬ ＤＲＡＧＯＮ","ＵＩＤ：８３１１１７５７"})
+            {
+                search.Text=query;
+                check(results.Items.Count==1 && ReferenceEquals(results.Items[0],expected),page+" finds the catalog record using "+query);
+            }
+            search.Text=ClubSearch.Cue;
+            check(results.Items.Count==0,page+" filters literal typed text separately from the cue");
+            search.Clear();
+            check(results.Items.Count==count,page+" restores records on clearing the search");
+        }
+
         internal void CheckPatchedClubCatalog(Action<bool,string> check)
         {
             freezeTimer.Stop();
@@ -101,6 +117,14 @@ namespace Fm24Editor
                     ClubSearch.Matches(patched,"＃８３１１１７５７") && !ClubSearch.Matches(money,"东方巨龙") && ClubSearch.Matches(money,"1907"),
                     "patch aliases and exact UID coexist with normal number fragments in club names");
                 check(ClubSearch.Matches(new Club{Name="东方龙"},"Oriental Dragon FC"),"a translated game record also matches the English name");
+                var bayern=new Club{Name="FC Bayern München",ShortName="拜仁",Uid=127};
+                check(ClubSearch.Matches(bayern,"bayern munchen") && ClubSearch.Matches(bayern,"拜仁"),
+                    "club search matches unaccented English input and the Chinese short name on the same record");
+                check(ClubSearch.Matches(new Club{Name="Test UID 127",Uid=128},"127") &&
+                    !ClubSearch.Matches(new Club{Name="Test UID 127",Uid=128},"UID 127"),
+                    "plain digits match name fragments while explicit UIDs require identity");
+                check(ClubSearch.Matches(bayern,"　 ") && !ClubSearch.Matches(bayern,"Unrelated club"),
+                    "blank searches restore the catalog and a real non-match stays empty");
                 var generic=new ClubCatalogReader(fm.Read,fm.ReadLenString,module,0).Read(hits,CancellationToken.None);
                 check(generic.Any(c=>c.Addr==dragon && c.Finance==0 && !c.CompactFinance) && !generic.Any(c=>c.Addr==noRoster),
                     "other builds require an owned team when their compact finance layout is unconfirmed");
@@ -141,6 +165,14 @@ namespace Fm24Editor
                 qword(money.Finance,module+compactType);
                 ApplyClub();
                 check(!btnApplyClub.Enabled && loadedFin==null && changes.Count==edits,"stale previews cannot apply after a club changes to compact finances");
+
+                CheckClubSearchInput(check,txtClubSearch,lstClubs,patched,found.Count,"club management");
+                tabs.SelectedTab=squadPage;
+                CheckClubSearchInput(check,txtSquadClubSearch,lstSquadClubs,patched,found.Count,"squad roster");
+                tabs.SelectedTab=growPage;
+                CheckClubSearchInput(check,txtGrowClubSearch,growthClubChecks,patched,found.Count,"multi-club growth");
+                growthMultiClub.Checked=false;
+                CheckClubSearchInput(check,txtGrowClubSearch,lstGrowClubs,patched,found.Count,"single-club growth");
             }
             finally
             {
