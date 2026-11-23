@@ -8,9 +8,15 @@
 # Generated build/test artifacts and local tooling
 *.exe
 *.pdb
+*.dll
+!/third-party/libzstd.dll
 *.zip
 build.tmp/
 /tests/third-party/
+/tests/TestResults/
+/.release-cache/
+/bin/
+/obj/
 __pycache__/
 *.pyc
 .vs/

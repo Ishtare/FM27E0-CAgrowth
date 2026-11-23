@@ -16,6 +16,8 @@ v1.1.29 修复俱乐部转会预算提交，并更新筛选结果、培养名单
 
 32,855 项离线断言通过，一键优化和定向成长已完成实机验收。[使用说明](使用说明-1.1.31.md) · [变更记录](CHANGELOG.md) · [验证范围](VALIDATION.md)
 
+维护者可通过发布脚本分开管理自用文件与分享产物。[发布与演练说明](docs/release-workflow.md)
+
 以下保留早期版本与原作者的项目介绍。
 
 # FM27€0 - Open source (modified build with CA growth, Chinese interface)

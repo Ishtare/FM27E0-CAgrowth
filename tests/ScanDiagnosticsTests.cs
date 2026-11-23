@@ -38,7 +38,8 @@ namespace Fm24Editor
             check(report.Contains("299×2") && report.Contains("类型命中 0") && report.Contains("姓名／生日检查未通过"), "zero-player report includes actual read and candidate failures");
             check(report.Contains("候选不足，未进行身份抽样") && !report.Contains("身份抽样 -1"), "a skipped candidate identity check is not presented as a failed sample");
             check(report.Contains("全部编辑功能保持只读") && report.Contains("该提示本身不会阻止扫描或编辑"), "core failure and the informational version notice remain distinct");
-            string source = ScanDiagnostics.Connection(123, "game_plugin.dll", false, "custom", @"C:\Private\profiles\custom.txt");
+            string syntheticProfile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "Private", "profiles", "custom.txt");
+            string source = ScanDiagnostics.Connection(123, "game_plugin.dll", false, "custom", syntheticProfile);
             check(source.Contains("自动识别 关闭") && source.Contains("外部 custom.txt") && !source.Contains("Private"), "diagnostics disclose a disabled external profile without exposing its directory");
 
             var good = new ScanResult();
