@@ -10,22 +10,39 @@ namespace Fm24Editor
     {
         internal Form BuildGrowthPreview(Player player,GrowthStep frame,GrowthFocusState focus)
         {
+            if(!focus.SamePositions(frame.Positions))
+                throw new InvalidOperationException("位置数据已变化，请停止后重新开始培养。");
             bool hasRoom=frame.Ca<frame.Cap;
             var allocation=hasRoom?focus.AllocateForGrowth(focus.WithLimits(frame.Attributes),frame.Cap,frame.Cap):
                 new GrowthAllocation{After=(byte[])frame.Attributes.Clone()};
             var dialog=new Form{Name="GrowthPreview",Width=880,Height=650,MinimumSize=new Size(760,540)};
             StyleWorkspaceDialog(dialog,"成长预览 · "+player.DisplayName);
-            var note=new Label{Dock=DockStyle.Top,Height=100,Padding=new Padding(4),UseMnemonic=false,ForeColor=UiMuted,Text="方案："+(focus.CustomSelection?"自选 "+focus.TargetAttributes.Length+" 项属性":focus.Profile.Name)+"；CA "+frame.Ca+" → "+frame.Cap+"。\n"+
-                (hasRoom?"下表为达到 PA 时的估算最终值，按档位逐步执行。":"当前 CA 已达 PA，没有新增成长空间。")+"\n主要培养与低值补强共用预算，按实际位置核对估算推荐 CA。\n"+
+            var targets=focus.TargetAttributes;
+            string budget=allocation.RecommendationLimit.HasValue
+                ?"预计 RCA "+allocation.RecommendationBefore+" → "+allocation.RecommendationAfter+
+                    "，累计预算上限 "+allocation.RecommendationLimit+"。依次补足蓝 17、绿 15、白 12。"
+                :focus.CustomSelection?"主要培养与低值补强共用预算，按实际位置核对估算 RCA。":"定向成长保留其余属性的现值。";
+            var note=new Label{Name="GrowthPreviewBudget",Dock=DockStyle.Top,Padding=new Padding(4),UseMnemonic=false,ForeColor=UiMuted,
+                Text="方案："+(focus.CustomSelection?"自选 "+targets.Length+" 项属性":focus.Profile.Name)+"；CA "+frame.Ca+" → "+frame.Cap+"。\n"+
+                (hasRoom?"下表为达到 PA 时的估算最终值。":"当前 CA 已达 PA。")+"\n"+budget+"\n"+
                 (focus.HasLimits?"持续成长时回调未勾选项超过上限的部分。停止成长或达到 PA 后解除。":
                     "游戏自身训练仍可能调整其他属性。")};
+            WrapDockedLabel(note);
             var tabs=new TabControl{Name="GrowthPreviewSections",Dock=DockStyle.Fill,TabIndex=0};var primary=new TabPage("主要培养");var support=new TabPage("低值补强");tabs.TabPages.Add(primary);tabs.TabPages.Add(support);
-            var main=NewGrid();main.Name="GrowthPrimaryPreview";main.ReadOnly=true;foreach(string title in new[]{"属性","优先级","当前","预计最终","增幅"})main.Columns.Add(title,title);
-            foreach(int i in focus.TargetAttributes)main.Rows.Add(Zh.Attr(FmLayout.Attrs[i]),focus.CustomSelection?"自选":focus.Profile.Core.Contains(i)?"关键":"重要",(frame.Attributes[i]/5.0).ToString("0.0"),(allocation.After[i]/5.0).ToString("0.0"),"+"+((allocation.After[i]-frame.Attributes[i])/5.0).ToString("0.0"));
+            var main=NewGrid();main.Name="GrowthPrimaryPreview";main.ReadOnly=true;foreach(string title in new[]{"属性","优先级","目标","当前","预计最终","增幅"})main.Columns.Add(title,title);
+            foreach(int i in targets)
+            {
+                var tier=focus.CustomSelection?AttributeTier.Protected:focus.RoleTiers.TierOf(i);
+                main.Rows.Add(Zh.Attr(FmLayout.Attrs[i]),focus.CustomSelection?"自选":RoleAttributeTiers.Label(tier),
+                    focus.CustomSelection?"—":(RoleAttributeTiers.Target(tier)/5).ToString(),
+                    (frame.Attributes[i]/5.0).ToString("0.0"),(allocation.After[i]/5.0).ToString("0.0"),
+                    ((allocation.After[i]-frame.Attributes[i])/5.0).ToString("+0.0;-0.0;0.0"));
+            }
             primary.Controls.Add(main);
             var extra=NewGrid();extra.Name="GrowthSupportPreview";extra.ReadOnly=true;foreach(string title in new[]{"属性","当前","目标下限","预计最终","原因"})extra.Columns.Add(title,title);extra.Columns[4].FillWeight=240;
             foreach(var item in focus.SupportItems)extra.Rows.Add(Zh.Attr(FmLayout.Attrs[item.Index]),(frame.Attributes[item.Index]/5.0).ToString("0.0"),item.Target,(allocation.After[item.Index]/5.0).ToString("0.0"),item.Reason);
-            var supportNote=new Label{Name="GrowthSupportPreviewNote",Dock=DockStyle.Top,Height=84,Padding=new Padding(8),ForeColor=UiMuted,Text=focus.SupportItems.Length==0?"没有额外补强项：未启用，或没有符合条件的低值属性。\n可以在球员培养设置中开启并查看自动识别建议。":"补强只补到确认的下限。与主培养重合的属性可能继续按主方案增长。\n预算份额是新增估算额度的上限；自然增长也会占用，无法保证所有目标均能补齐。\n这里仅预览。如需取消某项或改目标，停止成长后打开“补强设置…”。"};
+            var supportNote=new Label{Name="GrowthSupportPreviewNote",Dock=DockStyle.Top,Padding=new Padding(8),ForeColor=UiMuted,Text=focus.SupportItems.Length==0?"没有额外补强项。可以在球员培养设置中查看识别建议。":"补强只补到确认的下限，与主培养重合的增量共用同一预算。自然增长也会占用额度。\n如需调整，停止成长后打开“补强设置…”。"};
+            WrapDockedLabel(supportNote);
             support.Controls.Add(extra);support.Controls.Add(supportNote);
             if(focus.HasLimits)
             {

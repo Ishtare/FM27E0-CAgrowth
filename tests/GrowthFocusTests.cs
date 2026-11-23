@@ -93,9 +93,89 @@ namespace Fm24Editor
                 "when original attributes already exceed the next budget, CA may catch up without adding or taking away attributes");
         }
 
+        static void CheckTieredRoleGrowth(Action<bool,string> check)
+        {
+            const int marking=5,acceleration=34,strength=36;
+            var fixture=new Fixture(position:11,pa:200);
+            var values=Enumerable.Repeat((byte)50,54).ToArray();
+            values[marking]=67;
+            values[acceleration]=15;
+            values[strength]=20;
+            fixture.Put(fixture.Player.Block+15,values);
+            var model=new PositionAbility(Positions(11));
+            int startingRca=model.Estimate(values);
+            int startingCa=startingRca+8;
+            ulong ability=fixture.Player.Tail-FmLayout.AbilityBeforePerson;
+            fixture.Put(ability,BitConverter.GetBytes((short)startingCa));
+
+            int winger=Array.FindIndex(GrowthProfile.All,p=>p.Group=="边锋" && p.Phase=="持球" && p.English=="Winger");
+            var support=new GrowthSupportOptions{Enabled=true,BudgetPercent=40};
+            support.Targets[acceleration]=12;
+            support.Targets[strength]=8;
+            var frame=fixture.Capture();
+            var focus=new GrowthFocusState(frame.Positions,values,startingCa,winger,support:support,age:18);
+            var blue=focus.RoleTiers.Members(AttributeTier.Core);
+            var green=focus.RoleTiers.Members(AttributeTier.Supporting);
+            var white=focus.RoleTiers.Members(AttributeTier.Foundation);
+            check(focus.RoleTiers.TierOf(marking)==AttributeTier.Other && white.Contains(strength) &&
+                focus.SupportItems.Any(item=>item.Index==acceleration) && focus.SupportItems.Any(item=>item.Index==strength),
+                "the role fixture has protected background and support in both a higher and a lower tier");
+
+            frame.Plan(focus,startingCa+6);
+            var first=frame.Allocation;
+            check(first.RawAdded>0 && blue.Any(i=>first.After[i]>values[i]) &&
+                green.Concat(white).All(i=>first.After[i]==values[i]),
+                "a low green attribute or foundation supplement cannot take the early blue budget");
+            check(first.SupportAdded[acceleration]>0 && first.SupportAdded[strength]==0 &&
+                first.SupportAdded[acceleration]<=first.After[acceleration]-values[acceleration] &&
+                first.RawAdded==first.After.Zip(values,(after,before)=>after-before).Sum(),
+                "overlapping blue growth and approved support account for the same acceleration increase once");
+            string original=fixture.Digest(),error;
+            check(fixture.Apply(frame,out error) && GrowthUndo.Apply(fixture.Read,fixture.Write,fixture.Log(frame),out error) &&
+                fixture.Digest()==original,"an exact-RCA role step and its CA can be undone together");
+
+            var natural=(byte[])values.Clone();
+            foreach(int index in focus.RoleTiers.Members(AttributeTier.Other))natural[index]=100;
+            check(model.Estimate(natural)>=startingRca+6 && focus.AllocateForGrowth(natural,startingCa+6,200).RawAdded==0,
+                "natural increases in unrelated attributes consume the same cumulative RCA allowance");
+            check(focus.AllocateForGrowth(values,startingCa,200).RawAdded==0,"an unchanged CA goal grants no role growth");
+
+            bool trainedGreen=false,trainedWhite=false;
+            foreach(int desired in new[]{startingCa+6,startingCa+16,135,150,165,180,200}.Where(ca=>ca>startingCa).Distinct().OrderBy(ca=>ca))
+            {
+                var step=fixture.Capture();
+                step.Plan(focus,desired);
+                var allocation=step.Allocation;
+                int limit=Math.Min(desired,startingRca+desired-startingCa);
+                bool grewGreen=green.Any(i=>allocation.After[i]>step.Attributes[i]);
+                bool grewWhite=white.Any(i=>allocation.After[i]>step.Attributes[i]);
+                check(allocation.RecommendationLimit==limit && allocation.RecommendationAfter==model.Estimate(allocation.After) &&
+                    allocation.RecommendationAfter<=limit,"consecutive role steps use the original RCA plus cumulative CA at "+desired);
+                check((!grewGreen || blue.All(i=>allocation.After[i]>=85)) &&
+                    (!grewWhite || green.All(i=>allocation.After[i]>=75)), "later tiers wait for earlier goals at "+desired);
+                check(allocation.After[marking]==67 && allocation.After.Zip(step.Attributes,(after,before)=>after>=before).All(ok=>ok),
+                    "incremental role growth preserves existing values, including a T4 value above ten");
+                check(focus.AllocateForGrowth(allocation.After,desired,200).RawAdded==0,
+                    "re-evaluating an applied tier budget at the same CA cannot grant it again");
+                check(fixture.Apply(step,out error),"apply and read back the consecutive exact-RCA growth step at "+desired);
+                trainedGreen|=grewGreen;trainedWhite|=grewWhite;
+            }
+            check(trainedGreen && trainedWhite,"successive CA increases unlock both supporting and foundation targets");
+
+            using(var form=new MainForm(false,false))
+            using(var dialog=form.BuildGrowthPreview(fixture.Player,frame,focus))
+            {
+                var rows=(DataGridView)dialog.Controls.Find("GrowthPrimaryPreview",true).Single();
+                var preview=dialog.Controls.Find("GrowthPreviewBudget",true).Single();
+                check(preview.Text.Contains("累计预算上限") && rows.Rows.Cast<DataGridViewRow>().Any(row=>(string)row.Cells[2].Value=="12"),
+                    "the role preview reports the shared RCA ceiling and shows the foundation targets");
+            }
+        }
+
         public static void Run(Action<bool,string> check)
         {
             CheckWingerRecommendation(check);
+            CheckTieredRoleGrowth(check);
             var values = Enumerable.Repeat((byte)50, 54).ToArray();
             var striker = new GrowthFocusState(Positions(12), values, 100, -1);
             var defender = new GrowthFocusState(Positions(3), values, 100, -1);

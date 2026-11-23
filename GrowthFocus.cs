@@ -76,18 +76,17 @@ namespace Fm24Editor
         public byte[] Before, After;
         public int RawAdded, ChangedAttributes;
         public long ScoreBefore, ScoreAfter, Limit;
+        public int? RecommendationBefore, RecommendationAfter, RecommendationLimit;
         public long SelectedLimit, SelectedScoreAfter;
         public int SupportRawAdded;
         public readonly int[] SupportAdded = new int[54];
         public long SupportLimit, SupportSpent;
     }
 
-    // This is a bounded development proxy, not FM's unpublished RCA formula. Its scale is
-    // anchored to the player's initial attributes and CA. Natural changes consume the same
-    // budget, so every tick cannot grant the whole CA increase again.
     sealed class GrowthFocusState
     {
         public readonly GrowthProfile Profile;
+        public readonly RoleAttributeTiers RoleTiers;
         public readonly int StartCa;
         readonly byte[] positions, baseline;
         readonly HashSet<int> selected;
@@ -96,6 +95,8 @@ namespace Fm24Editor
         readonly long baselineScore;
         readonly long selectedBaselineScore;
         readonly PositionAbility recommendation;
+        readonly int baselineRca;
+        readonly int[] roleSupportGoals=new int[54];
         public readonly GrowthSupportItem[] SupportItems;
         readonly int supportPercent;
         public GrowthFocusState(byte[] positionValues, byte[] attributes, int ca, int selectedProfile,
@@ -114,6 +115,11 @@ namespace Fm24Editor
             }
             StartCa = ca; positions = (byte[])positionValues.Clone(); baseline = (byte[])attributes.Clone();
             if(positions.Any(v=>v>=2))recommendation=new PositionAbility(positions);
+            if(selected==null && recommendation!=null)
+            {
+                RoleTiers=new RoleAttributeTiers(Profile,recommendation);
+                baselineRca=recommendation.Estimate(baseline);
+            }
             limitUnselected=limitUnselected && selected!=null;
             limitedAttributes=limitUnselected?Enumerable.Range(0,baseline.Length)
                 .Where(i=>GrowthProfile.Developable(i) && Profile.Cost(i)>0 && !selected.Contains(i)).ToArray():new int[0];
@@ -129,6 +135,11 @@ namespace Fm24Editor
             supportPercent=supportOptions.BudgetPercent;
             SupportItems=supportOptions.Enabled?GrowthSupportPlanner.Suggest(Profile,baseline,ca,age,supportOptions,
                 limitUnselected?selected:null).Where(i=>i.Included).ToArray():new GrowthSupportItem[0];
+            if(RoleTiers!=null)
+            {
+                SupportItems=SupportItems.Where(item=>RoleTiers.TierOf(item.Index)<AttributeTier.Other).ToArray();
+                foreach(var item in SupportItems)roleSupportGoals[item.Index]=item.Target*5;
+            }
         }
         public static void ValidateAttributes(byte[] values)
         {
@@ -155,18 +166,33 @@ namespace Fm24Editor
             return capped;
         }
         public bool CustomSelection { get { return selected != null; } }
-        public int[] TargetAttributes { get { return selected==null?Profile.AutomaticTargets.ToArray():selected.OrderBy(i=>i).ToArray(); } }
+        public int[] TargetAttributes
+        {
+            get
+            {
+                if(selected!=null)return selected.OrderBy(i=>i).ToArray();
+                if(RoleTiers==null)return new int[0];
+                return RoleTiers.Members(AttributeTier.Core).Concat(RoleTiers.Members(AttributeTier.Supporting))
+                    .Concat(RoleTiers.Members(AttributeTier.Foundation)).ToArray();
+            }
+        }
         public int[] AllTargetAttributes { get { return TargetAttributes.Concat(SupportItems.Select(i=>i.Index)).Distinct().ToArray(); } }
         public int Priority(int attribute) { return attribute>=0 && attribute<54?priorities[attribute]:0; }
         public long Score(byte[] values)
         { long result=0;for(int i=0;i<54;i++)result+=(long)values[i]*costs[i];return result; }
         long SelectedScore(byte[] values)
         { long result=0;for(int i=0;i<54;i++)if(priorities[i]>0)result+=(long)values[i]*costs[i];return result; }
-        public GrowthAllocation Allocate(byte[] current, int targetCa, int cap)
+        void ValidateTarget(byte[] current,int targetCa,int cap)
         {
             ValidateAttributes(current);
             if (cap < 1 || cap > 200 || targetCa < StartCa || targetCa > cap)
                 throw new InvalidDataException("属性成长目标必须在起始 CA 与 PA 上限之间。");
+        }
+
+        // Preserve the bounded relative shares for explicit custom selections.
+        public GrowthAllocation Allocate(byte[] current, int targetCa, int cap)
+        {
+            ValidateTarget(current,targetCa,cap);
             var result = new GrowthAllocation { Before = (byte[])current.Clone(), After = (byte[])current.Clone(),
                 Limit = baselineScore * targetCa / StartCa, ScoreBefore = Score(current) };
             long remaining = result.Limit - result.ScoreBefore;
@@ -210,11 +236,11 @@ namespace Fm24Editor
 
         internal GrowthAllocation AllocateForGrowth(byte[] current,int targetCa,int cap)
         {
+            if(!CustomSelection)return AllocateRoleGrowth(current,targetCa,cap);
             var result=Allocate(current,targetCa,cap);
             if(result.RawAdded==0 || recommendation!=null && recommendation.Estimate(result.After)<=targetCa)return result;
 
-            // Keep the relative priorities, but only retain gains that fit the
-            // estimated CA at the player's actual positions. Never lower the input.
+            // Fit the existing custom-selection share at the player's actual positions.
             var proposed=result.After;
             var fitted=(byte[])current.Clone();
             if(recommendation!=null && recommendation.Estimate(current)<=targetCa)
@@ -248,6 +274,67 @@ namespace Fm24Editor
             result.ScoreAfter=Score(fitted);
             result.SelectedScoreAfter=SelectedScore(fitted);
             return result;
+        }
+
+        GrowthAllocation AllocateRoleGrowth(byte[] current,int targetCa,int cap)
+        {
+            ValidateTarget(current,targetCa,cap);
+            var result=new GrowthAllocation{Before=(byte[])current.Clone(),After=(byte[])current.Clone()};
+            if(RoleTiers==null)return result;
+
+            int limit=Math.Min(targetCa,baselineRca+(targetCa-StartCa));
+            int actualRca=recommendation.Estimate(current);
+            result.RecommendationBefore=result.RecommendationAfter=actualRca;
+            result.RecommendationLimit=limit;
+            if(targetCa==StartCa || actualRca>=limit)return result;
+
+            var budget=new AttributeBudget(recommendation,limit);
+            int supportLimit=Math.Max(0,limit-baselineRca)*supportPercent/100;
+            for(var tier=AttributeTier.Core;tier<=AttributeTier.Foundation;tier++)
+            {
+                var members=RoleTiers.Members(tier);
+                if(supportLimit>0)ApplyRoleSupport(result,members,limit,supportLimit);
+                if(!budget.Raise(result.After,members,RoleAttributeTiers.Target(tier)))break;
+            }
+            result.RecommendationAfter=recommendation.Estimate(result.After);
+            for(int i=0;i<result.After.Length;i++)
+            {
+                int gain=result.After[i]-current[i];
+                if(gain==0)continue;
+                result.ChangedAttributes++;
+                result.RawAdded+=gain;
+            }
+            return result;
+        }
+
+        void ApplyRoleSupport(GrowthAllocation result,int[] members,int limit,int supportLimit)
+        {
+            var values=result.After;
+            var pending=members.Where(i=>roleSupportGoals[i]>values[i]).ToArray();
+            if(pending.Length==0)return;
+
+            // Charge already-realized support progress against the same cumulative RCA budget.
+            // Main training and support share this vector, including when they target the same attribute.
+            var before=(byte[])values.Clone();
+            int actualRca=recommendation.Estimate(before);
+            foreach(var item in SupportItems)
+            {
+                int index=item.Index;
+                int covered=Math.Max(0,Math.Min(values[index],roleSupportGoals[index])-baseline[index]);
+                before[index]=(byte)(values[index]-covered);
+            }
+            int spent=Math.Max(0,actualRca-recommendation.Estimate(before));
+            int available=Math.Min(limit-actualRca,supportLimit-spent);
+            if(available<=0)return;
+
+            var beforeSupport=pending.Select(i=>values[i]).ToArray();
+            new AttributeBudget(recommendation,actualRca+available).Raise(values,pending,i=>roleSupportGoals[i]);
+            for(int i=0;i<pending.Length;i++)
+            {
+                int gain=values[pending[i]]-beforeSupport[i];
+                result.SupportAdded[pending[i]]=gain;
+                result.SupportRawAdded+=gain;
+            }
         }
     }
 
