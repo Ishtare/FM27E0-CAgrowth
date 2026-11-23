@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1.31 (modified release, 2026-11-24)
+
+- Optimize attributes in four role tiers with targets of 17+ for blue core skills, 15+ for green supporting skills, around 12 for white foundations, and around 10 for other adjustable attributes. Combine core and supporting skills from both tactical phases. Reduce targets gradually with floors at low CA and spend surplus on blue skills first.
+- Show targets reached, projected ranges, lowered attributes, and unmet blue and green goals in the optimization preview. Fit and scroll the settings at larger font sizes while keeping the action buttons visible.
+- Allocate directed growth against a cumulative estimated RCA budget, filling blue, green, then white. Repeated steps share the same allowance and preserve existing non-priority attributes above 10. The default acceleration mode continues to write CA only.
+
 ## v1.1.30 (modified release, 2026-11-22)
 
 - Match club names entered with full-width Latin characters or without accents. Show club type hits, record checks, filtering, and the final catalog count in the connection report.
