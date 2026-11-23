@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace Fm24Editor
@@ -12,6 +14,26 @@ namespace Fm24Editor
         static readonly BindingFlags Private=BindingFlags.Instance|BindingFlags.NonPublic;
         static T Field<T>(MainForm form,string name){return (T)typeof(MainForm).GetField(name,Private).GetValue(form);}
         static Control Named(Control parent,string name){return parent.Controls.Find(name,true).Single();}
+
+        const uint SwpNoMove=0x0002,SwpNoZOrder=0x0004,SwpNoActivate=0x0010,SwpNoSendChanging=0x0400;
+
+        [DllImport("user32.dll",SetLastError=true)]
+        [return:MarshalAs(UnmanagedType.Bool)]
+        static extern bool SetWindowPos(IntPtr window,IntPtr insertAfter,int x,int y,int width,int height,uint flags);
+
+        static void ResizeFixture(Action<bool,string> check,Form form,Size size,bool clientArea=false)
+        {
+            // WinForms caps Form.Size at the desktop's maximum tracking size. Suppressing
+            // WM_WINDOWPOSCHANGING also bypasses native tracking limits on these hidden fixtures.
+            var handle=form.Handle;
+            var outerSize=clientArea?size+(form.Size-form.ClientSize):size;
+            if(!SetWindowPos(handle,IntPtr.Zero,0,0,outerSize.Width,outerSize.Height,
+                SwpNoMove|SwpNoZOrder|SwpNoActivate|SwpNoSendChanging))
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            form.PerformLayout();
+            var actual=clientArea?form.ClientSize:form.Size;
+            check(actual==size,form.GetType().Name+" layout fixture expected "+size+" but received "+actual);
+        }
 
         static void CheckContained(Action<bool,string> check,Control parent,string context,params Control[] controls)
         {
@@ -88,9 +110,7 @@ namespace Fm24Editor
             using(var font=new Font(dialog.Font.FontFamily,dialog.Font.SizeInPoints*fontScale))
             {
                 dialog.Font=font;
-                dialog.ClientSize=size;
-                var handle=dialog.Handle;
-                dialog.PerformLayout();
+                ResizeFixture(check,dialog,size,clientArea:true);
                 string context="batch settings at "+size+" and font "+fontScale;
                 var scroll=Named(dialog,"GrowthBatchScroll");
                 var footer=Named(dialog,"DialogActions");
@@ -133,9 +153,7 @@ namespace Fm24Editor
             using(var font=new Font(dialog.Font.FontFamily,dialog.Font.SizeInPoints*fontScale))
             {
                 dialog.Font=font;
-                dialog.ClientSize=size;
-                var handle=dialog.Handle;
-                dialog.PerformLayout();
+                ResizeFixture(check,dialog,size,clientArea:true);
                 string context="attribute optimizer at "+size+" and font "+fontScale;
                 var body=Named(dialog,"OptimizationBody");
                 var footer=Named(dialog,"DialogActions");
@@ -258,6 +276,13 @@ namespace Fm24Editor
 
         public static void Run(Action<bool,string> check)
         {
+            using(var fixture=new Form())
+            {
+                // Exercise the resize path beyond the actual host limit even on a wide desktop.
+                var oversize=SystemInformation.MaxWindowTrackSize+new Size(32,32);
+                ResizeFixture(check,fixture,oversize);
+                ResizeFixture(check,fixture,oversize,clientArea:true);
+            }
             CheckOptimizationLayout(check,new Size(928,590),1.4f);
             CheckOptimizationLayout(check,new Size(1056,700),1f);
             CheckOptimizationLayout(check,new Size(1280,780),1.4f);
@@ -314,8 +339,14 @@ namespace Fm24Editor
                 Field<Label>(form,"lblStoredPounds").Text="原始英镑金额：余额 £2,147,483,647，转会预算 £120,000,000，下赛季预算 £145,000,000，周薪预算 £560,000／周";
                 foreach(var size in new[]{new Size(1120,720),new Size(1360,860),new Size(1600,960)})
                 {
-                    form.Size=size;var formHandle=form.Handle;var tabHandle=tabs.Handle;
-                    if(size.Width==1120)typeof(Form).GetMethod("OnLoad",Private).Invoke(form,new object[]{EventArgs.Empty});
+                    ResizeFixture(check,form,size);
+                    var tabHandle=tabs.Handle;
+                    if(size.Width==1120)
+                    {
+                        typeof(Form).GetMethod("OnLoad",Private).Invoke(form,new object[]{EventArgs.Empty});
+                        // Startup fits the real window to the desktop. Restore the test viewport.
+                        ResizeFixture(check,form,size);
+                    }
                     for(int i=0;i<tabs.TabPages.Count;i++){tabs.SelectedIndex=i;var pageHandle=tabs.TabPages[i].Handle;form.PerformLayout();tabs.PerformLayout();Application.DoEvents();check(tabs.TabPages[i].ClientSize.Width>500 && tabs.TabPages[i].ClientSize.Height>350,"each page retains useful space: "+size+" page "+i+" "+tabs.TabPages[i].ClientSize);}
                     var header=Named(form,"ConnectionBar");
                     CheckContained(check,header,"connection "+size,Named(header,"AttachAndScan"),Named(header,"ScanProgress"),Named(header,"CurrencyDisplayHint"));
@@ -427,16 +458,16 @@ namespace Fm24Editor
                         remove,Named(rosterToolbar,"GrowthDetailedColumns"));
                     typeof(Button).GetMethod("OnClick",Private).Invoke(browse,new object[]{EventArgs.Empty});
                 }
-                form.Size=new Size(1120,720);
+                ResizeFixture(check,form,new Size(1120,720));
                 var minSize=form.MinimumSize;
                 var appHeader=Named(form,"AppHeader");
                 var headerGroups=appHeader.Controls.Cast<Control>().ToArray();
                 int groupWidth=headerGroups.Max(group=>group.Width+group.Margin.Horizontal);
                 form.MinimumSize=Size.Empty;
-                form.ClientSize=new Size(groupWidth+appHeader.Padding.Horizontal+28,form.ClientSize.Height);
+                ResizeFixture(check,form,new Size(groupWidth+appHeader.Padding.Horizontal+28,form.ClientSize.Height),clientArea:true);
                 CheckHeader(check,form,true);
                 form.MinimumSize=minSize;
-                form.Size=new Size(1120,720);
+                ResizeFixture(check,form,new Size(1120,720));
                 var initialFeedback=feedback.Text;
                 int singleLineHeight=feedback.Height;
                 feedback.Text="第一行操作结果\r\n第二行原因\r\n第三行详情";
@@ -469,9 +500,7 @@ namespace Fm24Editor
                 using(var editor=new GrowthEditorPanel{Dock=DockStyle.Fill})
                 using(var dialog=form.BuildGrowthSettingsDialog(editor))
                 {
-                    dialog.ClientSize=new Size(415,380);
-                    var handle=dialog.Handle;
-                    dialog.PerformLayout();
+                    ResizeFixture(check,dialog,new Size(415,380),clientArea:true);
                     var close=Named(dialog,"CloseGrowthSettings");
                     CheckContained(check,dialog,"compact growth dialog",editor,close);
                     check(editor.AutoScroll && editor.Controls[0].Height>editor.ClientSize.Height && close==dialog.AcceptButton,
@@ -479,9 +508,7 @@ namespace Fm24Editor
                 }
                 using(var currency=form.BuildCurrencyDialog())
                 {
-                    currency.ClientSize=new Size(540,290);
-                    var handle=currency.Handle;
-                    currency.PerformLayout();
+                    ResizeFixture(check,currency,new Size(540,290),clientArea:true);
                     var layout=Named(currency,"CurrencyForm");
                     var save=Named(currency,"SaveCurrency");
                     check(((Panel)layout.Parent).AutoScroll && layout.Height>layout.Parent.ClientSize.Height,
@@ -493,9 +520,7 @@ namespace Fm24Editor
                     var scope=(TabControl)dialog.Controls.Find("RegistrationScopeTabs",true).Single();
                     check(dialog.Text=="报名与资格" && scope.TabPages.Count==2 && scope.SelectedIndex==1,"the detached registration dialog shares both scopes and the requested initial tab");
                     check(dialog.Controls.Find("PersonalEligibilityEmpty",true).Length==1,"the unified dialog explains its disconnected state without attaching to FM");
-                    dialog.ClientSize=new Size(570,420);
-                    var handle=dialog.Handle;
-                    dialog.PerformLayout();
+                    ResizeFixture(check,dialog,new Size(570,420),clientArea:true);
                     SelectPage(scope,0);
                     var picker=Named(dialog,"RegistrationPlayerPicker");
                     CheckContained(check,picker,"compact registration picker",picker.Controls.Cast<Control>().ToArray());
