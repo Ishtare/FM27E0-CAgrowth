@@ -182,6 +182,12 @@ namespace Fm24Editor
                 CheckGrid(check,Named<DataGridView>(optimizer,"OptimizationComparison"),"optimization comparison");
                 var summary=Named<Label>(optimizer,"OptimizationSummary");
                 CheckContrast(check,summary.ForeColor,summary.BackColor,"optimization summary");
+                foreach(string name in new[]{"OptimizationUnmetHighlights","OptimizationTierDetails"})
+                {
+                    var note=Named<TextBox>(optimizer,name);
+                    CheckContrast(check,note.ForeColor,note.BackColor,note.Name);
+                    check(note.ReadOnly && note.TabStop,note.Name+" is reachable and read-only");
+                }
             }
 
             using(var birthday=new BirthdayEditorDialog("年龄编辑测试球员",new DateTime(2026,11,21),new DateTime(1998,12,6),27))

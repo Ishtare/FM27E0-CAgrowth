@@ -27,7 +27,17 @@ namespace Fm24Editor
             };
         }
         public GrowthProfile ResolveProfile(byte[] positions)
-        {if(DefendingProfile<-2)throw new ArgumentOutOfRangeException("DefendingProfile");return GrowthProfile.Combine(GrowthProfile.Resolve(positions,Profile),DefendingProfile==-2?null:GrowthProfile.Resolve(positions,DefendingProfile),PossessionWeight);}
+        { return ResolveProfile(positions,Profile,DefendingProfile,PossessionWeight); }
+
+        internal static GrowthProfile ResolveProfile(byte[] positions,int profile,int defending,int possessionWeight)
+        {
+            if(defending<-2)throw new ArgumentOutOfRangeException("defending");
+            if(possessionWeight<0 || possessionWeight>100)throw new ArgumentOutOfRangeException("possessionWeight");
+            if(defending!=-2 && possessionWeight==0)return GrowthProfile.Resolve(positions,defending);
+            var inside=GrowthProfile.Resolve(positions,profile);
+            if(defending==-2 || possessionWeight==100)return inside;
+            return GrowthProfile.Combine(inside,GrowthProfile.Resolve(positions,defending),possessionWeight);
+        }
         public bool UsesAttributes { get { return Mode != GrowthMode.CaOnly; } }
         public bool LimitsUnselected { get { return Mode==GrowthMode.SelectedAttributes && LimitUnselected; } }
         internal ICollection<int> SupportScope { get { return LimitsUnselected?(Attributes??new int[0]):null; } }

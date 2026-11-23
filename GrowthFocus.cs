@@ -104,8 +104,7 @@ namespace Fm24Editor
         {
             ValidateAttributes(attributes);
             if (ca < 1 || ca > 200) throw new InvalidDataException("CA 必须在 1–200 范围内。");
-            if(defendingProfile<-2)throw new ArgumentOutOfRangeException("defendingProfile");
-            Profile = GrowthProfile.Combine(GrowthProfile.Resolve(positionValues, selectedProfile),defendingProfile==-2?null:GrowthProfile.Resolve(positionValues,defendingProfile),possessionWeight);
+            Profile = GrowthOptions.ResolveProfile(positionValues,selectedProfile,defendingProfile,possessionWeight);
             if (selectedAttributes != null)
             {
                 selected = new HashSet<int>(selectedAttributes);

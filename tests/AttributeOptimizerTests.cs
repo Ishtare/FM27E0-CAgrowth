@@ -58,8 +58,68 @@ namespace Fm24Editor
             frame=fixture.Capture();
             check(!AttributeOptimizer.CanRaiseToPotential(frame),"a player at PA cannot request an increase");
         }
+
+        static void CheckTieredRedistribution(Action<bool,string> check)
+        {
+            string[] names={"Inside Forward","Winger","Ball-Playing Centre-Back"};
+            int[] slots={11,11,3};
+            for(int role=0;role<names.Length;role++)
+            {
+                string english=names[role];
+                int profile=Array.FindIndex(GrowthProfile.All,p=>p.English==english && p.Phase=="持球" &&
+                    p.Group==(role==2?"中后卫":"边锋"));
+                var options=new GrowthOptions{Profile=profile,DefendingProfile=-2};
+                var original=Enumerable.Repeat((byte)50,54).ToArray();
+                original[24]=100;
+                original[26]=original[43]=original[45]=75;
+                foreach(int ca in new[]{135,150,165,180})
+                {
+                    var positions=Enumerable.Repeat((byte)1,15).ToArray();
+                    positions[slots[role]]=20;
+                    var frame=new GrowthStep{Ca=ca,Cap=200,RawPa=200,Positions=positions,Attributes=original};
+                    var plan=AttributeOptimizer.Create(frame,options,AttributeOptimizationMode.Redistribute);
+                    var blue=plan.Tiers.Members(AttributeTier.Core);
+                    var green=plan.Tiers.Members(AttributeTier.Supporting);
+                    var white=plan.Tiers.Members(AttributeTier.Foundation);
+                    var other=plan.Tiers.Members(AttributeTier.Other);
+                    string context=english+" at CA "+ca;
+                    check(plan.Conflict==null && plan.AfterRca<=ca && plan.AfterRca>=ca-1,context+" uses the real position budget");
+                    check(blue.All(i=>plan.After[i]>=60) && green.All(i=>plan.After[i]>=60) &&
+                        white.All(i=>plan.After[i]>=40) && other.All(i=>plan.After[i]>=30),context+" keeps the normal tier floors");
+                    check((!white.Any(i=>plan.After[i]<60) || other.All(i=>plan.After[i]==30)) &&
+                        (!green.Any(i=>plan.After[i]<75) || white.All(i=>plan.After[i]==40) && other.All(i=>plan.After[i]==30)) &&
+                        (!blue.Any(i=>plan.After[i]<85) || green.All(i=>plan.After[i]==60)),context+" downgrades the lower tiers first");
+                    check(other.All(i=>plan.After[i]<=50) && green.All(i=>plan.After[i]<=85) &&
+                        (!green.Any(i=>plan.After[i]>75) || blue.All(i=>plan.After[i]==100)),context+" spends surplus on blue before green");
+                    if(ca==180)check(white.All(i=>plan.After[i]==60) && other.All(i=>plan.After[i]==50) &&
+                        blue.All(i=>plan.After[i]>85) && green.All(i=>plan.After[i]>=75),context+" reaches all goals and gives surplus to blue");
+                    check(Enumerable.Range(0,54).Where(i=>plan.Tiers.TierOf(i)==AttributeTier.Protected).All(i=>plan.After[i]==original[i]),
+                        context+" preserves cost-bearing locked fields, both feet, and set pieces");
+                }
+
+                var alt=(byte[])original.Clone();
+                alt[25]=100;
+                var alternatePositions=Enumerable.Repeat((byte)1,15).ToArray();
+                alternatePositions[slots[role]]=alternatePositions[12]=20;
+                var alternate=new GrowthStep{Ca=165,Cap=200,RawPa=200,Positions=alternatePositions,Attributes=alt};
+                var fitted=AttributeOptimizer.Create(alternate,options,AttributeOptimizationMode.Redistribute);
+                check(fitted.Conflict==null && fitted.AfterRca<=165 && fitted.AfterRca==new PositionAbility(alternatePositions).Estimate(fitted.After)
+                    && fitted.After[24]==100 && fitted.After[25]==100,english+" accounts for two fully developed feet and a natural striker position");
+            }
+
+            var lowPositions=Enumerable.Repeat((byte)1,15).ToArray();
+            lowPositions[11]=20;
+            var low=new GrowthStep{Ca=60,Cap=160,RawPa=160,Positions=lowPositions,Attributes=Enumerable.Repeat((byte)50,54).ToArray()};
+            var lowPlan=AttributeOptimizer.Create(low,new GrowthOptions{DefendingProfile=-2},AttributeOptimizationMode.Redistribute);
+            check(lowPlan.Conflict==null && lowPlan.AfterRca<=60 &&
+                lowPlan.Tiers.Members(AttributeTier.Foundation).Any(i=>lowPlan.After[i]<40) &&
+                lowPlan.Tiers.Members(AttributeTier.Other).Any(i=>lowPlan.After[i]<30),
+                "when all normal tier floors exceed the budget, both background floors can be relaxed");
+        }
+
         public static void Run(Action<bool,string> check)
         {
+            CheckTieredRedistribution(check);
             int inside=Array.FindIndex(GrowthProfile.All,p=>p.Name=="肋部中锋" && p.Phase=="持球");
             int outside=Array.FindIndex(GrowthProfile.All,p=>p.Group=="中锋" && p.Phase=="无球");
             var ip=GrowthProfile.All[inside];var oop=GrowthProfile.All[outside];
@@ -68,6 +128,17 @@ namespace Fm24Editor
             foreach(int i in Enumerable.Range(0,54))check(combined.Priority(i)==ip.Priority(i)*50+oop.Priority(i)*50 && combined.Cost(i)==ip.Cost(i)*50+oop.Cost(i)*50,"combined priorities and costs reflect the chosen phase weights: "+i);
             check(object.ReferenceEquals(GrowthProfile.Combine(ip,oop,100),ip) && object.ReferenceEquals(GrowthProfile.Combine(ip,oop,0),oop),"phase endpoints reproduce the individual role exactly");
             check(object.ReferenceEquals(GrowthProfile.Combine(ip,ip,50),ip),"matching phase profiles do not double-charge a baseline");
+            var dormant=new GrowthOptions{Profile=int.MaxValue,DefendingProfile=outside,PossessionWeight=0};
+            var knownPositions=Enumerable.Repeat((byte)1,15).ToArray();
+            knownPositions[12]=20;
+            check(object.ReferenceEquals(dormant.ResolveProfile(knownPositions),oop),"a zero-weight in-possession selection is ignored");
+            dormant.Profile=inside;dormant.DefendingProfile=int.MaxValue;dormant.PossessionWeight=100;
+            check(object.ReferenceEquals(dormant.ResolveProfile(knownPositions),ip),"a zero-weight out-of-possession selection is ignored");
+            var highAttack=new RoleAttributeTiers(GrowthProfile.Combine(ip,oop,99),new PositionAbility(knownPositions));
+            var highDefend=new RoleAttributeTiers(GrowthProfile.Combine(ip,oop,1),new PositionAbility(knownPositions));
+            check(Enumerable.Range(0,54).All(i=>highAttack.TierOf(i)==highDefend.TierOf(i)) &&
+                highAttack.Members(AttributeTier.Core).Intersect(oop.Core.Except(ip.Core)).Any(),
+                "phase weights only rank attributes within a tier, including the minority phase's core items");
             Reject(()=>GrowthProfile.Combine(ip,GrowthProfile.All[0],50),check,"keeper and outfield roles cannot be mixed into a fictitious profile");
             var fixture=new GrowthFocusTests.Fixture();fixture.Put(fixture.Player.Block+15+36,new byte[]{5});var frame=fixture.Capture();
             var roles=new GrowthOptions{Profile=inside,DefendingProfile=outside,PossessionWeight=50};
@@ -137,6 +208,11 @@ namespace Fm24Editor
                 check(dialog.Plan.Decreased>0,"redistribution requires an explicit choice and previews decreases");
                 mode.SelectedIndex=(int)AttributeOptimizationMode.Preserve;
                 check(dialog.Plan.Decreased==0 && dialog.Plan.CanApply,"preserve preview uses only measured headroom");
+                var misses=(TextBox)dialog.Controls.Find("OptimizationUnmetHighlights",true).Single();
+                var details=(TextBox)dialog.Controls.Find("OptimizationTierDetails",true).Single();
+                check(misses.Text.Contains("蓝档") && misses.Text.Contains("绿档") && misses.Text.Contains("未达标") &&
+                    details.Text.Contains("达标") && details.Text.Contains("预计") && details.Text.Contains("被压低项") && details.Text.Contains("保留项"),
+                    "the preview reports unmet role targets and tier outcomes independently of the changes-only grid");
                 var usePa=(CheckBox)dialog.Controls.Find("OptimizationUsePa",true).Single();
                 check(usePa.Enabled && !usePa.Checked && dialog.Plan.TargetCa==frame.Ca,"increasing to PA is opt-in");
                 usePa.Checked=true;

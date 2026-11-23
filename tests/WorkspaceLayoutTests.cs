@@ -126,6 +126,56 @@ namespace Fm24Editor
             }
         }
 
+        static void CheckOptimizationLayout(Action<bool,string> check,Size size,float fontScale)
+        {
+            var fixture=new GrowthFocusTests.Fixture();
+            using(var dialog=new AttributeOptimizationDialog(fixture.Player,fixture.Capture(),new GrowthOptions()))
+            using(var font=new Font(dialog.Font.FontFamily,dialog.Font.SizeInPoints*fontScale))
+            {
+                dialog.Font=font;
+                dialog.ClientSize=size;
+                var handle=dialog.Handle;
+                dialog.PerformLayout();
+                string context="attribute optimizer at "+size+" and font "+fontScale;
+                var body=Named(dialog,"OptimizationBody");
+                var footer=Named(dialog,"DialogActions");
+                var split=(SplitContainer)Named(body,"OptimizationSplit");
+                CheckContained(check,dialog,context,body,footer);
+                CheckContained(check,footer,context+" actions",footer.Controls.Cast<Control>().ToArray());
+                CheckContained(check,body,context+" body",Named(body,"OptimizationPlayer"),split);
+                var settings=Named(split.Panel1,"OptimizationSettings");
+                CheckContained(check,settings,context+" settings",settings.Controls.Cast<Control>()
+                    .Where(control=>control.Name!="OptimizationSwitchMode").ToArray());
+                var mode=(ComboBox)Named(settings,"OptimizationMode");
+                int modeText=mode.Items.Cast<object>().Max(item=>TextRenderer.MeasureText(item.ToString(),mode.Font).Width);
+                check(mode.Height>=mode.PreferredHeight && mode.Width>=modeText+SystemInformation.VerticalScrollBarWidth,
+                    context+" renders the native mode choices in full");
+                var roles=(DualRoleSelector)Named(settings,"OptimizerDualRoleSelector");
+                var phases=(TabControl)Named(roles,"OptimizerRolePhaseTabs");
+                SelectPage(phases,1);
+                var outFields=roles.OutPosition.Parent;
+                CheckContained(check,outFields,context+" out of possession",outFields.Controls.Cast<Control>().ToArray());
+                SelectPage(phases,0);
+                var inFields=roles.InPosition.Parent;
+                CheckContained(check,inFields,context+" in possession",inFields.Controls.Cast<Control>().ToArray());
+
+                var result=Named(split.Panel2,"OptimizationResults");
+                var summary=Named(result,"OptimizationSummary");
+                var gaps=(TextBox)Named(result,"OptimizationUnmetHighlights");
+                var sections=(TabControl)Named(result,"OptimizationResultTabs");
+                CheckContained(check,split.Panel2,context+" results column",result);
+                CheckContained(check,result,context+" preview",summary,gaps,sections);
+                check(gaps.ReadOnly && gaps.WordWrap && gaps.ScrollBars==ScrollBars.Vertical &&
+                    gaps.Height>=2*gaps.Font.Height,context+" keeps the full unmet highlights scrollable outside the grid filter");
+                var comparison=sections.TabPages[0];
+                var grid=Named(comparison,"OptimizationComparison");
+                CheckContained(check,comparison,context+" comparison",Named(comparison,"OptimizationComparisonFilter"),grid);
+                SelectPage(sections,1);
+                var details=sections.SelectedTab;
+                CheckContained(check,details,context+" tier details",Named(details,"OptimizationTierDetails"));
+            }
+        }
+
         static void CheckAccentStates(Action<bool,string> check,Button button)
         {
             var original=button.Enabled;
@@ -208,6 +258,9 @@ namespace Fm24Editor
 
         public static void Run(Action<bool,string> check)
         {
+            CheckOptimizationLayout(check,new Size(928,590),1.4f);
+            CheckOptimizationLayout(check,new Size(1056,700),1f);
+            CheckOptimizationLayout(check,new Size(1280,780),1.4f);
             using(var form=new MainForm(false,false))
             {
                 var tabs=(TabControl)form.Controls.Find("WorkspaceTabs",true).Single();

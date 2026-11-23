@@ -11,6 +11,7 @@ namespace Fm24Editor
     {
         public readonly byte[] Before, After, Positions;
         public readonly GrowthProfile Profile;
+        public readonly RoleAttributeTiers Tiers;
         public readonly int SourceCa, RawPa, Cap, TargetCa, BeforeRca, AfterRca, BeforeSlot, AfterSlot;
         public readonly AttributeOptimizationMode Mode;
         public readonly string Conflict;
@@ -18,33 +19,19 @@ namespace Fm24Editor
         public int Decreased { get { return Enumerable.Range(0,54).Count(i => After[i]<Before[i]); } }
         public int Remaining { get { return TargetCa - AfterRca; } }
         public bool CanApply { get { return Conflict==null && Remaining>=0 && (TargetCa>SourceCa || Increased+Decreased>0); } }
-        internal AttributeOptimizationResult(GrowthStep frame, int targetCa, byte[] after, GrowthProfile profile,
+        internal AttributeOptimizationResult(GrowthStep frame, int targetCa, byte[] after, GrowthProfile profile,RoleAttributeTiers tiers,
             AttributeOptimizationMode mode, PositionAbility model, string conflict)
         {
             Before=(byte[])frame.Attributes.Clone(); After=after; Positions=(byte[])frame.Positions.Clone();
             SourceCa=frame.Ca; RawPa=frame.RawPa; Cap=frame.Cap; TargetCa=targetCa;
-            Profile=profile; Mode=mode; Conflict=conflict;
+            Profile=profile; Tiers=tiers; Mode=mode; Conflict=conflict;
             BeforeRca=model.Estimate(Before, out BeforeSlot); AfterRca=model.Estimate(After, out AfterSlot);
         }
     }
     static class AttributeOptimizer
     {
-        static readonly int[] Preserved={26,40,43,45,50,51};
-        static readonly int[] Foundation={34,36,37,38,42,46};
-        static readonly int[] Basics={7,17,18,22,23,28,29,52,53};
         public static bool Editable(GrowthProfile profile,int index)
-        {
-            return GrowthProfile.Developable(index) && !GrowthProfile.IsSetPiece(index) &&
-                profile.Cost(index)>0 && !Preserved.Contains(index);
-        }
-        // Role bonuses rank attributes on the internal 1–100 scale.
-        static int RoleBonus(GrowthProfile profile,int index)
-        {
-            int bonus=(4*profile.Priority(index)+profile.Scale/2)/profile.Scale;
-            if(Foundation.Contains(index)) bonus=Math.Max(bonus,10);
-            if(Basics.Contains(index)) bonus=Math.Max(bonus,6);
-            return bonus;
-        }
+        { return RoleAttributeTiers.Editable(profile,index); }
         public static bool CanRaiseToPotential(GrowthStep frame)
         {
             return frame.RawPa>frame.Ca && frame.RawPa==frame.Cap && frame.RawPa<=200;
@@ -63,15 +50,12 @@ namespace Fm24Editor
             int targetCa=raiseToPotential?frame.RawPa:frame.Ca;
             var model=new PositionAbility(frame.Positions);
             var profile=roles.ResolveProfile(frame.Positions);
+            var tiers=new RoleAttributeTiers(profile,model);
             var original=frame.Attributes;
             var floor=(byte[])original.Clone();
-            var indices=Enumerable.Range(0,54).Where(i=>Editable(profile,i) && model.Counts(i)).ToArray();
-            var bonus=new int[54];
-            foreach(int i in indices)
-            {
-                bonus[i]=RoleBonus(profile,i);
-                if(mode==AttributeOptimizationMode.Redistribute) floor[i]=Math.Min(floor[i],(byte)5);
-            }
+            if(mode==AttributeOptimizationMode.Redistribute)
+                for(int i=0;i<floor.Length;i++)
+                    if(tiers.TierOf(i)!=AttributeTier.Protected)floor[i]=Math.Min(floor[i],(byte)5);
             int minimum=model.Estimate(floor);
             if(minimum>targetCa)
             {
@@ -83,44 +67,51 @@ namespace Fm24Editor
                         "勾选“同时升到 PA”即可继续保留特点。":"可尝试恢复原属性，或选“重新分配”。";
                 }
                 else reason="可调整项降至下限后仍超出 "+(minimum-targetCa)+" 点，受保护属性已占满预算。";
-                return new AttributeOptimizationResult(frame,targetCa,(byte[])original.Clone(),profile,mode,model,reason);
+                return new AttributeOptimizationResult(frame,targetCa,(byte[])original.Clone(),profile,tiers,mode,model,reason);
             }
-            if(mode==AttributeOptimizationMode.Preserve && minimum==targetCa)
-                return new AttributeOptimizationResult(frame,targetCa,floor,profile,mode,model,null);
 
-            // In PA growth, add to each existing value in role-weighted steps. A strong
-            // attribute can keep growing instead of waiting for the others to catch up.
-            bool preserveAndGrow=raiseToPotential && mode==AttributeOptimizationMode.Preserve;
-            const int scale=32, baseRate=10;
-            var starts=new int[54];
-            var rates=new int[54];
-            foreach(int i in indices)
+            var after=(byte[])original.Clone();
+            var budget=new AttributeBudget(model,targetCa);
+            if(mode==AttributeOptimizationMode.Redistribute)
+                Redistribute(after,floor,tiers,budget);
+            else if(minimum<targetCa)
             {
-                starts[i]=preserveAndGrow?original[i]:bonus[i];
-                rates[i]=preserveAndGrow?baseRate+bonus[i]+original[i]/20:scale;
+                for(var tier=AttributeTier.Core;tier<=AttributeTier.Foundation;tier++)
+                    if(!budget.Raise(after,tiers.Members(tier),RoleAttributeTiers.Target(tier)))break;
             }
-            var after=(byte[])floor.Clone();
-            int low=preserveAndGrow?0:-25, high=preserveAndGrow?100*scale/baseRate+1:101;
-            while(high-low>1)
+            return new AttributeOptimizationResult(frame,targetCa,after,profile,tiers,mode,model,null);
+        }
+
+        static void Redistribute(byte[] values,byte[] minimum,RoleAttributeTiers tiers,AttributeBudget budget)
+        {
+            for(var tier=AttributeTier.Core;tier<=AttributeTier.Other;tier++)
+                foreach(int index in tiers.Members(tier))values[index]=(byte)RoleAttributeTiers.Target(tier);
+
+            var blue=tiers.Members(AttributeTier.Core);
+            var green=tiers.Members(AttributeTier.Supporting);
+            var white=tiers.Members(AttributeTier.Foundation);
+            var other=tiers.Members(AttributeTier.Other);
+            if(budget.Fits(values))
             {
-                int level=low+(high-low)/2;
-                foreach(int i in indices) after[i]=(byte)Math.Max(floor[i],Math.Min(100,starts[i]+level*rates[i]/scale));
-                if(model.Estimate(after)<=targetCa) low=level; else high=level;
+                if(budget.Raise(values,blue,100))budget.Raise(values,green,85);
+                return;
             }
-            foreach(int i in indices) after[i]=(byte)Math.Max(floor[i],Math.Min(100,starts[i]+low*rates[i]/scale));
-            int used=model.Estimate(after);
-            foreach(int i in indices.OrderByDescending(i=>preserveAndGrow?rates[i]:bonus[i]))
+
+            if(budget.Lower(values,other,i=>30) || budget.Lower(values,white,i=>40) ||
+                budget.Lower(values,green,i=>60) || budget.Lower(values,blue,i=>60))
+                return;
+
+            // At low CA, relax both background floors together before lowering the highlights further.
+            var background=white.Concat(other).ToArray();
+            var before=(byte[])values.Clone();
+            for(int retained=99;retained>=0;retained--)
             {
-                int ceiling=Math.Min(100,starts[i]+high*rates[i]/scale);
-                while(used<targetCa && after[i]<ceiling)
-                {
-                    after[i]++;
-                    int next=model.Estimate(after);
-                    if(next>targetCa){after[i]--;break;}
-                    used=next;
-                }
+                foreach(int index in background)
+                    values[index]=(byte)(minimum[index]+(before[index]-minimum[index])*retained/100);
+                if(budget.Fits(values))return;
             }
-            return new AttributeOptimizationResult(frame,targetCa,after,profile,mode,model,null);
+            if(!budget.Lower(values,green,i=>minimum[i]))
+                budget.Lower(values,blue,i=>minimum[i]);
         }
         public static void Validate(AttributeOptimizationResult result)
         {
