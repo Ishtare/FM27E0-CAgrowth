@@ -10,13 +10,27 @@ namespace Fm24Editor
     partial class MainForm
     {
         readonly Dictionary<int,GrowthOptions> growthPreferences = new Dictionary<int,GrowthOptions>();
+        readonly GrowthPreferenceStore savedGrowthPreferences;
         readonly GrowthEditorPanel growEditor = new GrowthEditorPanel();
 
         GrowthOptions OptionsFor(Player player)
         {
             GrowthOptions value;
-            return player!=null && growthPreferences.TryGetValue(player.Uid,out value) ? value.Clone() :
+            if(player!=null && growthPreferences.TryGetValue(player.Uid,out value))return value.Clone();
+            return (savedGrowthPreferences==null?null:savedGrowthPreferences.Find(player))??
                 new GrowthOptions{Mode=GrowthMode.CaOnly};
+        }
+        void LoadGrowthPreferences()
+        {
+            if(savedGrowthPreferences==null)return;
+            try{savedGrowthPreferences.Load();}
+            catch(Exception ex){LogLine("个人培养配置无法读取："+ex.Message);}
+        }
+        void PersistGrowthPreferences(IEnumerable<Player> selected)
+        {
+            if(savedGrowthPreferences==null)return;
+            try{savedGrowthPreferences.Save(selected,growthPreferences);}
+            catch(Exception ex){LogLine("个人培养修改已在本次会话生效，无法保存到本地："+ex.Message);}
         }
         Player GrowthPlayer(int uid)
         {
@@ -53,6 +67,7 @@ namespace Fm24Editor
                 preferred=target.Options.Clone();
             }
             growthPreferences[uid]=preferred;
+            PersistGrowthPreferences(new[]{player});
             RefreshGrowthOptionRow(player,target);
         }
         void ToggleGrowthPlayer(int uid)
@@ -79,6 +94,7 @@ namespace Fm24Editor
                         if(target.P.Uid!=uid)individual=options.ForAnotherPlayer(frame.Positions,frame.Attributes,frame.Ca,age);
                         individual.CreateState(frame.Positions,frame.Attributes,frame.Ca,age);
                     }
+                    individual.CaGrowthMultiplierOverride=target.Options.CaGrowthMultiplierOverride;
                     prepared[target.P.Uid]=individual;
                 }
                 catch(Exception ex){errors.Add(target.P.DisplayName+"："+ex.Message);}
@@ -91,8 +107,9 @@ namespace Fm24Editor
             }
             foreach(var target in growWatch.Values)
             {target.Options=prepared[target.P.Uid];ResetGrowthTarget(target);growthPreferences[target.P.Uid]=target.Options.Clone();}
+            PersistGrowthPreferences(growWatch.Values.Select(target=>target.P));
             RefreshGrow();BindGrowthEditor();
-            ShowOperationFeedback(FeedbackKind.Success,"培养方案已应用到整份名单的 "+growWatch.Count+" 人。开始成长后才写入游戏。");
+            ShowOperationFeedback(FeedbackKind.Success,"培养方案已应用到整份名单的 "+growWatch.Count+" 人。各球员保留原倍率。开始成长后才写入游戏。");
         }
         void BindGrowthEditor()
         {
@@ -102,7 +119,7 @@ namespace Fm24Editor
         }
         void BindGrowthEditor(GrowthEditorPanel editor,Player player)
         {
-            if(player==null){editor.Bind(0,null,new GrowthOptions(),null,false,growOn);return;}
+            if(player==null){editor.Bind(0,null,new GrowthOptions(),null,false,growOn,globalMultiplier:GrowGear());return;}
             GrowTarget target;growWatch.TryGetValue(player.Person,out target);
             byte[] positions=null,attributes=null;
             int ca=0;
@@ -123,7 +140,7 @@ namespace Fm24Editor
                 if(positions==null)positions=fm.Read(player.Block,15);
             }
             editor.Bind(player.Uid,player.DisplayName,target==null?OptionsFor(player):target.Options,
-                positions,target!=null,growOn,attributes,ca,GrowthSupportPlanner.Age(player.Born,GrowthToday()));
+                positions,target!=null,growOn,attributes,ca,GrowthSupportPlanner.Age(player.Born,GrowthToday()),GrowGear());
         }
         void OpenGrowthEditor()
         {
@@ -176,7 +193,8 @@ namespace Fm24Editor
                     target.StartCa=BitConverter.ToInt16(value,0);target.Cap=PaTop(BitConverter.ToInt16(value,2));
                     if(target.StartCa<1 || target.StartCa>200 || target.Cap<1 || target.Cap>200)throw new InvalidOperationException("CA/PA 超出范围。");
                 }
-                target.Span=GrowSpanFor(target.StartCa,target.Cap,gear??GrowGear());target.Done=target.StartCa>=target.Cap;target.Note=target.Done?"已在 PA":"";return true;
+                target.Span=GrowSpanFor(target.StartCa,target.Cap,target.Options.ResolveMultiplier(gear??GrowGear()));
+                target.Done=target.StartCa>=target.Cap;target.Note=target.Done?"已在 PA":"";return true;
             }
             catch(Exception ex){target.Done=true;target.Note="已停止："+ex.Message;return false;}
         }
@@ -188,6 +206,7 @@ namespace Fm24Editor
                 (options.LimitsUnselected?" + 上限":"")+(options.UsesAttributes && options.Support.Enabled?" + 补强":""));
             string chosen=options.Mode==GrowthMode.SelectedAttributes?"仅同步："+string.Join("、",options.Attributes.Where(i=>i>=0 && i<54).Select(i=>Zh.Attr(FmLayout.Attrs[i])).ToArray()):"";
             row.Cells[9].ToolTipText=chosen+(target==null?"":"\n本轮同步增量合计 "+(target.AttributeRawAdded/5.0).ToString("0.0")+" 属性点，不等同于 CA 点数。");
+            SetGrowthCell(row,growMultiplierColumn.Index,options.MultiplierLabel(GrowGear()));
         }
         bool ApplyFocusGrowth(GrowTarget target,byte[] expectedAbility,int desiredCa,bool enforceLimits,out string error)
         {

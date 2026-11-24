@@ -247,6 +247,19 @@ namespace Fm24Editor
                 runners.All(p=>!target(p).Options.LimitsUnselected && target(p).Options.Mode==GrowthMode.SelectedAttributes) &&
                 gridGrow.Rows.Count==1 && GrowthSelectedUid()==102 && btnViewGrowthQueue.Text.Contains("2"),
                 "toggling caps off preserves distinct selections for the visible and filtered-out queued players");
+
+            var faster=target(runners[0]).Options.Clone();
+            faster.CaGrowthMultiplierOverride=10;
+            SaveGrowthOptions(runners[0].Uid,faster);
+            check(SubmitGrowthBatch(GrowthMode.CaOnly,null,7,out problem)==DialogResult.OK && sameSelections() &&
+                target(runners[0]).Options.ResolveMultiplier(GrowGear())==10 && target(runners[1]).Options.ResolveMultiplier(GrowGear())==7 &&
+                target(runners[0]).Span==GrowSpanFor(target(runners[0]).StartCa,target(runners[0]).Cap,10) &&
+                target(runners[1]).Span==GrowSpanFor(target(runners[1]).StartCa,target(runners[1]).Cap,7) &&
+                (string)row(102).Cells["GrowthMultiplier"].Value=="全局(7x)",
+                "bulk global rate and mode updates preserve the hidden player's override and the visible player's global fallback");
+            ApplyCheckedGrowthOptions(runners[0].Uid,target(runners[0]).Options);
+            check(target(runners[0]).Options.CaGrowthMultiplierOverride==10 && !target(runners[1]).Options.CaGrowthMultiplierOverride.HasValue,
+                "copying one player's cultivation mode across clubs does not copy his individual rate");
         }
 
         void CheckOverlapAndClubRebinding(Action<bool,string> check,Club parent,Club borrower)

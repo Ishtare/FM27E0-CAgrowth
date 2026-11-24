@@ -11,6 +11,30 @@ namespace Fm24Editor
     {
         internal static readonly string[] ModeNames=
             {"按位置或角色定向","自定义勾选属性","仅加速成长（系统自动分配属性）"};
+        internal const int MinMultiplier = 2, MaxMultiplier = 10, DefaultMultiplier = 4;
+        int? multiplierOverride;
+        public int? CaGrowthMultiplierOverride
+        {
+            get { return multiplierOverride; }
+            set { multiplierOverride=value.HasValue?(int?)ValidateMultiplier(value.Value):null; }
+        }
+
+        internal static bool IsValidMultiplier(int value)
+        { return value>=MinMultiplier && value<=MaxMultiplier; }
+
+        internal static int ValidateMultiplier(int value)
+        {
+            if(!IsValidMultiplier(value))
+                throw new ArgumentOutOfRangeException("value","成长倍率须为 "+MinMultiplier+" 至 "+MaxMultiplier+" 的整数。");
+            return value;
+        }
+
+        public int ResolveMultiplier(int globalMultiplier)
+        { return ValidateMultiplier(CaGrowthMultiplierOverride??globalMultiplier); }
+
+        public string MultiplierLabel(int globalMultiplier)
+        { return (CaGrowthMultiplierOverride.HasValue?"自定义":"全局")+"("+ResolveMultiplier(globalMultiplier)+"x)"; }
+
         public GrowthMode Mode = GrowthMode.Position;
         public int Profile = -1;
         public int DefendingProfile = -1, PossessionWeight = 50;
@@ -23,7 +47,8 @@ namespace Fm24Editor
             {
                 Mode=Mode, Profile=Profile, DefendingProfile=DefendingProfile, PossessionWeight=PossessionWeight,
                 Attributes=Attributes==null?new int[0]:Attributes.Distinct().OrderBy(i=>i).ToArray(),
-                LimitUnselected=LimitUnselected, Support=(Support??new GrowthSupportOptions()).Clone()
+                LimitUnselected=LimitUnselected, Support=(Support??new GrowthSupportOptions()).Clone(),
+                CaGrowthMultiplierOverride=CaGrowthMultiplierOverride
             };
         }
         public GrowthProfile ResolveProfile(byte[] positions)

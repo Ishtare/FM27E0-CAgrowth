@@ -43,13 +43,14 @@ namespace Fm24Editor
             var limit=GrowthBatchChoice("GrowthBatchLimit",1);
             limit.Items.AddRange(new object[]{"保留各自上限设置","开启自选属性上限","关闭上限"});
             var speed=GrowthBatchChoice("GrowthBatchSpeed",2);
-            speed.Items.Add("保留当前 "+GrowGear()+" 倍");
-            speed.Items.AddRange(Enumerable.Range(2,9).Select(gear=>gear+" 倍").ToArray());
+            speed.Items.Add("保留全局 "+GrowGear()+" 倍");
+            for(int gear=GrowthOptions.MinMultiplier;gear<=GrowthOptions.MaxMultiplier;gear++)speed.Items.Add(gear+" 倍");
             mode.SelectedIndex=limit.SelectedIndex=speed.SelectedIndex=0;
 
             var scope=FieldLabel("作用范围为整份培养名单的 "+queued.Count+" 人，包含其他俱乐部和被筛选隐藏的球员。");
             scope.Name="GrowthBatchScope";
-            var note=FieldLabel("属性上限只在自定义勾选属性模式生效。系统自动分配只推进 CA，由 FM 处理属性。\n"+
+            var note=FieldLabel("全局倍率应用于跟随全局的球员，各球员的自定义倍率会保留。\n"+
+                "属性上限只在自定义勾选属性模式生效。系统自动分配只推进 CA，由 FM 处理属性。\n"+
                 (template.Length>0?"切到自选时，只为没有勾选项的球员沿用当前选中球员的 "+template.Length+" 项自选属性。":
                     "切到自选需要已有勾选项。可先在单人设置勾选属性，再以该球员作为模板。"));
             note.Name="GrowthBatchExplanation";
@@ -64,7 +65,7 @@ namespace Fm24Editor
             };
             fields.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
             var rows=new Control[]{scope,FieldLabel("成长模式"),mode,FieldLabel("限制未勾选属性上涨"),limit,
-                FieldLabel("整份名单成长倍率"),speed,note,problem};
+                FieldLabel("全局成长倍率"),speed,note,problem};
             fields.RowCount=rows.Length;
             for(int row=0;row<rows.Length;row++)
             {
@@ -128,7 +129,7 @@ namespace Fm24Editor
                 {
                     GrowthMode? requestedMode=mode.SelectedIndex<=0?(GrowthMode?)null:(GrowthMode)(mode.SelectedIndex-1);
                     bool? requestedLimit=limit.SelectedIndex<=0?(bool?)null:limit.SelectedIndex==1;
-                    int wantedGear=speed.SelectedIndex<=0?GrowGear():speed.SelectedIndex+1;
+                    int wantedGear=speed.SelectedIndex<=0?GrowGear():speed.SelectedIndex+GrowthOptions.MinMultiplier-1;
                     if(ApplyGrowthBatchSettings(requestedMode,requestedLimit,wantedGear,template,out feedback))
                     {
                         ShowOperationFeedback(FeedbackKind.Success,feedback);
@@ -148,6 +149,11 @@ namespace Fm24Editor
             if(!CanSetGrowthBatch)
             {
                 feedback="请先停止成长并确认培养名单中的球员。";
+                return false;
+            }
+            if(!GrowthOptions.IsValidMultiplier(gear))
+            {
+                feedback="成长倍率须为 "+GrowthOptions.MinMultiplier+" 至 "+GrowthOptions.MaxMultiplier+" 的整数。";
                 return false;
             }
             var prepared=new List<GrowTarget>();
@@ -184,10 +190,11 @@ namespace Fm24Editor
                 growWatch[target.P.Person]=target;
                 growthPreferences[target.P.Uid]=target.Options.Clone();
             }
-            cmbGrowSpeed.SelectedIndex=gear-2;
+            if(mode.HasValue || limit.HasValue)PersistGrowthPreferences(prepared.Select(target=>target.P));
+            cmbGrowSpeed.SelectedIndex=gear-GrowthOptions.MinMultiplier;
             RefreshGrow();
             BindGrowthEditor();
-            feedback="整份培养名单共 "+growWatch.Count+" 人，已更新 "+prepared.Count+" 人。名单速度为 "+gear+" 倍。";
+            feedback="整份培养名单共 "+growWatch.Count+" 人，已更新 "+prepared.Count+" 人。全局倍率为 "+gear+" 倍，各球员保留自定义倍率。";
             if(mode.HasValue)feedback+=Environment.NewLine+"成长模式为"+GrowthOptions.ModeNames[(int)mode.Value]+"。";
             if(limit.HasValue)feedback+=Environment.NewLine+(limit.Value?
                 "已为自选属性方案开启上限。"+(skipped>0?" 其他模式 "+skipped+" 人未启用。":""):

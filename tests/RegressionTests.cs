@@ -340,6 +340,7 @@ namespace Fm24Editor
                 GrowthRoleCatalogTests.Run(Check);
                 GrowthFocusTests.Run(Check);
                 GrowthSelectionTests.Run(Check);
+                GrowthMultiplierTests.Run(Check);
                 GrowthSupportTests.Run(Check);
                 GrowthLimitTests.Run(Check);
                 GrowthSquadTests.Run(Check);

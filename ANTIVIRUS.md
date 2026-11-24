@@ -25,7 +25,7 @@ Every version is a new file, so it starts with no reputation again. You can uplo
 - It only touches fm.exe, and only when you click **Attach & scan**.
 - No network code. The only links are the Ko-fi and download page links, which open in your browser when you click them.
 - Installs nothing, adds nothing to startup, does not change Windows settings.
-- In normal use the only files it writes are `settings.txt` and `changes.log` next to the exe.
+- The editor keeps `settings.txt`, `changes.log`, and the `growth-preferences.xml` file and its write-lock file next to the exe.
 - Not packed or obfuscated.
 
 ## Check it yourself

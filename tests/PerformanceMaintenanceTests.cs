@@ -282,6 +282,7 @@ namespace Fm24Editor
                 }
                 RefreshGrow();
                 CheckDefaultCaGrowth(check,club,today,date=>integer(start+8,(int)date),integer);
+                CheckPersonalGrowthMultipliers(check,today,date=>integer(start+8,(int)date),integer);
                 CheckGrowthLimitRuntime(check,club,today,date=>integer(start+8,(int)date));
                 CheckCrossClubGrowth(check,club,team,start,today,ptr,integer,vector);
             }

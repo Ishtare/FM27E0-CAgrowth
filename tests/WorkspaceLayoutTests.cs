@@ -146,6 +146,32 @@ namespace Fm24Editor
             }
         }
 
+        static void CheckPersonalGrowthLayout(Action<bool,string> check,MainForm form,Size size,float fontScale)
+        {
+            using(var editor=new GrowthEditorPanel{Dock=DockStyle.Fill})
+            using(var dialog=form.BuildGrowthSettingsDialog(editor))
+            using(var font=new Font(dialog.Font.FontFamily,dialog.Font.SizeInPoints*fontScale))
+            {
+                dialog.Font=font;
+                editor.Bind(123,"Fixture",new GrowthOptions{CaGrowthMultiplierOverride=10},null,true,false,globalMultiplier:10);
+                ResizeFixture(check,dialog,size,clientArea:true);
+                var fields=(TableLayoutPanel)Named(editor,"GrowthPersonalSettings");
+                CheckContained(check,fields,"personal growth settings "+size+" and font "+fontScale,
+                    fields.Controls.Cast<Control>().ToArray());
+                var input=editor.PersonalMultiplier;
+                var reset=editor.FollowGlobal;
+                int width=TextRenderer.MeasureText(input.Items[0].ToString(),input.Font).Width;
+                check(input.Width>=width+SystemInformation.VerticalScrollBarWidth &&
+                    fields.GetRowHeights()[fields.GetRow(input)]>=input.Height+input.Margin.Vertical &&
+                    reset.Width>=reset.PreferredSize.Width && reset.Height>=reset.PreferredSize.Height,
+                    "the individual rate and reset controls fit at "+size+" and font "+fontScale);
+                var close=Named(dialog,"CloseGrowthSettings");
+                CheckContained(check,dialog,"personal growth dialog "+size,editor,close);
+                check(editor.Mode.TabIndex<input.TabIndex && input.TabIndex<reset.TabIndex && dialog.AcceptButton==close,
+                    "keyboard navigation visits mode, multiplier and reset in order; Enter still completes the dialog");
+            }
+        }
+
         static void CheckOptimizationLayout(Action<bool,string> check,Size size,float fontScale,bool floorConflict=false)
         {
             var fixture=new GrowthFocusTests.Fixture();
@@ -541,6 +567,8 @@ namespace Fm24Editor
                     check(editor.AutoScroll && editor.Controls[0].Height>editor.ClientSize.Height && close==dialog.AcceptButton,
                         "the narrow growth dialog scrolls the settings with its completion button outside the scroll region");
                 }
+                CheckPersonalGrowthLayout(check,form,new Size(400,360),1.4f);
+                CheckPersonalGrowthLayout(check,form,new Size(510,720),1f);
                 using(var currency=form.BuildCurrencyDialog())
                 {
                     ResizeFixture(check,currency,new Size(540,290),clientArea:true);

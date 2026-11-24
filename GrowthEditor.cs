@@ -18,7 +18,19 @@ namespace Fm24Editor
         readonly Label playerName = new Label { Dock=DockStyle.Fill, AutoEllipsis=true, TextAlign=ContentAlignment.MiddleLeft };
         readonly Label selection = new Label { Dock=DockStyle.Fill, TextAlign=ContentAlignment.MiddleLeft };
         readonly Label help = new Label { Dock=DockStyle.Fill, ForeColor=MainForm.UiMuted, UseMnemonic=false };
-        internal readonly ComboBox Mode = new ComboBox { Name="GrowthFocusMode", Dock=DockStyle.Fill, DropDownStyle=ComboBoxStyle.DropDownList };
+        internal readonly ComboBox Mode = new ComboBox
+        {
+            Name="GrowthFocusMode",Dock=DockStyle.Fill,DropDownStyle=ComboBoxStyle.DropDownList,DropDownWidth=300,TabIndex=0
+        };
+        internal readonly ComboBox PersonalMultiplier = new ComboBox
+        {
+            Name="GrowthPersonalMultiplier",AccessibleName="个人成长倍率",Dock=DockStyle.Fill,
+            DropDownStyle=ComboBoxStyle.DropDownList,TabIndex=1
+        };
+        internal readonly Button FollowGlobal = new Button
+        {
+            Name="GrowthFollowGlobalMultiplier",Text="恢复跟随全局",AutoSize=true,Anchor=AnchorStyles.Right,TabIndex=2
+        };
         readonly DualRoleSelector roles = new DualRoleSelector("Growth");
         internal ComboBox Direction {get{return roles.InRole;}}
         internal ComboBox PositionGroup {get{return roles.InPosition;}}
@@ -34,7 +46,9 @@ namespace Fm24Editor
         internal readonly Button ConfigureSupport = new Button {Name="GrowthSupportSettings",Text="补强设置…",Width=100};
         readonly CheckedListBox[] lists = new CheckedListBox[4];
         readonly TableLayoutPanel body;
+        readonly TableLayoutPanel selectors;
         GrowthOptions options = new GrowthOptions();
+        int globalMultiplier = GrowthOptions.DefaultMultiplier;
         byte[] positions;
         byte[] currentAttributes;
         int currentCa;
@@ -56,12 +70,22 @@ namespace Fm24Editor
             body.RowStyles.Add(new RowStyle(SizeType.Percent,100));body.RowStyles.Add(new RowStyle(SizeType.Absolute,50));body.RowStyles.Add(new RowStyle(SizeType.Absolute,76));
             body.Controls.Add(new Label {Text="球员培养设置",Font=new Font(Font,FontStyle.Bold),Dock=DockStyle.Fill},0,0);
             playerName.Font=new Font(Font,FontStyle.Bold);body.Controls.Add(playerName,0,1);
-            var selectors=new TableLayoutPanel {Dock=DockStyle.Fill,ColumnCount=2,RowCount=2,Margin=Padding.Empty};
-            selectors.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,44));selectors.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
-            selectors.RowStyles.Add(new RowStyle(SizeType.Absolute,32));selectors.RowStyles.Add(new RowStyle(SizeType.Percent,100));
-            selectors.Controls.Add(new Label {Text="模式",Dock=DockStyle.Fill,TextAlign=ContentAlignment.MiddleLeft},0,0);selectors.Controls.Add(Mode,1,0);
-            selectors.Controls.Add(roles,0,1);selectors.SetColumnSpan(roles,2);body.Controls.Add(selectors,0,2);body.RowStyles[2].Height=180;
+            selectors=new TableLayoutPanel {Name="GrowthPersonalSettings",Dock=DockStyle.Fill,ColumnCount=2,RowCount=4,Margin=Padding.Empty};
+            selectors.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            selectors.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
+            for(int i=0;i<3;i++)selectors.RowStyles.Add(new RowStyle(SizeType.Absolute,30));
+            selectors.RowStyles.Add(new RowStyle(SizeType.Percent,100));
+            selectors.Controls.Add(new Label {Text="模式",AutoSize=true,Anchor=AnchorStyles.Left},0,0);
+            selectors.Controls.Add(Mode,1,0);
+            selectors.Controls.Add(new Label {Text="个人倍率",AutoSize=true,Anchor=AnchorStyles.Left},0,1);
+            selectors.Controls.Add(PersonalMultiplier,1,1);
+            selectors.Controls.Add(FollowGlobal,1,2);
+            roles.TabIndex=3;
+            selectors.Controls.Add(roles,0,3);selectors.SetColumnSpan(roles,2);
+            body.Controls.Add(selectors,0,2);
             Mode.Items.AddRange(GrowthOptions.ModeNames);
+            PersonalMultiplier.Items.Add("跟随全局("+globalMultiplier+"x)");
+            for(int rate=GrowthOptions.MinMultiplier;rate<=GrowthOptions.MaxMultiplier;rate++)PersonalMultiplier.Items.Add(rate+"x");
             selection.AutoEllipsis=true;
             var quick=new TableLayoutPanel {Dock=DockStyle.Fill,ColumnCount=2,RowCount=1,Margin=Padding.Empty};
             quick.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));quick.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,58));quick.Controls.Add(Speed,0,0);quick.Controls.Add(ClearAttributes,1,0);body.Controls.Add(quick,0,3);
@@ -88,9 +112,15 @@ namespace Fm24Editor
             actions.RowStyles.Add(new RowStyle(SizeType.Percent,50));actions.RowStyles.Add(new RowStyle(SizeType.Percent,50));
             actions.Controls.Add(Watch,0,0);actions.Controls.Add(Preview,1,0);actions.Controls.Add(ApplyChecked,0,1);actions.SetColumnSpan(ApplyChecked,2);body.Controls.Add(actions,0,7);
             MainForm.StyleButton(Watch,WorkspaceButtonRole.Primary);
-            foreach(var button in new[]{Speed,ClearAttributes,ApplyChecked,Preview,ConfigureSupport})MainForm.StyleButton(button);
+            foreach(var button in new[]{Speed,ClearAttributes,ApplyChecked,Preview,ConfigureSupport,FollowGlobal})MainForm.StyleButton(button);
             Controls.Add(body);
             Resize+=delegate{FitEditorHeight();};
+            foreach(var input in new[]{Mode,PersonalMultiplier})
+            {
+                input.FontChanged+=delegate{FitEditorHeight();};
+                input.HandleCreated+=delegate{FitEditorHeight();};
+            }
+            FollowGlobal.FontChanged+=delegate{FitEditorHeight();};
             FontChanged+=delegate
             {
                 playerName.Font=new Font(Font,FontStyle.Bold);
@@ -104,6 +134,12 @@ namespace Fm24Editor
                 options.Mode=(GrowthMode)Mode.SelectedIndex;
                 Rebuild();Emit();
             };
+            PersonalMultiplier.SelectedIndexChanged+=delegate
+            {
+                int index=PersonalMultiplier.SelectedIndex;
+                if(index>=0)ChangeMultiplier(index==0?(int?)null:index+GrowthOptions.MinMultiplier-1);
+            };
+            FollowGlobal.Click+=delegate{ChangeMultiplier(null);};
             roles.Changed+=(inside,outside,weight)=>{if(binding || uid==0 || running)return;options.Profile=inside;options.DefendingProfile=outside;options.PossessionWeight=weight;Rebuild();Emit();};
             Speed.Click+=delegate {if(uid==0 || running)return;options.Mode=GrowthMode.SelectedAttributes;options.Attributes=new[]{34,38};Rebuild();AttributeTabs.SelectedIndex=2;Emit();};
             ClearAttributes.Click+=delegate {if(uid==0 || running)return;options.Mode=GrowthMode.SelectedAttributes;options.Attributes=new int[0];Rebuild();Emit();};
@@ -146,6 +182,15 @@ namespace Fm24Editor
         void Emit(){if(OptionsChanged!=null)OptionsChanged(uid,options.Clone());}
         void FitEditorHeight()
         {
+            for(int row=0;row<2;row++)
+            {
+                var input=(ComboBox)selectors.GetControlFromPosition(1,row);
+                var label=(Label)selectors.GetControlFromPosition(0,row);
+                selectors.RowStyles[row].Height=Math.Max(input.PreferredHeight+input.Margin.Vertical,label.PreferredHeight+label.Margin.Vertical);
+            }
+            selectors.RowStyles[2].Height=FollowGlobal.PreferredSize.Height+FollowGlobal.Margin.Vertical;
+            body.RowStyles[2].Height=selectors.RowStyles[0].Height+selectors.RowStyles[1].Height+
+                selectors.RowStyles[2].Height+Math.Max(148,Font.Height*9);
             int fixedRows=(int)Math.Ceiling(body.RowStyles.Cast<RowStyle>().Where(row=>row.SizeType==SizeType.Absolute).Sum(row=>row.Height));
             int minimum=fixedRows+Font.Height*12+body.Padding.Vertical;
             int height=Math.Max(minimum,ClientSize.Height-Padding.Vertical);
@@ -164,11 +209,43 @@ namespace Fm24Editor
             finally { binding=false; }
             RefreshSummary();Emit();
         }
-        public void Bind(int playerUid,string name,GrowthOptions value,byte[] currentPositions,bool isWatched,bool isRunning,byte[] attributes=null,int ca=0,int? age=null)
+        void ChangeMultiplier(int? value)
+        {
+            if(binding || uid<=0 || running || options.CaGrowthMultiplierOverride==value)return;
+            options.CaGrowthMultiplierOverride=value;
+            UpdateMultiplierControls();
+            Emit();
+        }
+
+        internal void SetGlobalMultiplier(int value)
+        {
+            if(globalMultiplier==value)return;
+            globalMultiplier=GrowthOptions.ValidateMultiplier(value);
+            bool wasBinding=binding;binding=true;
+            try
+            {
+                PersonalMultiplier.Items[0]="跟随全局("+globalMultiplier+"x)";
+                UpdateMultiplierControls();
+            }
+            finally{binding=wasBinding;}
+        }
+
+        void UpdateMultiplierControls()
+        {
+            int? rate=options.CaGrowthMultiplierOverride;
+            PersonalMultiplier.SelectedIndex=rate.HasValue?rate.Value-GrowthOptions.MinMultiplier+1:0;
+            PersonalMultiplier.Enabled=uid>0 && !running;
+            FollowGlobal.Enabled=PersonalMultiplier.Enabled && rate.HasValue;
+        }
+
+        public void Bind(int playerUid,string name,GrowthOptions value,byte[] currentPositions,bool isWatched,bool isRunning,
+            byte[] attributes=null,int ca=0,int? age=null,int globalMultiplier=GrowthOptions.DefaultMultiplier)
         {
             uid=playerUid;options=(value??new GrowthOptions()).Clone();positions=currentPositions==null?null:(byte[])currentPositions.Clone();running=isRunning;watched=isWatched;
             currentAttributes=attributes==null?null:(byte[])attributes.Clone();currentCa=ca;currentAge=age;
-            playerName.Text=uid==0?"从名单中选择一名球员":name;Rebuild();
+            playerName.Text=uid==0?"从名单中选择一名球员":name;
+            SetGlobalMultiplier(globalMultiplier);
+            Rebuild();
         }
         void Rebuild()
         {
@@ -181,6 +258,7 @@ namespace Fm24Editor
                 foreach(var list in lists)list.Items.Clear();
                 for(int i=0;i<54;i++)if(GrowthProfile.Developable(i) && profile.Cost(i)>0)lists[Category(i)].Items.Add(new AttributeItem{Index=i},checkedValues.Contains(i));
                 Mode.Enabled=active && !running;
+                UpdateMultiplierControls();
                 AttributeTabs.Enabled=active && options.UsesAttributes;
                 foreach(var list in lists)list.Enabled=active && !running && options.UsesAttributes;
                 AttributeTabs.TabPages[3].Enabled=lists[3].Items.Count>0;

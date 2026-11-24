@@ -22,6 +22,11 @@ namespace Fm24Editor
         readonly Button btnGrowEdit=new Button{Name="GrowthEditPlayer",Text="球员设置…",Width=100};
         readonly Button btnGrowOptimize=new Button{Name="GrowthOptimizeAttributes",Text="属性优化…",Width=105};
         readonly Button btnGrowBatch=new Button{Name="GrowthBatchSettings",Text="批量设置整份培养名单…",AutoSize=true,Enabled=false};
+        readonly DataGridViewTextBoxColumn growMultiplierColumn=new DataGridViewTextBoxColumn
+        {
+            Name="GrowthMultiplier",HeaderText="成长倍率",ReadOnly=true,FillWeight=90,MinimumWidth=96,
+            ToolTipText="全局倍率随上方设置变化。自定义倍率仅用于该球员。"
+        };
         SplitContainer growContent;
         bool growClubFilling,growLayoutBusy;
         readonly System.Windows.Forms.Timer growthBatchTimer=new System.Windows.Forms.Timer{Interval=15};
@@ -54,13 +59,14 @@ namespace Fm24Editor
             lblGrow.Dock=DockStyle.None;lblGrow.AutoSize=true;lblGrow.Anchor=AnchorStyles.Left;
             lblGrow.Padding=Padding.Empty;lblGrow.ForeColor=UiMuted;title.Controls.Add(lblGrow);
             cmbGrowSpeed.Name="GrowthSpeed";cmbGrowSpeed.Width=90;cmbGrowSpeed.Margin=new Padding(3,4,8,4);
-            for(int g=2;g<=10;g++)cmbGrowSpeed.Items.Add(g+" 倍");cmbGrowSpeed.SelectedIndex=2;
+            for(int g=GrowthOptions.MinMultiplier;g<=GrowthOptions.MaxMultiplier;g++)cmbGrowSpeed.Items.Add(g+" 倍");
+            cmbGrowSpeed.SelectedIndex=GrowthOptions.DefaultMultiplier-GrowthOptions.MinMultiplier;
             var fill=new Button{Name="GrowthFillToPa",Text="直接到 PA",Width=100};StyleButton(fill);StyleButton(btnGrowEdit);StyleButton(btnGrowToggle,WorkspaceButtonRole.Primary);btnGrowToggle.Width=144;btnGrowToggle.Name="GrowthStartStop";
             StyleButton(btnGrowOptimize);
             foreach(var button in new[]{btnGrowEdit,btnGrowOptimize,fill,btnGrowToggle})button.AutoSize=true;
             var singleActions=FieldGroup(FieldLabel("单人设置"),btnGrowEdit,btnGrowOptimize);
             singleActions.Name="GrowthSingleActions";
-            growButtons=FieldGroup(FieldLabel("批量动作"),FieldLabel("速度"),cmbGrowSpeed,fill,btnGrowToggle);
+            growButtons=FieldGroup(FieldLabel("批量动作"),FieldLabel("全局倍率"),cmbGrowSpeed,fill,btnGrowToggle);
             growButtons.Name="GrowthActions";
             var commands=WrappingBar("GrowthCommandBar");
             commands.Dock=DockStyle.Bottom;
@@ -101,6 +107,7 @@ namespace Fm24Editor
             gridGrow.Columns[7].FillWeight=80;gridGrow.Columns[8].FillWeight=110;gridGrow.Columns[9].FillWeight=105;
             var clubColumn=gridGrow.Columns[gridGrow.Columns.Add("GrowthPlayingClub","当前效力俱乐部")];
             clubColumn.ReadOnly=true;clubColumn.FillWeight=120;clubColumn.MinimumWidth=112;clubColumn.DisplayIndex=2;
+            gridGrow.Columns.Add(growMultiplierColumn);growMultiplierColumn.DisplayIndex=6;
             UpdateGrowthColumns();
             center.Controls.Add(gridGrow);
             center.Controls.Add(toolbar);
@@ -115,6 +122,7 @@ namespace Fm24Editor
             root.Controls.Add(title);
             page.Controls.Add(root);
             ConnectGrowthEditor(growEditor);
+            cmbGrowSpeed.SelectedIndexChanged+=delegate{RefreshGrowthMultipliers();};
             txtGrowClubSearch.TextChanged+=delegate{if(growthMultiClub.Checked)PopulateGrowthClubList();else FilterGrowClubs();};
             lstGrowClubs.SelectedIndexChanged+=delegate{if(!growClubFilling && !growthMultiClub.Checked){RebuildGrowthScopes();LoadGrow();}};
             txtGrowPlayerSearch.TextChanged+=delegate{if(!switchingGrowthView)LoadGrow();};
@@ -284,11 +292,29 @@ namespace Fm24Editor
 
         // the selected gear m: K = 40 / m in-game days per CA point (4x -> K=10). A player's time depends only on
         // his gap, not his age, with a 21-day floor and no upper cap
-        int GrowGear() { return cmbGrowSpeed.SelectedIndex + 2; }
+        int GrowGear()
+        {
+            int index=cmbGrowSpeed.SelectedIndex;
+            return index<0?GrowthOptions.DefaultMultiplier:GrowthOptions.ValidateMultiplier(index+GrowthOptions.MinMultiplier);
+        }
         int GrowSpanFor(int ca, int cap,int gear)
         {
-            double k = 40.0 / gear;
+            double k = 40.0 / GrowthOptions.ValidateMultiplier(gear);
             return Math.Max(21, (int)Math.Round((cap - ca) * k));
+        }
+
+        void RefreshGrowthMultipliers()
+        {
+            int global=GrowGear();
+            growEditor.SetGlobalMultiplier(global);
+            foreach(DataGridViewRow row in gridGrow.Rows)
+            {
+                var player=row.Tag as Player;
+                if(player==null)continue;
+                GrowTarget target;
+                var options=growWatch.TryGetValue(player.Person,out target)?target.Options:OptionsFor(player);
+                SetGrowthCell(row,growMultiplierColumn.Index,options.MultiplierLabel(global));
+            }
         }
 
         // natural growth: quick while there is a long way to go, slowing down as CA nears the ceiling, and exactly
@@ -554,9 +580,11 @@ namespace Fm24Editor
             RebuildGrowthLimitSchedule();
             SetGrowControlsLocked(true);
             string limits=growthLimitTargets.Length>0?"，"+growthLimitTargets.Length+" 人启用属性上限":"";
-            LogLine("CA 成长已开启：" + n + " 名球员，" + (growWatch.Values.Any(t => t.UseFocus) ? "按各球员培养设置" : "仅加速成长（系统自动分配属性）") + "，速度档位 " + GrowGear() + " 倍，各球员独立计算时长，上限为 PA"+limits);
+            int custom=growWatch.Values.Count(t=>!t.Done && t.Options.CaGrowthMultiplierOverride.HasValue);
+            string rates="全局倍率 "+GrowGear()+"x"+(custom>0?"，"+custom+" 人使用自定义倍率":"");
+            LogLine("CA 成长已开启：" + n + " 名球员，" + (growWatch.Values.Any(t => t.UseFocus) ? "按各球员培养设置" : "仅加速成长（系统自动分配属性）") + "，"+rates+"，各球员独立计算时长，上限为 PA"+limits);
             RefreshGrow();
-            lblStatus.Text = "成长运行中：" + n + " 人，" + GrowGear() + " 倍加速"+limits+"。保持修改器开启。";
+            lblStatus.Text = "成长运行中：" + n + " 人，" + rates+limits+"。保持修改器开启。";
         }
 
         void StopGrow(string why)

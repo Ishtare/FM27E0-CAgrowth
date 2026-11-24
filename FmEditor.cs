@@ -2007,8 +2007,9 @@ CurrentDateRva = 0x56237C8
             return g;
         }
 
-        public MainForm(bool autoScan, bool calibrate)
+        public MainForm(bool autoScan, bool calibrate, GrowthPreferenceStore savedGrowthPreferences = null)
         {
+            this.savedGrowthPreferences = savedGrowthPreferences;
             PlayerNames.Load(AppDomain.CurrentDomain.BaseDirectory, false);
             forceCalibrate = calibrate;
             Text = "FM27E0 汉化修改器 v" + Version;
@@ -2067,6 +2068,7 @@ CurrentDateRva = 0x56237C8
             btnScan.Click += delegate { StartScan(); };
             if (autoScan) Shown += delegate { StartScan(); };
             LoadSettings();
+            LoadGrowthPreferences();
             RefreshCurrency();
             Zh.Tree(this);   // Chinese labels for everything built above
             PolishWorkspace(this);
@@ -5449,7 +5451,8 @@ CurrentDateRva = 0x56237C8
                 return 0;
             }
             Application.EnableVisualStyles();
-            Application.Run(new MainForm(args.Contains("--scan"), args.Contains("--calibrate")));
+            var preferences = new GrowthPreferenceStore(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, GrowthPreferenceStore.FileName));
+            Application.Run(new MainForm(args.Contains("--scan"), args.Contains("--calibrate"), preferences));
             return 0;
         }
 

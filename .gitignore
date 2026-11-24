@@ -1,6 +1,9 @@
 # Local runtime data
 /names/
 /settings.txt
+/growth-preferences.xml
+/growth-preferences.xml.lock
+/growth-preferences.xml.*.tmp
 /changes.log
 *.log
 *.fm
