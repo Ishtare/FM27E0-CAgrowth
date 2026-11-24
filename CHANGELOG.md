@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.1.34 (modified release, 2026-11-25)
 
 - Set a personal CA growth multiplier from 2x to 10x or restore the global rate. Show each player's effective rate in the roster and preserve overrides during global rate changes.
 - Save each player's growth mode, roles, selected attributes and multiplier in `growth-preferences.xml` beside the executable. Restore the plan for matching players after a restart or reattach. Select the growth roster again after connecting.
