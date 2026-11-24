@@ -12,7 +12,7 @@ namespace Fm24Editor
         public readonly string Group, Phase, English;
         public readonly int[] Core, Supporting;
         readonly int[] withinTierPriority;
-        int[] compositeCosts,compositePriorities;
+        int[] compositeCosts,compositePriorities,compositeWithinTierPriorities;
         public int Scale {get{return compositeCosts==null?1:100;}}
         internal GrowthProfile(string name, int[] core, int[] supporting, string group = null, string phase = "基本",
             string english = "", int[] withinTierPriority = null)
@@ -20,7 +20,12 @@ namespace Fm24Editor
             Name=name; Core=core; Supporting=supporting; Group=group??(name=="前锋"?"中锋":name); Phase=phase; English=english;
             this.withinTierPriority=withinTierPriority??new int[0];
         }
-        public int WithinTierPriority(int attribute) { return Array.IndexOf(withinTierPriority,attribute)>=0?1:0; }
+        public int WithinTierPriority(int attribute)
+        {
+            if(attribute<0 || attribute>=54)return 0;
+            if(compositeWithinTierPriorities!=null)return compositeWithinTierPriorities[attribute];
+            return Array.IndexOf(withinTierPriority,attribute)>=0?1:0;
+        }
         public string DisplayName {get{return Phase=="基本"?Name+"（基本方案）":Name+"（"+Phase+"）";}}
 
         static readonly GrowthProfile[] Basic = {
@@ -50,6 +55,9 @@ namespace Fm24Editor
             return Core.Contains(attribute) ? 3 : Supporting.Contains(attribute) ? 2 : 1;
         }
         public int Priority(int attribute) { return compositePriorities!=null?(attribute>=0 && attribute<54?compositePriorities[attribute]:0):Core.Contains(attribute) ? 6 : Supporting.Contains(attribute) ? 2 : 0; }
+        int HighlightTier(int attribute)
+        { return Core.Contains(attribute)?2:Supporting.Contains(attribute)?1:0; }
+
         public static GrowthProfile Combine(GrowthProfile possession,GrowthProfile defending,int possessionWeight)
         {
             if(possessionWeight<0 || possessionWeight>100)throw new ArgumentOutOfRangeException("possessionWeight");
@@ -62,6 +70,12 @@ namespace Fm24Editor
             var combined=new GrowthProfile("有球："+possession.Name+" / 无球："+defending.Name,core,supporting,possession.Group,"双阶段");
             combined.compositeCosts=Enumerable.Range(0,54).Select(i=>possession.Cost(i)*possessionWeight+defending.Cost(i)*(100-possessionWeight)).ToArray();
             combined.compositePriorities=Enumerable.Range(0,54).Select(i=>possession.Priority(i)*possessionWeight+defending.Priority(i)*(100-possessionWeight)).ToArray();
+            combined.compositeWithinTierPriorities=Enumerable.Range(0,54).Select(i=>
+            {
+                int inside=possession.HighlightTier(i),outside=defending.HighlightTier(i);
+                return (inside>=outside?possession.WithinTierPriority(i)*possessionWeight:0)+
+                    (outside>=inside?defending.WithinTierPriority(i)*(100-possessionWeight):0);
+            }).ToArray();
             return combined;
         }
         // selected == -1 means the highest familiarity, with a stable first-position tie break.
@@ -296,12 +310,8 @@ namespace Fm24Editor
 
             var budget=new AttributeBudget(recommendation,limit);
             int supportLimit=Math.Max(0,limit-baselineRca)*supportPercent/100;
-            for(var tier=AttributeTier.Core;tier<=AttributeTier.Foundation;tier++)
-            {
-                var members=RoleTiers.Members(tier);
-                if(supportLimit>0)ApplyRoleSupport(result,members,limit,supportLimit);
-                if(!budget.Raise(result.After,members,RoleAttributeTiers.Target(tier)))break;
-            }
+            Action<int[]> beforeTier=supportLimit>0?(Action<int[]>)(members=>ApplyRoleSupport(result,members,limit,supportLimit)):null;
+            RoleTiers.RaiseDevelopment(result.After,budget,beforeTier);
             result.RecommendationAfter=recommendation.Estimate(result.After);
             for(int i=0;i<result.After.Length;i++)
             {

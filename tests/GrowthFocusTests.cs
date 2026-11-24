@@ -140,7 +140,7 @@ namespace Fm24Editor
                 "natural increases in unrelated attributes consume the same cumulative RCA allowance");
             check(focus.AllocateForGrowth(values,startingCa,200).RawAdded==0,"an unchanged CA goal grants no role growth");
 
-            bool trainedGreen=false,trainedWhite=false;
+            bool trainedGreen=false,trainedWhite=false,advancedBlue=false,advancedGreen=false;
             foreach(int desired in new[]{startingCa+6,startingCa+16,135,150,165,180,200}.Where(ca=>ca>startingCa).Distinct().OrderBy(ca=>ca))
             {
                 var step=fixture.Capture();
@@ -151,23 +151,35 @@ namespace Fm24Editor
                 bool grewWhite=white.Any(i=>allocation.After[i]>step.Attributes[i]);
                 check(allocation.RecommendationLimit==limit && allocation.RecommendationAfter==model.Estimate(allocation.After) &&
                     allocation.RecommendationAfter<=limit,"consecutive role steps use the original RCA plus cumulative CA at "+desired);
-                check((!grewGreen || blue.All(i=>allocation.After[i]>=85)) &&
-                    (!grewWhite || green.All(i=>allocation.After[i]>=75)), "later tiers wait for earlier goals at "+desired);
+                check((!grewGreen || blue.All(i=>allocation.After[i]>=75)) &&
+                    (!grewWhite || green.All(i=>allocation.After[i]>=70)), "later tiers wait for earlier base goals at "+desired);
+                bool raisedBlueBeyondBase=blue.Any(i=>allocation.After[i]>Math.Max(75,(int)step.Attributes[i]));
+                bool raisedGreenBeyondBase=green.Any(i=>allocation.After[i]>Math.Max(70,(int)step.Attributes[i]));
+                check((!raisedBlueBeyondBase || green.All(i=>allocation.After[i]>=70) && white.All(i=>allocation.After[i]>=55)) &&
+                    (!raisedGreenBeyondBase || blue.All(i=>allocation.After[i]>=85) && white.All(i=>allocation.After[i]>=55)),
+                    "the second pass waits for the complete base and advances blue before green at "+desired);
+                check(blue.All(i=>allocation.After[i]<=Math.Max(85,(int)values[i])) &&
+                    green.All(i=>allocation.After[i]<=Math.Max(75,(int)values[i])),
+                    "directed growth stops at the milestone instead of distributing redistribution-only surplus at "+desired);
                 check(allocation.After[marking]==67 && allocation.After.Zip(step.Attributes,(after,before)=>after>=before).All(ok=>ok),
                     "incremental role growth preserves existing values, including a T4 value above ten");
                 check(focus.AllocateForGrowth(allocation.After,desired,200).RawAdded==0,
                     "re-evaluating an applied tier budget at the same CA cannot grant it again");
                 check(fixture.Apply(step,out error),"apply and read back the consecutive exact-RCA growth step at "+desired);
                 trainedGreen|=grewGreen;trainedWhite|=grewWhite;
+                advancedBlue|=raisedBlueBeyondBase;advancedGreen|=raisedGreenBeyondBase;
             }
             check(trainedGreen && trainedWhite,"successive CA increases unlock both supporting and foundation targets");
+            check(advancedBlue && advancedGreen,"successive CA increases also unlock both milestone stages");
 
             using(var form=new MainForm(false,false))
             using(var dialog=form.BuildGrowthPreview(fixture.Player,frame,focus))
             {
                 var rows=(DataGridView)dialog.Controls.Find("GrowthPrimaryPreview",true).Single();
                 var preview=dialog.Controls.Find("GrowthPreviewBudget",true).Single();
-                check(preview.Text.Contains("累计预算上限") && rows.Rows.Cast<DataGridViewRow>().Any(row=>(string)row.Cells[2].Value=="12"),
+                var goals=rows.Rows.Cast<DataGridViewRow>().Select(row=>(string)row.Cells[2].Value).ToArray();
+                check(preview.Text.Contains("累计预算上限") && goals.Contains("11") &&
+                    goals.Contains("15 → 17") && goals.Contains("14 → 15"),
                     "the role preview reports the shared RCA ceiling and shows the foundation targets");
             }
         }

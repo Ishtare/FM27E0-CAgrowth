@@ -20,8 +20,9 @@ namespace Fm24Editor
             var targets=focus.TargetAttributes;
             string budget=allocation.RecommendationLimit.HasValue
                 ?"预计 RCA "+allocation.RecommendationBefore+" → "+allocation.RecommendationAfter+
-                    "，累计预算上限 "+allocation.RecommendationLimit+"。依次补足蓝 17、绿 15、白 12。"
+                    "，累计预算上限 "+allocation.RecommendationLimit+"。"
                 :focus.CustomSelection?"主要培养与低值补强共用预算，按实际位置核对估算 RCA。":"定向成长保留其余属性的现值。";
+            if(!focus.CustomSelection)budget+="先补蓝 15、绿 14、白 11，再补蓝 17、绿 15。";
             var note=new Label{Name="GrowthPreviewBudget",Dock=DockStyle.Top,Padding=new Padding(4),UseMnemonic=false,ForeColor=UiMuted,
                 Text="方案："+(focus.CustomSelection?"自选 "+targets.Length+" 项属性":focus.Profile.Name)+"；CA "+frame.Ca+" → "+frame.Cap+"。\n"+
                 (hasRoom?"下表为达到 PA 时的估算最终值。":"当前 CA 已达 PA。")+"\n"+budget+"\n"+
@@ -29,12 +30,20 @@ namespace Fm24Editor
                     "游戏自身训练仍可能调整其他属性。")};
             WrapDockedLabel(note);
             var tabs=new TabControl{Name="GrowthPreviewSections",Dock=DockStyle.Fill,TabIndex=0};var primary=new TabPage("主要培养");var support=new TabPage("低值补强");tabs.TabPages.Add(primary);tabs.TabPages.Add(support);
-            var main=NewGrid();main.Name="GrowthPrimaryPreview";main.ReadOnly=true;foreach(string title in new[]{"属性","优先级","目标","当前","预计最终","增幅"})main.Columns.Add(title,title);
+            var main=NewGrid();main.Name="GrowthPrimaryPreview";main.ReadOnly=true;foreach(string title in new[]{"属性","优先级","基准／冲高","当前","预计最终","增幅"})main.Columns.Add(title,title);
             foreach(int i in targets)
             {
                 var tier=focus.CustomSelection?AttributeTier.Protected:focus.RoleTiers.TierOf(i);
-                main.Rows.Add(Zh.Attr(FmLayout.Attrs[i]),focus.CustomSelection?"自选":RoleAttributeTiers.Label(tier),
-                    focus.CustomSelection?"—":(RoleAttributeTiers.Target(tier)/5).ToString(),
+                string goal="—";
+                string priority="自选";
+                if(!focus.CustomSelection)
+                {
+                    int target=RoleAttributeTiers.Target(tier),milestone=RoleAttributeTiers.Milestone(tier);
+                    goal=(target/5).ToString();
+                    if(milestone>target)goal+=" → "+(milestone/5);
+                    priority=RoleAttributeTiers.Label(tier)+(focus.Profile.WithinTierPriority(i)>0?" · 优先":"");
+                }
+                main.Rows.Add(Zh.Attr(FmLayout.Attrs[i]),priority,goal,
                     (frame.Attributes[i]/5.0).ToString("0.0"),(allocation.After[i]/5.0).ToString("0.0"),
                     ((allocation.After[i]-frame.Attributes[i])/5.0).ToString("+0.0;-0.0;0.0"));
             }

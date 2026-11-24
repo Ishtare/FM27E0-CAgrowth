@@ -52,66 +52,47 @@ namespace Fm24Editor
             var profile=roles.ResolveProfile(frame.Positions);
             var tiers=new RoleAttributeTiers(profile,model);
             var original=frame.Attributes;
-            var floor=(byte[])original.Clone();
-            if(mode==AttributeOptimizationMode.Redistribute)
-                for(int i=0;i<floor.Length;i++)
-                    if(tiers.TierOf(i)!=AttributeTier.Protected)floor[i]=Math.Min(floor[i],(byte)5);
-            int minimum=model.Estimate(floor);
-            if(minimum>targetCa)
+            int beforeRca=model.Estimate(original);
+            if(mode==AttributeOptimizationMode.Preserve && beforeRca>targetCa)
             {
-                string reason;
-                if(mode==AttributeOptimizationMode.Preserve)
-                {
-                    reason="原有属性需要 "+minimum+" 点，超出预算 "+(minimum-targetCa)+" 点。";
-                    reason+=!raiseToPotential && CanRaiseToPotential(frame) && minimum<=frame.RawPa?
-                        "勾选“同时升到 PA”即可继续保留特点。":"可尝试恢复原属性，或选“重新分配”。";
-                }
-                else reason="可调整项降至下限后仍超出 "+(minimum-targetCa)+" 点，受保护属性已占满预算。";
+                string reason="原有属性需要 "+beforeRca+" 点，超出预算 "+(beforeRca-targetCa)+" 点。";
+                reason+=!raiseToPotential && CanRaiseToPotential(frame) && beforeRca<=frame.RawPa?
+                    "勾选“同时升到 PA”即可继续保留特点。":"可尝试恢复原属性，或选“重新分配”。";
                 return new AttributeOptimizationResult(frame,targetCa,(byte[])original.Clone(),profile,tiers,mode,model,reason);
             }
 
             var after=(byte[])original.Clone();
             var budget=new AttributeBudget(model,targetCa);
             if(mode==AttributeOptimizationMode.Redistribute)
-                Redistribute(after,floor,tiers,budget);
-            else if(minimum<targetCa)
             {
-                for(var tier=AttributeTier.Core;tier<=AttributeTier.Foundation;tier++)
-                    if(!budget.Raise(after,tiers.Members(tier),RoleAttributeTiers.Target(tier)))break;
+                if(!Redistribute(after,tiers,budget))
+                {
+                    int required=model.Estimate(after);
+                    string reason="按各档下限降级后仍需 "+required+" 点 RCA，超出预算 "+(required-targetCa)+" 点。保留原属性。";
+                    return new AttributeOptimizationResult(frame,targetCa,(byte[])original.Clone(),profile,tiers,mode,model,reason);
+                }
             }
+            else if(beforeRca<targetCa)tiers.RaiseDevelopment(after,budget);
             return new AttributeOptimizationResult(frame,targetCa,after,profile,tiers,mode,model,null);
         }
 
-        static void Redistribute(byte[] values,byte[] minimum,RoleAttributeTiers tiers,AttributeBudget budget)
+        static bool Redistribute(byte[] values,RoleAttributeTiers tiers,AttributeBudget budget)
         {
             for(var tier=AttributeTier.Core;tier<=AttributeTier.Other;tier++)
                 foreach(int index in tiers.Members(tier))values[index]=(byte)RoleAttributeTiers.Target(tier);
 
-            var blue=tiers.Members(AttributeTier.Core);
-            var green=tiers.Members(AttributeTier.Supporting);
-            var white=tiers.Members(AttributeTier.Foundation);
-            var other=tiers.Members(AttributeTier.Other);
             if(budget.Fits(values))
             {
-                if(budget.Raise(values,blue,100))budget.Raise(values,green,85);
-                return;
+                tiers.RaiseSurplus(values,budget);
+                return true;
             }
 
-            if(budget.Lower(values,other,i=>30) || budget.Lower(values,white,i=>40) ||
-                budget.Lower(values,green,i=>60) || budget.Lower(values,blue,i=>60))
-                return;
-
-            // At low CA, relax both background floors together before lowering the highlights further.
-            var background=white.Concat(other).ToArray();
-            var before=(byte[])values.Clone();
-            for(int retained=99;retained>=0;retained--)
+            for(var tier=AttributeTier.Other;tier>=AttributeTier.Core;tier--)
             {
-                foreach(int index in background)
-                    values[index]=(byte)(minimum[index]+(before[index]-minimum[index])*retained/100);
-                if(budget.Fits(values))return;
+                int floor=RoleAttributeTiers.Floor(tier);
+                if(budget.Lower(values,tiers.Members(tier),i=>floor))return true;
             }
-            if(!budget.Lower(values,green,i=>minimum[i]))
-                budget.Lower(values,blue,i=>minimum[i]);
+            return false;
         }
         public static void Validate(AttributeOptimizationResult result)
         {
@@ -125,9 +106,14 @@ namespace Fm24Editor
                result.AfterRca>result.TargetCa)
                 throw new InvalidDataException("属性方案的估算值超出所选预算或预览已变化。");
             for(int i=0;i<54;i++)
+            {
+                var tier=result.Tiers.TierOf(i);
                 if((!Editable(result.Profile,i) || !model.Counts(i)) && result.Before[i]!=result.After[i] ||
-                   result.Mode==AttributeOptimizationMode.Preserve && result.After[i]<result.Before[i])
+                    result.Mode==AttributeOptimizationMode.Preserve && result.After[i]<result.Before[i] ||
+                    result.Mode==AttributeOptimizationMode.Redistribute && tier!=AttributeTier.Protected &&
+                        result.After[i]<RoleAttributeTiers.Floor(tier))
                     throw new InvalidDataException("属性方案与保护项或所选模式冲突。");
+            }
         }
     }
     partial class MainForm

@@ -146,10 +146,13 @@ namespace Fm24Editor
             }
         }
 
-        static void CheckOptimizationLayout(Action<bool,string> check,Size size,float fontScale)
+        static void CheckOptimizationLayout(Action<bool,string> check,Size size,float fontScale,bool floorConflict=false)
         {
             var fixture=new GrowthFocusTests.Fixture();
-            using(var dialog=new AttributeOptimizationDialog(fixture.Player,fixture.Capture(),new GrowthOptions()))
+            var frame=fixture.Capture();
+            if(floorConflict)frame.Ca=1;
+            var initial=floorConflict?AttributeOptimizationMode.Redistribute:AttributeOptimizationMode.Preserve;
+            using(var dialog=new AttributeOptimizationDialog(fixture.Player,frame,new GrowthOptions(),initial))
             using(var font=new Font(dialog.Font.FontFamily,dialog.Font.SizeInPoints*fontScale))
             {
                 dialog.Font=font;
@@ -190,7 +193,36 @@ namespace Fm24Editor
                 CheckContained(check,comparison,context+" comparison",Named(comparison,"OptimizationComparisonFilter"),grid);
                 SelectPage(sections,1);
                 var details=sections.SelectedTab;
-                CheckContained(check,details,context+" tier details",Named(details,"OptimizationTierDetails"));
+                var tierDetails=Named(details,"OptimizationTierDetails");
+                CheckContained(check,details,context+" tier details",tierDetails);
+                if(floorConflict)
+                    check(summary.Text.Contains("超出预算") && tierDetails.Text.Contains("超出预算") &&
+                        !Named(footer,"ApplyAttributeOptimization").Enabled,
+                        context+" shows the full hard-floor shortfall and disables Apply");
+            }
+        }
+
+        static void CheckGrowthPreviewLayout(Action<bool,string> check,MainForm form,Size size,float fontScale)
+        {
+            var fixture=new GrowthFocusTests.Fixture();
+            var frame=fixture.Capture();
+            var focus=new GrowthOptions().CreateState(frame.Positions,frame.Attributes,frame.Ca);
+            using(var dialog=form.BuildGrowthPreview(fixture.Player,frame,focus))
+            using(var font=new Font(dialog.Font.FontFamily,dialog.Font.SizeInPoints*fontScale))
+            {
+                dialog.Font=font;
+                ResizeFixture(check,dialog,size,clientArea:true);
+                var note=Named(dialog,"GrowthPreviewBudget");
+                var pages=(TabControl)Named(dialog,"GrowthPreviewSections");
+                var footer=Named(dialog,"DialogActions");
+                string context="growth preview at "+size+" and font "+fontScale;
+                CheckContained(check,dialog,context,note,pages,footer);
+                SelectPage(pages,0);
+                var grid=(DataGridView)Named(pages.SelectedTab,"GrowthPrimaryPreview");
+                CheckContained(check,pages.SelectedTab,context+" goals",grid);
+                check(note.Text.Contains("白 11") && note.Text.Contains("再补蓝 17") &&
+                    grid.Columns[2].HeaderText=="基准／冲高",
+                    context+" shows both progression steps with readable goals");
             }
         }
 
@@ -286,8 +318,11 @@ namespace Fm24Editor
             CheckOptimizationLayout(check,new Size(928,590),1.4f);
             CheckOptimizationLayout(check,new Size(1056,700),1f);
             CheckOptimizationLayout(check,new Size(1280,780),1.4f);
+            CheckOptimizationLayout(check,new Size(928,590),1.4f,floorConflict:true);
             using(var form=new MainForm(false,false))
             {
+                CheckGrowthPreviewLayout(check,form,new Size(760,540),1.4f);
+                CheckGrowthPreviewLayout(check,form,new Size(1056,700),1f);
                 var tabs=(TabControl)form.Controls.Find("WorkspaceTabs",true).Single();
                 var feedback=(TextBox)form.Controls.Find("OperationFeedbackText",true).Single();
                 check(feedback.Multiline && feedback.WordWrap && feedback.ReadOnly && feedback.ScrollBars==ScrollBars.Vertical &&

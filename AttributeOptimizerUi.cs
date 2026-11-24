@@ -185,8 +185,10 @@ namespace Fm24Editor
                 bool canPreserveAtPa=!raise.Checked && raise.Enabled && plan.BeforeRca<=frame.RawPa;
                 canSwitchMode=plan.Mode==AttributeOptimizationMode.Preserve && plan.Conflict!=null && !canPreserveAtPa;
                 summary.ForeColor=plan.Conflict==null?MainForm.UiMuted:MainForm.UiWarningInk;
+                string headroom=plan.Conflict==null?"     剩余额度 "+plan.Remaining+" 点":
+                    plan.Mode==AttributeOptimizationMode.Preserve?"     原属性超额 "+(-plan.Remaining)+" 点":"";
                 summary.Text="CA "+plan.SourceCa+" → "+plan.TargetCa+"     整套属性估算 "+plan.BeforeRca+" → "+plan.AfterRca+
-                    "     "+(plan.Remaining<0?"超额 "+(-plan.Remaining):"剩余额度 "+plan.Remaining)+" 点\n"+
+                    headroom+"\n"+
                     (plan.Conflict??("提高 "+plan.Increased+" 项，降低 "+plan.Decreased+" 项。计费位置 "+
                     Zh.Z(FmLayout.Positions[plan.AfterSlot])+"。"+(apply.Enabled?"":"当前无需调整。")))+
                     (Math.Max(plan.BeforeRca,plan.AfterRca)>200?"\n游戏推荐 CA 最高显示 200。此处列出未封顶的估算。":"\n可在游戏内对照同一球员的推荐 CA。");
@@ -200,10 +202,12 @@ namespace Fm24Editor
         {
             var lines=new List<string>();
             var gaps=new List<string>();
+            if(plan.Conflict!=null)lines.Add(plan.Conflict);
             for(var tier=AttributeTier.Core;tier<=AttributeTier.Other;tier++)
             {
                 var members=plan.Tiers.Members(tier);
                 int target=RoleAttributeTiers.Target(tier);
+                int milestone=RoleAttributeTiers.Milestone(tier);
                 if(members.Length==0)
                 {
                     lines.Add(RoleAttributeTiers.Label(tier)+"  无可调计费项");
@@ -211,17 +215,26 @@ namespace Fm24Editor
                 else
                 {
                     var values=members.Select(i=>plan.After[i]).ToArray();
-                    lines.Add(RoleAttributeTiers.Label(tier)+"  达标 "+values.Count(v=>v>=target)+"/"+values.Length+
-                        "  目标 "+Display(target)+"  预计 "+Display(values.Min())+"–"+Display(values.Max()));
+                    string regular=RoleAttributeTiers.Label(tier)+"  基准 "+Display(target)+" 达标 "+
+                        values.Count(v=>v>=target)+"/"+values.Length;
+                    if(milestone>target)
+                        regular+="  冲高 "+Display(milestone)+" 达标 "+values.Count(v=>v>=milestone)+"/"+values.Length;
+                    lines.Add(regular+"  预计 "+Display(values.Min())+"–"+Display(values.Max()));
                 }
                 if(tier>AttributeTier.Supporting)continue;
-                var profileIndices=tier==AttributeTier.Core?plan.Profile.Core:plan.Profile.Supporting;
-                var missed=profileIndices.Where(i=>plan.After[i]<target).Select(i=>AttributeName(i)+" "+Display(plan.After[i])+
-                    (plan.Tiers.TierOf(i)==AttributeTier.Protected?"（保留）":"")).ToArray();
-                if(missed.Length>0)gaps.Add(RoleAttributeTiers.Label(tier)+"未达标（"+Display(target)+"）  "+string.Join("、",missed));
+                var missed=members.Where(i=>plan.After[i]<milestone).Select(i=>AttributeName(i)+" "+
+                    Display(plan.After[i])+(plan.After[i]<target?"（基准未达）":"")).ToArray();
+                if(missed.Length>0)
+                    gaps.Add(RoleAttributeTiers.Label(tier)+"未达标（冲高 "+Display(milestone)+"）  "+string.Join("、",missed));
             }
-            unmet.Text=gaps.Count==0?"蓝档和绿档均达到目标。":string.Join(Environment.NewLine,gaps);
+            unmet.Text=gaps.Count==0?"蓝档和绿档均达到冲高目标。":string.Join(Environment.NewLine,gaps);
             unmet.SelectionStart=0;unmet.ScrollToCaret();
+            if(plan.Mode==AttributeOptimizationMode.Redistribute)
+            {
+                var preferred=plan.Tiers.Members(AttributeTier.Core).Where(i=>plan.Profile.WithinTierPriority(i)>0)
+                    .Select(AttributeName).ToArray();
+                if(preferred.Length>0)lines.Add("蓝档达标后 18–20 优先项  "+string.Join("、",preferred));
+            }
             lines.Add("");
             lines.Add("被压低项 "+plan.Decreased+" 项");
             lines.AddRange(Enumerable.Range(0,54).Where(i=>plan.After[i]<plan.Before[i])
@@ -246,6 +259,7 @@ namespace Fm24Editor
                 if(changesOnly.Checked && delta==0)continue;
                 var tier=plan.Tiers.TierOf(i);
                 string basis=GrowthProfile.IsSetPiece(i)?"定位球保留":RoleAttributeTiers.Label(tier);
+                if(tier!=AttributeTier.Protected && plan.Profile.WithinTierPriority(i)>0)basis+=" · 档内优先";
                 int row=grid.Rows.Add(AttributeName(i),Display(plan.Before[i]),Display(plan.After[i]),
                     (delta>0?"+":"")+Display(delta),basis);
                 grid.Rows[row].Cells[3].Style.ForeColor=delta<0?MainForm.UiErrorInk:delta>0?MainForm.UiSuccessInk:MainForm.UiMuted;
