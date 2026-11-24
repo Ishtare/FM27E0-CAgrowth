@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.1.33 (modified release, 2026-11-24)
 
 - Add a dedicated Steam profile for FM27 27.1.1+2511875. Match the engine image and five native signatures covering non-EU status, the game date, retirement, fitness and corporate facilities. Restore club funds, facilities, reputation, stadium capacity, tickets, sponsorship and names, plus condition, match sharpness, morale, injuries and fatigue.
 - Recover finance types in the generic scanner for PC Game Pass, Epic and later 27.1.x builds that share a verified layout. Distinguish full and compact finances by native type and check the supported field layout before applying it. Keep compact finances read-only and retain the existing vote and safety thresholds.

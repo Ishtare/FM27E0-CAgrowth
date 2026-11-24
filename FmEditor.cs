@@ -1857,7 +1857,7 @@ CurrentDateRva = 0x56237C8
 
     partial class MainForm : Form
     {
-        public const string Version = "1.1.32";
+        public const string Version = "1.1.33";
         public const string HomePage = "https://sortitoutsi.net/content/78059/fm27eur0-v100-live-editor-for-fm27";
         FmProcess fm;
         bool forceCalibrate, readOnlyWarned;
