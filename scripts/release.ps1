@@ -27,7 +27,8 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 function Invoke-ReleaseGit([string]$Directory,[string[]]$Arguments) {
     $safe = $Directory.Replace('\','/')
-    & $gitExe --no-optional-locks -c "safe.directory=$safe" -c core.quotePath=false -c core.longpaths=true -C $Directory @Arguments
+    # Use the same text bytes in archives regardless of the host Git line-ending settings.
+    & $gitExe --no-optional-locks -c "safe.directory=$safe" -c core.quotePath=false -c core.longpaths=true -c core.autocrlf=false -c core.eol=lf -C $Directory @Arguments
     if ($LASTEXITCODE -ne 0) { throw "Git $($Arguments[0]) failed with exit code $LASTEXITCODE." }
 }
 
@@ -84,7 +85,7 @@ function Read-ZipHashes([string]$Path,[string]$Prefix = '') {
 
 function Write-Checksums([string]$Path,[hashtable]$Hashes) {
     $lines = @(foreach ($name in ($Hashes.Keys | Sort-Object)) { "$($Hashes[$name])  $name" })
-    [IO.File]::WriteAllLines($Path,[string[]]$lines,$utf8)
+    [IO.File]::WriteAllText($Path,($lines -join "`n")+"`n",$utf8)
 }
 
 function Read-Checksums([string]$Path) {
@@ -185,7 +186,7 @@ function Get-ManagedReleaseVersion($Item) {
     $pattern = if ($Item.PSIsContainer) {
         '^FM27E0-CAgrowth v(?<version>\d{1,5}\.\d{1,5}\.\d{1,5})-(?:发布|测试)包$'
     } else {
-        '^FM27E0-CAgrowth (?:v(?<version>\d{1,5}\.\d{1,5}\.\d{1,5})-完整版发布包)\.zip$|^FM27E0-CAgrowth-v(?<version>\d{1,5}\.\d{1,5}\.\d{1,5})-source\.zip$'
+        '^FM27E0-CAgrowth(?: v(?<version>\d{1,5}\.\d{1,5}\.\d{1,5})-完整版发布包|-v(?<version>\d{1,5}\.\d{1,5}\.\d{1,5})(?:-source)?)\.zip$'
     }
     if ($Item.Name -match $pattern) { return [version]$Matches.version }
 }
@@ -213,7 +214,7 @@ function Get-CleanupPlan([string]$LocalDirectory,[string]$ReleaseDirectory,[vers
                     Assert-MatchingHashes (Read-Checksums (Join-Path $item.FullName 'SHA256SUMS.txt')) $actual $item.Name
                 } else {
                     [void](Get-CheckedItem $item.FullName $ReleaseDirectory)
-                    $prefix = if ($item.Name -like '*-完整版发布包.zip') { "FM27E0-CAgrowth v$oldVersion-发布包/" } else { '' }
+                    $prefix = if ($item.Name -like '*-source.zip') { '' } else { "FM27E0-CAgrowth v$oldVersion-发布包/" }
                     $member = if ($prefix) { "FM27E0-CAgrowth v$oldVersion.exe" } else { 'FmEditor.cs' }
                     if (-not (Read-ZipHashes $item.FullName $prefix).ContainsKey($member)) {
                         throw 'Expected project entry missing from ZIP.'
@@ -245,8 +246,10 @@ function Set-ProjectVersion([string]$Directory,[string]$OldVersion,[string]$NewV
     }
     foreach ($name in @('使用说明-{0}.md','论坛首楼文案-{0}.txt')) {
         $oldName = $name -f $OldVersion
+        $oldPath = Join-Path $Directory $oldName
+        if ($name -like '论坛首楼文案-*' -and -not (Test-Path -LiteralPath $oldPath)) { continue }
         $newName = $name -f $NewVersion
-        [IO.File]::Move((Join-Path $Directory $oldName),(Join-Path $Directory $newName))
+        [IO.File]::Move($oldPath,(Join-Path $Directory $newName))
         Set-Text $Directory $newName {
             param($text)
             $lines = $text -split '\r?\n',2
@@ -267,26 +270,29 @@ function Set-ReleaseNotes([string]$Directory,[string]$NewVersion,[int]$Assertion
         $unreleased = [regex]::new('(?im)^## (?:Unreleased|\[Unreleased\])[ \t]*(?=\r?$)')
         if ($unreleased.IsMatch($text)) { return $unreleased.Replace($text,$heading,1) }
         return [regex]::Replace($text,'\A# Changelog\r?\n\r?\n',
-            "# Changelog$eol$eol$heading$eol$eol- Build and verify the new version. See VALIDATION.md for the test result.$eol$eol")
+            "# Changelog$eol$eol$heading$eol$eol- Built the Windows editor and passed $count offline assertions.$eol$eol")
     }
-    Set-Text $Directory 'VALIDATION.md' {
-        param($text)
-        "# v$NewVersion 验证范围$eol$eol$date，构建通过，完整离线回归通过 $count 项断言。$eol$eol---$eol$eol" +
-            [regex]::Replace($text,'\A# (?!#) ', '## ')
+    if (Test-Path -LiteralPath (Join-Path $Directory 'VALIDATION.md')) {
+        Set-Text $Directory 'VALIDATION.md' {
+            param($text)
+            "# v$NewVersion 验证范围$eol$eol$date，构建通过，完整离线回归通过 $count 项断言。$eol$eol---$eol$eol" +
+                [regex]::Replace($text,'\A# (?!#) ', '## ')
+        }
     }
     Set-Text $Directory 'README.md' {
         param($text)
-        $oldSummary = '(?m)^[0-9,]+ 项离线断言通过[^\r\n]*'
-        [regex]::Replace($text,$oldSummary,"$count 项离线断言通过。[使用说明](使用说明-$NewVersion.md) · [变更记录](CHANGELOG.md) · [验证范围](VALIDATION.md)")
+        [regex]::Replace($text,'(?m)^[0-9,]+ 项离线断言通过',"$count 项离线断言通过")
     }
     Set-Text $Directory "使用说明-$NewVersion.md" {
         param($text)
-        [regex]::Replace($text,'(?m)^[0-9,]+ 项离线断言通过[^\r\n]*',"$count 项离线断言通过。[验证范围](VALIDATION.md)")
+        [regex]::Replace($text,'(?m)^[0-9,]+ 项离线断言通过',"$count 项离线断言通过")
     }
-    Set-Text $Directory "论坛首楼文案-$NewVersion.txt" {
-        param($text)
-        [regex]::Replace($text.Replace('【本次更新】','【功能说明】'),'(?m)^本版通过 [0-9,]+ 项离线断言[^\r\n]*',
-            "本版通过 $count 项离线断言。反馈请附修改器版本、FM 引擎版本及「连接详情」中的提示。")
+    $forumName = "论坛首楼文案-$NewVersion.txt"
+    if (Test-Path -LiteralPath (Join-Path $Directory $forumName)) {
+        Set-Text $Directory $forumName {
+            param($text)
+            [regex]::Replace($text,'(?m)^本版通过 [0-9,]+ 项离线断言',"本版通过 $count 项离线断言")
+        }
     }
 }
 
@@ -350,13 +356,26 @@ $tracked = @(Invoke-ReleaseGit $source @('ls-tree','-r','--name-only',$head))
 Assert-SourcePrivacy $source $tracked
 
 $packageName = "FM27E0-CAgrowth $tag-发布包"
-$shareName = "FM27E0-CAgrowth $tag-完整版发布包.zip"
+$shareName = "FM27E0-CAgrowth-$tag.zip"
 $exeName = "FM27E0-CAgrowth $tag.exe"
+$guideName = "使用说明-$Version.md"
+$forumName = "论坛首楼文案-$Version.txt"
 $packageTarget = Join-Path $releases $packageName
 $shareTarget = Join-Path $releases $shareName
 $localTarget = Join-Path $local $exeName
 $sourceMember = "对应源码/FM27E0-CAgrowth-$tag-source.zip"
-foreach ($target in @($packageTarget,$shareTarget)+@($localTarget | Where-Object {-not $SkipLocalUpdate})) {
+$renamedOld = @("使用说明-$current.md")
+$renamedNew = @($guideName)
+$forumTarget = $null
+if ("论坛首楼文案-$current.txt" -in $tracked) {
+    $renamedOld += "论坛首楼文案-$current.txt"
+    $renamedNew += $forumName
+    $forumTarget = Join-Path $root $forumName
+}
+$destinations = @($packageTarget,$shareTarget)
+if ($forumTarget) { $destinations += $forumTarget }
+if (-not $SkipLocalUpdate) { $destinations += $localTarget }
+foreach ($target in $destinations) {
     if (Test-Path -LiteralPath $target) { throw "Destination already exists: $target" }
 }
 if (Test-Path -LiteralPath $releases) {
@@ -375,6 +394,7 @@ Write-Output "Tracked privacy scan passed ($($tracked.Count) files)."
 Write-Output "Release $packageTarget"
 Write-Output "Share ZIP $shareTarget"
 Write-Output "Source ZIP $(Join-Path $packageTarget $sourceMember)"
+if ($forumTarget) { Write-Output "Separate forum text $forumTarget" }
 if ($SkipLocalUpdate) { Write-Output 'Local update skipped.' } else { Write-Output "Local update $localTarget" }
 if ($NoGitCommit) { Write-Output 'Git commit and tag skipped.' } else { Write-Output "Git will commit and tag $tag." }
 foreach ($entry in $cleanup) { Write-Output "After verification remove $($entry.Item.FullName)" }
@@ -408,38 +428,56 @@ try {
         if ($testExit -ne 0) { throw 'tests\run.ps1 failed.' }
     } finally { Pop-Location }
     $passed = [regex]::Match(($testOutput -join [Environment]::NewLine),'(?m)^PASS:\s*(\d+)\s+assertions\b')
-    if (-not $passed.Success -or [int]$passed.Groups[1].Value -le 0) { throw 'Tests did not report a passing assertion count.' }
+    if (-not $passed.Success -or [int]$passed.Groups[1].Value -lt 34999) {
+        throw 'Release requires at least 34,999 passing offline assertions.'
+    }
     $buildExe = Join-Path $snapshot $exeName
     Assert-ReleaseExe $buildExe $Version
     Set-ReleaseNotes $snapshot $Version ([int]$passed.Groups[1].Value)
 
-    $renamedOld = @("使用说明-$current.md","论坛首楼文案-$current.txt")
-    $renamedNew = @("使用说明-$Version.md","论坛首楼文案-$Version.txt")
     $snapshotFiles = @($tracked | Where-Object {$_ -notin $renamedOld}) + $renamedNew
     Assert-SourcePrivacy $snapshot $snapshotFiles
     Invoke-ReleaseGit $snapshot @('init','--quiet')
-    Invoke-ReleaseGit $snapshot (@('-c','core.autocrlf=false','add','--')+$snapshotFiles)
+    Invoke-ReleaseGit $snapshot (@('add','--')+$snapshotFiles)
     $tree = Invoke-ReleaseGit $snapshot @('write-tree')
     $checksumZip = Join-Path $stage.FullName 'checksums.zip'
     Invoke-ReleaseGit $snapshot @('archive','--format=zip',"--output=$checksumZip",$tree)
     $sourceHashes = Read-ZipHashes $checksumZip
     $sourceHashes.Remove('SHA256SUMS.txt')
-    Write-Checksums (Join-Path $snapshot 'SHA256SUMS.txt') $sourceHashes
-    Invoke-ReleaseGit $snapshot @('-c','core.autocrlf=false','add','--','SHA256SUMS.txt')
+    $sourceManifest = Join-Path $snapshot 'SHA256SUMS.txt'
+    Write-Checksums $sourceManifest $sourceHashes
+    Invoke-ReleaseGit $snapshot @('add','--','SHA256SUMS.txt')
     $releaseTree = Invoke-ReleaseGit $snapshot @('write-tree')
+
+    $playerNotices = @('NAME-FALLBACK-NOTICE.txt','姓名库覆盖说明.md',
+        'docs/name-translations.md','docs/role-presets.md')
+    # Keep source attribution and the release script's sharing guide in the source archive.
+    $sourceNotices = $playerNotices + @('docs/current-features.md','docs/growth-squads-support.md',
+        'docs/registration-evidence.md','docs/xbox-pc-and-roster.md','docs/staff-transfer.md',
+        'docs/sharing-portability.md')
+    $exportFiles = @($snapshotFiles | Where-Object {
+        $_ -ne 'VALIDATION.md' -and $_ -notlike '论坛首楼文案-*.txt' -and
+        ($_ -notlike 'docs/*' -or $_ -in $sourceNotices)
+    })
+    $exportHashes = @{}
+    foreach ($path in $exportFiles) {
+        if ($path -ne 'SHA256SUMS.txt') { $exportHashes[$path] = $sourceHashes[$path] }
+    }
+    # The tagged checkout keeps its own manifest for all tracked files.
+    Write-Checksums $sourceManifest $exportHashes
+    $exportHashes['SHA256SUMS.txt'] = (Get-FileHash -LiteralPath $sourceManifest).Hash.ToLowerInvariant()
+    Invoke-ReleaseGit $snapshot @('add','--','SHA256SUMS.txt')
+    $exportTree = Invoke-ReleaseGit $snapshot @('write-tree')
 
     $package = (Get-CheckedDirectory (Join-Path $stage.FullName $packageName) $stage.FullName).FullName
     $sourceZip = Join-Path $package $sourceMember
     [void][IO.Directory]::CreateDirectory((Split-Path -Parent $sourceZip))
-    Invoke-ReleaseGit $snapshot @('archive','--format=zip',"--output=$sourceZip",$releaseTree)
-    $actualSource = Read-ZipHashes $sourceZip
-    if (-not $actualSource.ContainsKey('SHA256SUMS.txt')) { throw 'Source ZIP is missing its checksum manifest.' }
-    $actualSource.Remove('SHA256SUMS.txt')
-    Assert-MatchingHashes $sourceHashes $actualSource 'Source ZIP'
+    Invoke-ReleaseGit $snapshot (@('archive','--format=zip',"--output=$sourceZip",$exportTree,'--')+$exportFiles)
+    Assert-MatchingHashes $exportHashes (Read-ZipHashes $sourceZip) 'Source ZIP'
+    Write-Checksums $sourceManifest $sourceHashes
 
-    $publicFiles = @('ADDITIONAL-TERMS.txt','CHANGELOG.md','LICENSE','NAME-FALLBACK-NOTICE.txt',
-        'VALIDATION.md','姓名库覆盖说明.md') + $renamedNew +
-        @($snapshotFiles | Where-Object {$_ -like 'docs/*' -or $_ -like 'third-party/*'})
+    $publicFiles = @('ADDITIONAL-TERMS.txt','CHANGELOG.md','LICENSE',$guideName) + $playerNotices +
+        @($snapshotFiles | Where-Object {$_ -like 'third-party/*'})
     foreach ($path in $publicFiles) {
         $destination = Join-Path $package $path
         [void][IO.Directory]::CreateDirectory((Split-Path -Parent $destination))
@@ -458,11 +496,14 @@ try {
     $publish = Get-CheckedDirectory $releases $root
     [void](Get-CheckedItem $package $stage.FullName -Directory)
     [void](Get-CheckedItem $share $stage.FullName)
-    if ((Test-Path -LiteralPath $packageTarget) -or (Test-Path -LiteralPath $shareTarget)) {
-        throw 'Release destination changed during build.'
+    foreach ($target in $destinations) {
+        if (Test-Path -LiteralPath $target) { throw "Release destination changed during build: $target" }
     }
     Move-Item -LiteralPath $package -Destination (Join-Path $publish.FullName $packageName)
     Move-Item -LiteralPath $share -Destination (Join-Path $publish.FullName $shareName)
+    if ($forumTarget) {
+        [IO.File]::Copy((Join-Path $snapshot $forumName),$forumTarget)
+    }
     if (-not $SkipLocalUpdate) {
         $install = Get-CheckedDirectory $local $root
         if (Test-Path -LiteralPath $localTarget) { throw 'Local EXE destination changed during build.' }
@@ -488,8 +529,8 @@ try {
 
     if (-not $NoGitCommit) {
         Assert-CleanCheckout $source $head
-        $updates = @('FmEditor.cs','README.md','docs/sharing-portability.md','CHANGELOG.md','VALIDATION.md','SHA256SUMS.txt') +
-            $renamedNew
+        $updates = @(@('FmEditor.cs','README.md','docs/sharing-portability.md','CHANGELOG.md','VALIDATION.md','SHA256SUMS.txt') |
+            Where-Object {$_ -in $snapshotFiles}) + $renamedNew
         foreach ($path in $updates) {
             Copy-Item -LiteralPath (Join-Path $snapshot $path) -Destination (Join-Path $source $path) -Force
         }

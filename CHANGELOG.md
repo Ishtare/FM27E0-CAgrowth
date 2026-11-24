@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Use a 15/14/11/10 baseline for role-based redistribution. With extra budget, raise blue to 17, green to 15, blue to 20, then green to 17. Below the baseline, lower other, white, green, then blue. Keep hard floors of 6 for other attributes and 8 for white. If all floors still exceed the target CA, preview the RCA shortfall and block the change.
+- Use two passes for directed growth and Preserve: blue 15, green 14, white 11 first, then blue 17 and green 15. Retain existing attributes and charge growth to the cumulative RCA budget. The default acceleration mode continues to write CA only.
+- Order attributes within tiers using position-group priorities informed by FM27.0.x match engine results, with a separate goalkeeper cross-reference. Keep the existing role colors and RCA formula.
+- Publish a smaller player ZIP with an ASCII filename, the matching buildable source archive, licenses, attribution notices and checksums. Generate forum text separately.
+
 ## v1.1.31 (modified release, 2026-11-24)
 
 - Optimize attributes in four role tiers with targets of 17+ for blue core skills, 15+ for green supporting skills, around 12 for white foundations, and around 10 for other adjustable attributes. Combine core and supporting skills from both tactical phases. Reduce targets gradually with floors at low CA and spend surplus on blue skills first.
