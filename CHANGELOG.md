@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Add a dedicated Steam profile for FM27 27.1.1+2511875. Match the engine image and five native signatures covering non-EU status, the game date, retirement, fitness and corporate facilities. Restore club funds, facilities, reputation, stadium capacity, tickets, sponsorship and names, plus condition, match sharpness, morale, injuries and fatigue.
+- Recover finance types in the generic scanner for PC Game Pass, Epic and later 27.1.x builds that share a verified layout. Distinguish full and compact finances by native type and check the supported field layout before applying it. Keep compact finances read-only and retain the existing vote and safety thresholds.
+- Keep individual domestic and UEFA registration editing read-only on Steam 27.1.1. Retirement, supported competition rules and verified Italian historical non-EU status continue to use their own checks.
+- Pass 35,105 offline assertions. The Steam 27.1.1 acceptance build passed in-game write and undo spot checks.
+
 ## v1.1.32 (modified release, 2026-11-24)
 
 - Use a 15/14/11/10 baseline for role-based redistribution. With extra budget, raise blue to 17, green to 15, blue to 20, then green to 17. Below the baseline, lower other, white, green, then blue. Keep hard floors of 6 for other attributes and 8 for white. If all floors still exceed the target CA, preview the RCA shortfall and block the change.

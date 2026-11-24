@@ -428,8 +428,8 @@ try {
         if ($testExit -ne 0) { throw 'tests\run.ps1 failed.' }
     } finally { Pop-Location }
     $passed = [regex]::Match(($testOutput -join [Environment]::NewLine),'(?m)^PASS:\s*(\d+)\s+assertions\b')
-    if (-not $passed.Success -or [int]$passed.Groups[1].Value -lt 34999) {
-        throw 'Release requires at least 34,999 passing offline assertions.'
+    if (-not $passed.Success -or [int]$passed.Groups[1].Value -lt 35105) {
+        throw 'Release requires at least 35,105 passing offline assertions.'
     }
     $buildExe = Join-Path $snapshot $exeName
     Assert-ReleaseExe $buildExe $Version

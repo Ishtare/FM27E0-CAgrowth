@@ -1,5 +1,7 @@
 # FM27E0 汉化改版 v1.1.32 完整版
 
+本版适配 Steam 27.1.1+2511875，恢复俱乐部资金、设施、声望、球场容量、票务、赞助与名称，以及球员体能、比赛状态、士气、伤病和疲劳度。通用财务校准可按原生类型区分完整和简化财务。该 Steam 构建的个人国内赛事和欧战登记仅供查看。
+
 一键属性优化以蓝 15、绿 14、白 11、末档 10 为基准。有余量时依次冲蓝 17、绿 15、蓝 20、绿 17。白档与末档的硬下限为 8 和 6。降到下限仍超预算时，预览显示差额并阻止应用。
 
 “保留特点”和角色定向成长分两轮推进，先补蓝 15、绿 14、白 11，再冲蓝 17、绿 15。同档优先顺序参考 FM27.0.x 的分位置比赛引擎实测。默认的“仅加速成长”只推进 CA。[角色与数据来源](docs/role-presets.md)
@@ -16,7 +18,7 @@ v1.1.29 修复俱乐部转会预算提交，并更新筛选结果、培养名单
 
 完整解压后运行程序，保留 third-party 文件夹。CA 成长支持跨俱乐部勾选和统一查看已选球员，内置姓名库支持中英文搜索。
 
-34,999 项离线断言通过。验收版已通过 FM27 实机抽测。[使用说明](使用说明-1.1.32.md) · [变更记录](CHANGELOG.md)
+35,105 项离线断言通过。Steam 27.1.1 验收版通过实机写入与撤销抽测。[使用说明](使用说明-1.1.32.md) · [变更记录](CHANGELOG.md)
 
 分享 ZIP 内附使用说明、对应源码、许可证、来源声明与校验清单。维护者可通过发布脚本分别管理自用 EXE 和对外发布包。[发布与演练说明](https://github.com/Ishtare/FM27E0-CAgrowth/blob/main/docs/release-workflow.md)
 
@@ -107,7 +109,7 @@ A free, open-source live editor for **Football Manager 27**. Edit your players, 
 - Recognises which FM version is running and finds its way again after most game updates
 
 **Not in this version (yet)**
-- For the verified Steam 27.0.1+2503222 build, injuries, condition, match sharpness, morale and fatigue have separate guarded editors. Other builds and failed object checks remain read-only; see the current Chinese documentation.
+- Verified Steam builds including 27.1.1+2511875 have separate guarded editors for injuries, condition, match sharpness, morale and fatigue. Check Connection details for the features available on each build.
 - Cup prize money (round appearance money)
 
 ## How to use
