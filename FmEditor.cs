@@ -247,6 +247,7 @@ namespace Fm24Editor
     {
         // Class pointers (RVA inside fm.exe) that identify each object type. FM24 Steam build.
         public static ulong PersonVtRva = 0x5A4EE78, ClubVtRva = 0x5A51F38, FinanceVtRva = 0x5A54048, ContractVtRva = 0x5667C88, StaffVtRva = 0x5A4C358, TeamVtRva = 0x5A78848, PlayerCoachVtRva = 0x5C7ECB8, CityVtRva = 0x5A51998;
+        public static ulong CompactFinanceVtRva = 0;
         // the human manager's person object; his attributes use the staff layout, based ManagerAttrsBefore bytes before it
         public static ulong ManagerVtRva = 0x5A6A388;
         // loan contract: same layout as a contract (+0x08 person, +0x10 team, +0x55 squad number), reached via player object +0x348
@@ -1185,6 +1186,26 @@ CurrentDateRva = 0x56237C8
             field = rva;
         }
 
+        internal static void RecoverClubFinance(FmProcess fm, Func<ulong,int,byte[]> read, IEnumerable<ulong> finances, List<string> report)
+        {
+            var candidates = new ClubFinanceCalibration(read, fm.Base, fm.ImageSize);
+            foreach (ulong finance in finances) candidates.Observe(finance);
+            int hits;
+            ulong table = Mode(fm, candidates.FullVotes, out hits);
+            if (table == 0 && candidates.IsCompact(fm.Base + FmProcess.FinanceVtRva))
+            {
+                FmProcess.FinanceVtRva = 0;
+                report.Add("校准：原完整财务位置实际是简化财务，已清除该映射。");
+            }
+            Set(report, fm, "Finance", ref FmProcess.FinanceVtRva, table, hits);
+            ulong compact = Mode(fm, candidates.CompactVotes, out hits);
+            if (compact != 0) Set(report, fm, "Compact finance", ref FmProcess.CompactFinanceVtRva, compact, hits);
+            if (table == 0 || !candidates.CurrentFields(table)) return;
+            FmLayout.FacilityFin = new ulong[] { 0, 0, 0, 0, ClubFinanceCalibration.CorporateOffset };
+            FmLayout.FinTicketPrice = ClubFinanceCalibration.TicketOffset;
+            report.Add("校准：已核对完整财务的转会预算、周薪预算和商业设施原生取值。设施与票价继续按项目检查。");
+        }
+
         public static List<string> Run(FmProcess fm, Action<double> progress)
         {
             var report = new List<string>();
@@ -1263,18 +1284,15 @@ CurrentDateRva = 0x56237C8
             Set(report, fm, "Player-coach", ref FmProcess.PlayerCoachVtRva, coach, coach == 0 ? 0 : Math.Max(staffCnt[coach], pcCnt.ContainsKey(coach) ? pcCnt[coach] : 0));
             ulong city = Mode(fm, cityVotes, out n); Set(report, fm, "City", ref FmProcess.CityVtRva, city, n);
             ulong club = Mode(fm, clubVotes, out n); Set(report, fm, "Club", ref FmProcess.ClubVtRva, club, n);
-            var finVotes = new List<ulong>(); var teamVotes = new List<ulong>();
+            var financeObjects = new List<ulong>(); var teamVotes = new List<ulong>();
             foreach (var cl in clubSet)
             {
                 if (fm.ReadPtr(cl) != club) continue;
-                // FM has a full finance class for clubs in playable leagues and a lighter one for the rest: only the full one has facilities
-                ulong fin = fm.ReadPtr(cl + FmLayout.ClubFinance);
-                if (fin > 0x10000 && FmLayout.FacilityFin.All(o => { if (o == 0) return true; var fb = fm.Read(fin + o, 1); return fb != null && fb[0] >= 1 && fb[0] <= 20; }))
-                    finVotes.Add(fm.ReadPtr(fin));
+                financeObjects.Add(fm.ReadPtr(cl + FmLayout.ClubFinance));
                 ulong t0 = fm.ReadPtr(fm.ReadPtr(cl + FmLayout.ClubTeams));
                 if (t0 > 0x10000 && fm.ReadPtr(t0 + FmLayout.TeamClub2) == cl) teamVotes.Add(fm.ReadPtr(t0));
             }
-            ulong finance = Mode(fm, finVotes, out n); Set(report, fm, "Finance", ref FmProcess.FinanceVtRva, finance, n);
+            if (!CurrentBuildProfile.Matches(fm) || Profile.Source != null) RecoverClubFinance(fm, fm.Read, financeObjects, report);
             ulong team = Mode(fm, teamVotes, out n); Set(report, fm, "Team", ref FmProcess.TeamVtRva, team, n);
 
             // loan contracts: player object +0x348 -> slot -> loan contract, which points back at the person
@@ -1730,9 +1748,10 @@ CurrentDateRva = 0x56237C8
                 Check(rep, "stadium", "一线队的球场及容量有效", sdOk, sdN, 0.95);
             }
             // tickets: season ticket holders 0-300,000 and an average ticket price of £0-2,000
+            bool checkedTickets = ClubFinanceCalibration.CheckedTickets(fm);
             Check(rep, "tickets", "季票数量和票价有效", fullClubs.Count(c =>
             {
-                if(fm.VerifiedCurrentBuild){try{CurrentTicketSnapshot.Capture(fm.Read,fm.Base,c);return true;}catch{return false;}}
+                if(checkedTickets){try{CurrentTicketSnapshot.Capture(fm,c);return true;}catch{return false;}}
                 if (c.Data < 0x10000) return false;
                 int? stn = fm.ReadI32(c.Data + FmLayout.DataSeasonTickets); var f = fm.Read(c.Finance + FmLayout.FinTicketPrice, 4);
                 if (stn == null || f == null) return false; float p = BitConverter.ToSingle(f, 0);
@@ -2930,7 +2949,7 @@ CurrentDateRva = 0x56237C8
                 r.Staff.Add(new Staff { Addr = a, Pers = m, Uid = BitConverter.ToInt32(head,(int)FmLayout.Uid), Manager = true, Name = name, Search = search + " | manager | you",NameParts=parts,NameNationUid=nameNationUid(BitConverter.ToUInt64(head,(int)FmLayout.Nation)), Born = BornFrom(head) });
             }
 
-            ulong compactFinance=CurrentBuildProfile.Matches(fm)?CurrentBuildProfile.Active.CompactFinance:0;
+            ulong compactFinance=CurrentBuildProfile.Matches(fm)?CurrentBuildProfile.Active.CompactFinance:FmProcess.CompactFinanceVtRva;
             var catalog=new ClubCatalogReader(fm.Read,fm.ReadLenString,fm.Base,compactFinance);
             r.Clubs=catalog.Read(clubHits,token);
             var clubNames = new Dictionary<ulong, string>(); foreach (var c in r.Clubs) clubNames[c.Addr] = c.Name;
@@ -4354,9 +4373,9 @@ CurrentDateRva = 0x56237C8
             txtClubName.Enabled = loadedClubName != null; txtClubShort.Enabled = loadedClubShort != null;
             double r = Rate();
             loadedSeasonTickets = -1; loadedTicketPrice = -1;loadedTickets=null;
-            if(fm.VerifiedCurrentBuild && Safety.On("tickets"))
+            if(Safety.On("tickets") && ClubFinanceCalibration.CheckedTickets(fm))
             {
-                try{loadedTickets=CurrentTicketSnapshot.Capture(fm.Read,fm.Base,c);loadedSeasonTickets=loadedTickets.SeasonTickets;loadedTicketPrice=loadedTickets.Price;}catch{}
+                try{loadedTickets=CurrentTicketSnapshot.Capture(fm,c);loadedSeasonTickets=loadedTickets.SeasonTickets;loadedTicketPrice=loadedTickets.Price;}catch{}
             }
             else if (Safety.On("tickets") && c.Data > 0x10000)
             {
@@ -4674,7 +4693,7 @@ CurrentDateRva = 0x56237C8
                     }
                 }
             }
-            if(fm.VerifiedCurrentBuild && loadedTickets!=null)
+            if(loadedTickets!=null)
             {
                 try
                 {
@@ -4699,7 +4718,7 @@ CurrentDateRva = 0x56237C8
                     loadedSeasonTickets.ToString("N0", CultureInfo.InvariantCulture) + " -> " + v.ToString("N0", CultureInfo.InvariantCulture))) written++;
             }
             double price;
-            if (!fm.VerifiedCurrentBuild && txtTicketPrice.Enabled && txtTicketPrice.Text != (loadedTicketPrice * r).ToString("0.00", CultureInfo.InvariantCulture) && ParseMoney(txtTicketPrice.Text, out price))
+            if (loadedTickets==null && !fm.VerifiedCurrentBuild && txtTicketPrice.Enabled && txtTicketPrice.Text != (loadedTicketPrice * r).ToString("0.00", CultureInfo.InvariantCulture) && ParseMoney(txtTicketPrice.Text, out price))
             {
                 float pounds = (float)Math.Max(0, Math.Min(2000, price / r));
                 var cur = fm.Read(loadedClub.Finance + FmLayout.FinTicketPrice, 4);

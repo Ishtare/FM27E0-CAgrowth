@@ -192,6 +192,8 @@ namespace Fm24Editor
         public int Unregistrations(byte code){return Rows.Count(row=>Own(row,code) && row.Type==0x1B);}
         public List<EligibilityEdit> Plan(Func<ulong,int,byte[]> read,bool clearItaly,byte? registerCode,bool removeUnregistration)
         {
+            if(registerCode.HasValue && !CurrentBuildProfile.Active.PlayerRegistrationEditing)
+                throw new InvalidOperationException("当前构建的国内赛事与欧战个人登记仅可查看。");
             if(registerCode.HasValue && registerCode!=0 && registerCode!=8)throw new ArgumentException("仅支持国内赛事或欧战注册类型。");
             if(clearItaly && !Italian)throw new InvalidOperationException("所选俱乐部不属于意大利，不能用意大利状态处理其他国家的配额。");
             if(!Reader.Matches(read))throw new InvalidOperationException("球员注册预览已失效，请重新打开。");

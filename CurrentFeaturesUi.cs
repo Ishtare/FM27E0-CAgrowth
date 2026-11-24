@@ -15,9 +15,13 @@ namespace Fm24Editor
 
         bool CommitCurrent(string feature,IList<EligibilityEdit> plan,Func<bool> identity)
         {
-            if(fm==null || !fm.VerifiedCurrentBuild || !Safety.On(feature) || plan.Count==0)return false;
+            if(fm==null || !Safety.On(feature) || plan.Count==0)return false;
             var attached=fm;
-            Func<bool> guard=()=>fm==attached && CurrentBuildProfile.Matches(attached) && CurrentBuildProfile.Supported(attached.Version,attached.ImageSize,attached.Read,attached.Base) && Safety.On(feature) && identity();
+            bool calibratedTickets=feature=="tickets" && !attached.VerifiedCurrentBuild;
+            if(calibratedTickets ? !ClubFinanceCalibration.CheckedTickets(attached) : !attached.VerifiedCurrentBuild)return false;
+            Func<bool> guard=()=>fm==attached && Safety.On(feature) && (calibratedTickets ?
+                ClubFinanceCalibration.CheckedTickets(attached) :
+                CurrentBuildProfile.Matches(attached) && CurrentBuildProfile.Supported(attached.Version,attached.ImageSize,attached.Read,attached.Base)) && identity();
             string error;
             if(!EligibilityTransaction.Apply(attached.Read,attached.Write,plan,guard,out error))
             {LogLine("修改停止："+error);MessageBox.Show(error,"数据已变化或写入失败");return false;}

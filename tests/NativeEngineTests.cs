@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading;
 
 namespace Fm24Editor
 {
@@ -68,13 +70,122 @@ namespace Fm24Editor
             public FacilityLayout Facilities(){return new FacilityLayout(Read,Layout.Version,Module,Layout.ImageSize,true,true,Layout.Club,Layout.Finance,0x100,0x150,new ulong[]{0x120,0x12B,0x12C,0x12D,0},new ulong[]{0,0,0,0,Layout.CorporateFacility});}
         }
         static bool Reject(Action action){try{action();return false;}catch{return true;}}
+
+        static void FinanceCalibrationCases(Action<bool,string> check)
+        {
+            var layout=NativeEngineLayout.Steam2711;
+            var data=new Fixture(layout);
+            ulong module=Fixture.Module,full=module+layout.Finance,compact=module+layout.CompactFinance;
+            const ulong legacyRva=0x4CF1A08,staleRva=0x4CF0CC8;
+            ulong legacy=module+legacyRva;
+            var originalFinOffsets=new ulong[]{0,0,0x8A6,0x8A7,0x8A9};
+            FmLayout.FacilityFin=originalFinOffsets;
+            FmLayout.FinTicketPrice=0x864;
+            FmProcess.FinanceVtRva=staleRva;
+            FmProcess.CompactFinanceVtRva=0;
+
+            data.Rtti(layout.Finance,0x72000,0,0x73000);
+            data.Rtti(layout.CompactFinance,0x72020,0,0x73080);
+            data.Rtti(legacyRva,0x72040,0,0x73100);
+            var fullName=Encoding.ASCII.GetBytes(".?AVCLUB_FINANCE@db@@\0");
+            data.Put(module+0x73010,fullName);
+            data.Put(module+0x73090,Encoding.ASCII.GetBytes(".?AVCLUB_FINANCE_BASE@db@@\0"));
+            data.Put(module+0x73110,fullName);
+            data.Q(full+0x98,module+0x80000);
+            data.Q(full+0x148,module+0x80100);
+            data.Q(full+0x498,module+0x80120);
+            data.Put(module+0x80000,new byte[96]);
+            data.Put(module+0x80000,new byte[]{0x41,0x57,0x41,0x56});
+            data.Put(module+0x80020,new byte[]{0x8B,0x81,0xC4,0x07,0,0});
+            var wageGetter=new byte[]{0x8B,0x81,0x08,0x08,0,0,0xC3};
+            data.Put(module+0x80100,wageGetter);
+            data.Put(module+0x80120,new byte[]{0x0F,0xB6,0x81,0xAD,0x08,0,0,0xC3});
+
+            Func<ulong,int,ulong,ulong[]> objects=(start,count,table)=>
+                Enumerable.Range(0,count).Select(i=>
+                {
+                    ulong at=start+(ulong)i*0x1000;
+                    data.Q(at,table);
+                    // Compact objects can coincidentally satisfy the older numeric check.
+                    foreach(ulong offset in originalFinOffsets.Where(o=>o!=0))
+                        data.Put(at+offset,new byte[]{(byte)(table==full?0:10)});
+                    return at;
+                }).ToArray();
+            var fullObjects=objects(0x200000,6,full);
+            var compactObjects=objects(0x300000,12,compact);
+            var legacyObjects=objects(0x400000,6,legacy);
+            var corrupt=(byte[])layout.Signatures[0].Bytes.Clone();
+            corrupt[0]^=1;
+            data.Put(module+layout.Signatures[0].Rva,corrupt);
+            var report=new List<string>();
+            using(var fm=new FmProcess{Base=module,Version=layout.Version,ImageSize=layout.ImageSize})
+            {
+                check(!CurrentBuildProfile.Supported(layout.Version,layout.ImageSize,data.Read,module),
+                    "wrong Steam 27.1.1 native proof selects the generic calibration path");
+                Calibration.RecoverClubFinance(fm,data.Read,fullObjects.Take(4).Concat(compactObjects),report);
+                check(FmProcess.FinanceVtRva==staleRva && FmProcess.CompactFinanceVtRva==layout.CompactFinance,
+                    "four full votes are insufficient even with a majority of compact objects");
+                check(FmLayout.FinTicketPrice==0x864 && FmLayout.FacilityFin.SequenceEqual(originalFinOffsets),
+                    "failed calibration does not change facility or ticket fields");
+
+                Calibration.RecoverClubFinance(fm,data.Read,fullObjects.Take(5).Concat(compactObjects),report);
+                check(FmProcess.FinanceVtRva==layout.Finance && FmProcess.CompactFinanceVtRva==layout.CompactFinance,
+                    "generic calibration recovers the full 27.1.1 type without using compact votes");
+                check(FmLayout.FacilityFin.SequenceEqual(new ulong[]{0,0,0,0,0x8AD}) && FmLayout.FinTicketPrice==0x10,
+                    "current layout getters select the established facility and ticket fields");
+
+                data.Q(Fixture.ClubAt+0xC0,Fixture.Data);
+                var catalog=new ClubCatalogReader(data.Read,a=>a==Fixture.Data?"Fixture club":null,module,FmProcess.CompactFinanceVtRva);
+                check(catalog.Read(new[]{Fixture.ClubAt},CancellationToken.None).Single().HasFullFinance,
+                    "the calibrated full type reaches the existing club catalog finance pool");
+                var ticket=CurrentTicketSnapshot.Capture(data.Read,module,data.Club,FmProcess.ClubVtRva,FmProcess.FinanceVtRva);
+                check(ticket.Price==-1 && ticket.Plan(null,20).Count==1,
+                    "verified generic finance uses the existing guarded unset ticket price path");
+                data.Put(Fixture.Finance+0x10,BitConverter.GetBytes(float.PositiveInfinity));
+                check(Reject(()=>CurrentTicketSnapshot.Capture(data.Read,module,data.Club,FmProcess.ClubVtRva,FmProcess.FinanceVtRva)),
+                    "the generic ticket snapshot retains its value checks");
+                data.Put(Fixture.Finance+0x10,BitConverter.GetBytes(-1f));
+                data.Q(Fixture.Finance,compact);
+                var light=catalog.Read(new[]{Fixture.ClubAt},CancellationToken.None).Single();
+                check(light.CompactFinance && !light.HasFullFinance &&
+                    Reject(()=>CurrentTicketSnapshot.Capture(data.Read,module,data.Club,FmProcess.ClubVtRva,FmProcess.FinanceVtRva)),
+                    "the generic catalog and guarded ticket paths keep compact finance read-only");
+                FmProcess.FinanceVtRva=layout.CompactFinance;
+                var overlapping=new ClubCatalogReader(data.Read,a=>a==Fixture.Data?"Fixture club":null,module,FmProcess.CompactFinanceVtRva);
+                check(!overlapping.Read(new[]{Fixture.ClubAt},CancellationToken.None).Single().HasFullFinance,
+                    "a stale full type that overlaps the compact type cannot make a compact club editable");
+                Calibration.RecoverClubFinance(fm,data.Read,compactObjects.Take(4),report);
+                check(FmProcess.FinanceVtRva==0,"a verified compact type is never retained as the full type on failed recovery");
+
+                FmProcess.FinanceVtRva=staleRva;
+                FmLayout.FacilityFin=originalFinOffsets;
+                FmLayout.FinTicketPrice=0x864;
+                Calibration.RecoverClubFinance(fm,data.Read,legacyObjects.Take(5).Concat(fullObjects.Take(4)),report);
+                check(FmProcess.FinanceVtRva==staleRva,"five votes below sixty percent remain ambiguous");
+                Calibration.RecoverClubFinance(fm,data.Read,legacyObjects.Concat(fullObjects.Take(4)),report);
+                check(FmProcess.FinanceVtRva==legacyRva && FmLayout.FacilityFin.SequenceEqual(originalFinOffsets) &&
+                    FmLayout.FinTicketPrice==0x864,"legacy finance can still win at sixty percent using the old verified fields");
+
+                data.Put(module+0x80100,new byte[wageGetter.Length]);
+                foreach(var at in fullObjects)
+                    foreach(ulong offset in originalFinOffsets.Where(o=>o!=0))data.Put(at+offset,new byte[]{10});
+                FmProcess.FinanceVtRva=staleRva;
+                Calibration.RecoverClubFinance(fm,data.Read,fullObjects,report);
+                check(FmProcess.FinanceVtRva==staleRva,"a partial current-layout proof cannot use incidental legacy facility values");
+                data.Put(module+0x80100,wageGetter);
+                data.I(module+0x72000+20,0x72100);
+                Calibration.RecoverClubFinance(fm,data.Read,fullObjects,report);
+                check(FmProcess.FinanceVtRva==staleRva,"a finance vtable with invalid RTTI self-reference cannot vote");
+            }
+        }
+
         public static void Run(Action<bool,string> check)
         {
             var saved=Profile.Fields().ToDictionary(f=>f,f=>f.GetValue(null) is Array?((Array)f.GetValue(null)).Clone():f.GetValue(null));
             var previous=CurrentBuildProfile.Active;
             try
             {
-                foreach(var layout in new[]{NativeEngineLayout.Legacy,NativeEngineLayout.Update271,NativeEngineLayout.GamePass271})
+                foreach(var layout in new[]{NativeEngineLayout.Legacy,NativeEngineLayout.Update271,NativeEngineLayout.GamePass271,NativeEngineLayout.Steam2711})
                 {
                     var data=new Fixture(layout);CurrentBuildProfile.Apply(layout);
                     check(CurrentBuildProfile.Supported(layout.Version,layout.ImageSize,data.Read,Fixture.Module),"exact engine proof selects "+layout.Version);
@@ -83,12 +194,12 @@ namespace Fm24Editor
                     if(layout.PeTimestamp!=0)
                     {
                         data.I(Fixture.Module+0x108,0);
-                        check(!CurrentBuildProfile.Supported(layout.Version,layout.ImageSize,data.Read,Fixture.Module),"Game Pass requires the PE timestamp as well as the version and build string");
+                        check(!CurrentBuildProfile.Supported(layout.Version,layout.ImageSize,data.Read,Fixture.Module),"timestamp-verified builds require their original PE timestamp");
                         data.I(Fixture.Module+0x108,(int)layout.PeTimestamp);
                         data.I(Fixture.Module+0x150,(int)layout.ImageSize+1);
-                        check(!CurrentBuildProfile.Supported(layout.Version,layout.ImageSize,data.Read,Fixture.Module),"mismatched Game Pass PE image size is rejected");
+                        check(!CurrentBuildProfile.Supported(layout.Version,layout.ImageSize,data.Read,Fixture.Module),"mismatched PE image size is rejected");
                         data.I(Fixture.Module+0x150,(int)layout.ImageSize);
-                        check(!CurrentBuildProfile.Supported(layout.Version,NativeEngineLayout.Update271.ImageSize,data.Read,Fixture.Module),"same text version does not let Game Pass borrow Steam structures");
+                        check(!CurrentBuildProfile.Supported(layout.Version,NativeEngineLayout.Update271.ImageSize,data.Read,Fixture.Module),"other builds cannot borrow the Steam 27.1.0 image layout");
                     }
                     if(layout.GameUiRoot!=0)
                     {
@@ -135,6 +246,10 @@ namespace Fm24Editor
                     check(facility.Fields[0].Editable && facility.Fields[4].Status==FacilityStatus.Zero,"new layout preserves per-field read-only facility handling");
                     var eligibility=PlayerEligibilitySnapshot.Capture(data.Read,Fixture.Module,data.Player);var nonEu=eligibility.Plan(data.Read,true,null,false);
                     check(eligibility.Italian && eligibility.ItalyNonEu && nonEu.Count==1 && nonEu[0].After[0]==0xA5,"same-season non-EU repair preserves other player flags");
+                    if(layout==NativeEngineLayout.Steam2711)
+                        check(!layout.PlayerRegistrationEditing && Reject(()=>eligibility.Plan(data.Read,false,8,true)) &&
+                            Reject(()=>eligibility.Plan(data.Read,false,0,true)),
+                            "Steam 27.1.1 exposes Italian flag edits while unverified individual registration edits are blocked");
                     using(var fm=new FmProcess{Version=layout.Version,ImageSize=layout.ImageSize,VerifiedCurrentBuild=true})
                     {
                         check(CurrentBuildProfile.Matches(fm) && RetirementSnapshot.VtableFor(fm)==layout.RetirementType,"player retirement is available for the selected verified build");
@@ -151,6 +266,9 @@ namespace Fm24Editor
                     check(!CurrentBuildProfile.Matches(steam),"active Xbox and Steam layouts are distinct even when the version text agrees");
                 EligibilityTests.RunCountryCases(check);
                 EligibilityTests.RunSelectedBuildRules(check);
+                CurrentBuildProfile.Apply(NativeEngineLayout.Steam2711);
+                EligibilityTests.RunSelectedBuildRules(check);
+                FinanceCalibrationCases(check);
                 CurrentBuildProfile.Reset();check(EligibilityLayout.ClubVt==NativeEngineLayout.Legacy.Club,"resetting a connection clears the new build's global layout");
             }
             finally{CurrentBuildProfile.Apply(previous);foreach(var field in saved)field.Key.SetValue(null,field.Value);}

@@ -86,8 +86,8 @@ namespace Fm24Editor
             if(uid<=0)return null;
             ulong finance=BitConverter.ToUInt64(header,(int)FmLayout.ClubFinance);
             ulong financeType=PointerAt(finance);
-            bool full=fullFinanceType!=0 && financeType==fullFinanceType;
             bool compact=compactFinanceType!=0 && financeType==compactFinanceType;
+            bool full=!compact && fullFinanceType!=0 && financeType==fullFinanceType;
             ulong firstTeam;
             bool hasOwnedTeam=FindOwnedTeam(address,header,!full && !compact,out firstTeam);
             if(!full && !compact && !hasOwnedTeam)return null;

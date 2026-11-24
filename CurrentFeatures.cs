@@ -136,8 +136,17 @@ namespace Fm24Editor
         public static bool ValidPrice(float value){return !float.IsNaN(value) && !float.IsInfinity(value) && (value==-1 || value>=0 && value<=2000);}
         public static CurrentTicketSnapshot Capture(Func<ulong,int,byte[]> read,ulong module,Club club)
         {
+            return Capture(read,module,club,EligibilityLayout.ClubVt,CurrentBuildProfile.Active.Finance);
+        }
+        public static CurrentTicketSnapshot Capture(FmProcess fm,Club club)
+        {
+            return fm.VerifiedCurrentBuild ? Capture(fm.Read,fm.Base,club) :
+                Capture(fm.Read,fm.Base,club,FmProcess.ClubVtRva,FmProcess.FinanceVtRva);
+        }
+        internal static CurrentTicketSnapshot Capture(Func<ulong,int,byte[]> read,ulong module,Club club,ulong clubType,ulong financeType)
+        {
             var s=new CurrentTicketSnapshot {Reader=new EligibilityReader(read)};var r=s.Reader;
-            if(r.Ptr(club.Addr)!=module+EligibilityLayout.ClubVt || r.Ptr(club.Addr+0x150)!=club.Finance || r.Ptr(club.Finance)!=module+CurrentBuildProfile.Active.Finance || r.Ptr(club.Addr+0x100)!=club.Data)
+            if(r.Ptr(club.Addr)!=module+clubType || r.Ptr(club.Addr+0x150)!=club.Finance || r.Ptr(club.Finance)!=module+financeType || r.Ptr(club.Addr+0x100)!=club.Data)
                 throw new InvalidDataException("俱乐部或完整财务对象已变化。");
             r.Int(club.Addr+12);s.CountAddress=club.Data+0xC0;s.PriceAddress=club.Finance+0x10;
             s.SeasonTickets=r.Int(s.CountAddress);s.Price=BitConverter.ToSingle(r.Bytes(s.PriceAddress,4),0);
