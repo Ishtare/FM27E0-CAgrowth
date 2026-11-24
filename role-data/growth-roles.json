@@ -9,6 +9,7 @@
   "roles": [
     {
       "group": "中锋",
+      "within_tier_priority": { "34": 1, "38": 1, "39": 1 },
       "phase": "持球",
       "english": "Deep-Lying Forward",
       "chinese": "拖后中锋",
@@ -32,6 +33,7 @@
     },
     {
       "group": "中锋",
+      "within_tier_priority": { "34": 1, "38": 1, "39": 1 },
       "phase": "持球",
       "english": "Channel Forward",
       "chinese": "肋部中锋",
@@ -59,6 +61,7 @@
     },
     {
       "group": "中锋",
+      "within_tier_priority": { "34": 1, "38": 1, "39": 1 },
       "phase": "持球",
       "english": "Centre Forward",
       "chinese": "中锋",
@@ -85,6 +88,7 @@
     },
     {
       "group": "中锋",
+      "within_tier_priority": { "34": 1, "38": 1, "39": 1 },
       "phase": "持球",
       "english": "Target Forward",
       "chinese": "支点中锋",
@@ -108,6 +112,7 @@
     },
     {
       "group": "中锋",
+      "within_tier_priority": { "34": 1, "38": 1, "39": 1 },
       "phase": "持球",
       "english": "Poacher",
       "chinese": "抢点型前锋",
@@ -129,6 +134,7 @@
     },
     {
       "group": "中锋",
+      "within_tier_priority": { "34": 1, "38": 1, "39": 1 },
       "phase": "持球",
       "english": "False Nine",
       "chinese": "伪九号",
@@ -154,6 +160,7 @@
     },
     {
       "group": "边锋",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Inside Winger",
       "chinese": "内切型边锋",
@@ -182,6 +189,7 @@
     },
     {
       "group": "边锋",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Wide Forward",
       "chinese": "边路前锋",
@@ -208,6 +216,7 @@
     },
     {
       "group": "边锋",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Inside Forward",
       "chinese": "内切型前锋",
@@ -236,6 +245,7 @@
     },
     {
       "group": "边锋",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Winger",
       "chinese": "边锋",
@@ -261,6 +271,7 @@
     },
     {
       "group": "边锋",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Playmaking Winger",
       "chinese": "组织型边锋",
@@ -288,6 +299,7 @@
     },
     {
       "group": "前腰",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Second Striker",
       "chinese": "二前锋",
@@ -314,6 +326,7 @@
     },
     {
       "group": "前腰",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Free Role",
       "chinese": "自由进攻核心",
@@ -339,6 +352,7 @@
     },
     {
       "group": "前腰",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Attacking Midfielder",
       "chinese": "前腰",
@@ -364,6 +378,7 @@
     },
     {
       "group": "前腰",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Advanced Playmaker",
       "chinese": "前场组织核心",
@@ -388,6 +403,7 @@
     },
     {
       "group": "前腰",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Channel Midfielder",
       "chinese": "肋部中场",
@@ -415,6 +431,7 @@
     },
     {
       "group": "边前卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Inside Winger",
       "chinese": "内切型边锋",
@@ -443,6 +460,7 @@
     },
     {
       "group": "边前卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Winger",
       "chinese": "边锋",
@@ -468,6 +486,7 @@
     },
     {
       "group": "边前卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Playmaking Winger",
       "chinese": "组织型边锋",
@@ -495,6 +514,7 @@
     },
     {
       "group": "边前卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Wide Midfielder",
       "chinese": "边前卫",
@@ -521,6 +541,7 @@
     },
     {
       "group": "中场",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Attacking Midfielder",
       "chinese": "前腰",
@@ -546,6 +567,7 @@
     },
     {
       "group": "中场",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Advanced Playmaker",
       "chinese": "前场组织核心",
@@ -570,6 +592,7 @@
     },
     {
       "group": "中场",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Channel Midfielder",
       "chinese": "肋部中场",
@@ -597,6 +620,7 @@
     },
     {
       "group": "中场",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Midfield Playmaker",
       "chinese": "中场组织核心",
@@ -623,6 +647,7 @@
     },
     {
       "group": "中场",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Wide Central Midfielder",
       "chinese": "侧翼中前卫",
@@ -650,6 +675,7 @@
     },
     {
       "group": "中场",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Central Midfielder",
       "chinese": "中前卫",
@@ -674,6 +700,7 @@
     },
     {
       "group": "后腰",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Deep-Lying Playmaker",
       "chinese": "拖后组织核心",
@@ -700,6 +727,7 @@
     },
     {
       "group": "后腰",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Box-to-Box Playmaker",
       "chinese": "全能组织核心",
@@ -730,6 +758,7 @@
     },
     {
       "group": "后腰",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Box-to-Box Midfielder",
       "chinese": "全能中场",
@@ -759,6 +788,7 @@
     },
     {
       "group": "后腰",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Defensive Midfielder",
       "chinese": "防守型后腰",
@@ -783,6 +813,7 @@
     },
     {
       "group": "后腰",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Half Back",
       "chinese": "半后卫",
@@ -810,6 +841,7 @@
     },
     {
       "group": "翼卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Advanced Wing-Back",
       "chinese": "进攻型翼卫",
@@ -839,6 +871,7 @@
     },
     {
       "group": "翼卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Wing-Back",
       "chinese": "翼卫",
@@ -868,6 +901,7 @@
     },
     {
       "group": "翼卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Playmaking Wing-Back",
       "chinese": "组织型翼卫",
@@ -898,6 +932,7 @@
     },
     {
       "group": "翼卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Inside Wing-Back",
       "chinese": "内收型翼卫",
@@ -924,6 +959,7 @@
     },
     {
       "group": "边后卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Wing-Back",
       "chinese": "翼卫",
@@ -953,6 +989,7 @@
     },
     {
       "group": "边后卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Full-Back",
       "chinese": "边后卫",
@@ -979,6 +1016,7 @@
     },
     {
       "group": "边后卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Playmaking Wing-Back",
       "chinese": "组织型翼卫",
@@ -1009,6 +1047,7 @@
     },
     {
       "group": "边后卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Inside Wing-Back",
       "chinese": "内收型翼卫",
@@ -1035,6 +1074,7 @@
     },
     {
       "group": "边后卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "持球",
       "english": "Inside Full-Back",
       "chinese": "内收型边后卫",
@@ -1063,6 +1103,7 @@
     },
     {
       "group": "中后卫",
+      "within_tier_priority": { "34": 1, "39": 1 },
       "phase": "持球",
       "english": "Ball-Playing Centre-Back",
       "chinese": "出球中后卫",
@@ -1090,6 +1131,7 @@
     },
     {
       "group": "中后卫",
+      "within_tier_priority": { "34": 1, "39": 1 },
       "phase": "持球",
       "english": "Advanced Centre-Back",
       "chinese": "压上型中后卫",
@@ -1120,6 +1162,7 @@
     },
     {
       "group": "中后卫",
+      "within_tier_priority": { "34": 1, "39": 1 },
       "phase": "持球",
       "english": "Overlapping Centre-Back",
       "chinese": "套边型中后卫",
@@ -1151,6 +1194,7 @@
     },
     {
       "group": "中后卫",
+      "within_tier_priority": { "34": 1, "39": 1 },
       "phase": "持球",
       "english": "Wide Centre-Back",
       "chinese": "边中卫",
@@ -1179,6 +1223,7 @@
     },
     {
       "group": "中后卫",
+      "within_tier_priority": { "34": 1, "39": 1 },
       "phase": "持球",
       "english": "No-Nonsense Centre-Back",
       "chinese": "防守型中后卫",
@@ -1200,6 +1245,7 @@
     },
     {
       "group": "中后卫",
+      "within_tier_priority": { "34": 1, "39": 1 },
       "phase": "持球",
       "english": "Centre-Back",
       "chinese": "中后卫",
@@ -1223,6 +1269,7 @@
     },
     {
       "group": "门将",
+      "within_tier_priority": { "21": 1, "46": 1 },
       "phase": "持球",
       "english": "No-Nonsense Goalkeeper",
       "chinese": "稳健型门将",
@@ -1244,6 +1291,7 @@
     },
     {
       "group": "门将",
+      "within_tier_priority": { "21": 1, "46": 1 },
       "phase": "持球",
       "english": "Ball-Playing Goalkeeper",
       "chinese": "出球型门将",
@@ -1269,6 +1317,7 @@
     },
     {
       "group": "门将",
+      "within_tier_priority": { "21": 1, "46": 1 },
       "phase": "持球",
       "english": "Goalkeeper",
       "chinese": "门将",
@@ -1292,6 +1341,7 @@
     },
     {
       "group": "中锋",
+      "within_tier_priority": { "34": 1, "38": 1, "39": 1 },
       "phase": "无球",
       "english": "Centre Forward",
       "chinese": "中锋",
@@ -1310,6 +1360,7 @@
     },
     {
       "group": "中锋",
+      "within_tier_priority": { "34": 1, "38": 1, "39": 1 },
       "phase": "无球",
       "english": "Tracking Centre Forward",
       "chinese": "回防型中锋",
@@ -1329,6 +1380,7 @@
     },
     {
       "group": "中锋",
+      "within_tier_priority": { "34": 1, "38": 1, "39": 1 },
       "phase": "无球",
       "english": "Splitting Outlet Centre Forward",
       "chinese": "拉边反击中锋",
@@ -1349,6 +1401,7 @@
     },
     {
       "group": "中锋",
+      "within_tier_priority": { "34": 1, "38": 1, "39": 1 },
       "phase": "无球",
       "english": "Central Outlet Centre Forward",
       "chinese": "中路反击中锋",
@@ -1369,6 +1422,7 @@
     },
     {
       "group": "边锋",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Winger",
       "chinese": "边锋",
@@ -1390,6 +1444,7 @@
     },
     {
       "group": "边锋",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Tracking Winger",
       "chinese": "回防型边锋",
@@ -1413,6 +1468,7 @@
     },
     {
       "group": "边锋",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Wide Outlet Winger",
       "chinese": "边路反击边锋",
@@ -1435,6 +1491,7 @@
     },
     {
       "group": "边锋",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Inside Outlet Winger",
       "chinese": "内收反击边锋",
@@ -1457,6 +1514,7 @@
     },
     {
       "group": "前腰",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Attacking Midfielder",
       "chinese": "前腰",
@@ -1475,6 +1533,7 @@
     },
     {
       "group": "前腰",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Central Outlet Attacking Midfielder",
       "chinese": "中路反击前腰",
@@ -1495,6 +1554,7 @@
     },
     {
       "group": "前腰",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Splitting Outlet Attacking Midfielder",
       "chinese": "拉边反击前腰",
@@ -1515,6 +1575,7 @@
     },
     {
       "group": "前腰",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Tracking Attacking Midfielder",
       "chinese": "回防型前腰",
@@ -1534,6 +1595,7 @@
     },
     {
       "group": "边前卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Wide Outlet Wide Midfielder",
       "chinese": "边路反击边前卫",
@@ -1556,6 +1618,7 @@
     },
     {
       "group": "边前卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Wide Midfielder",
       "chinese": "边前卫",
@@ -1577,6 +1640,7 @@
     },
     {
       "group": "边前卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Tracking Wide Midfielder",
       "chinese": "回防型边前卫",
@@ -1600,6 +1664,7 @@
     },
     {
       "group": "中场",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Pressing Central Midfielder",
       "chinese": "压迫型中前卫",
@@ -1622,6 +1687,7 @@
     },
     {
       "group": "中场",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Wide Covering Central Midfielder",
       "chinese": "侧翼补位中前卫",
@@ -1644,6 +1710,7 @@
     },
     {
       "group": "中场",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Central Midfielder",
       "chinese": "中前卫",
@@ -1664,6 +1731,7 @@
     },
     {
       "group": "中场",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Screening Central Midfielder",
       "chinese": "屏障型中前卫",
@@ -1683,6 +1751,7 @@
     },
     {
       "group": "后腰",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Pressing Defensive Midfielder",
       "chinese": "压迫型后腰",
@@ -1705,6 +1774,7 @@
     },
     {
       "group": "后腰",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Defensive Midfielder",
       "chinese": "防守型后腰",
@@ -1726,6 +1796,7 @@
     },
     {
       "group": "后腰",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Wide Covering Defensive Midfielder",
       "chinese": "侧翼补位后腰",
@@ -1749,6 +1820,7 @@
     },
     {
       "group": "后腰",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Screening Defensive Midfielder",
       "chinese": "屏障型后腰",
@@ -1769,6 +1841,7 @@
     },
     {
       "group": "后腰",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Dropping Defensive Midfielder",
       "chinese": "后撤型后腰",
@@ -1791,6 +1864,7 @@
     },
     {
       "group": "翼卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Pressing Wing-Back",
       "chinese": "压迫型翼卫",
@@ -1815,6 +1889,7 @@
     },
     {
       "group": "翼卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Wing-Back",
       "chinese": "翼卫",
@@ -1838,6 +1913,7 @@
     },
     {
       "group": "翼卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Holding Wing-Back",
       "chinese": "留守型翼卫",
@@ -1859,6 +1935,7 @@
     },
     {
       "group": "边后卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Pressing Full-Back",
       "chinese": "压迫型边后卫",
@@ -1883,6 +1960,7 @@
     },
     {
       "group": "边后卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Holding Full-Back",
       "chinese": "留守型边后卫",
@@ -1903,6 +1981,7 @@
     },
     {
       "group": "边后卫",
+      "within_tier_priority": { "34": 1, "38": 1 },
       "phase": "无球",
       "english": "Full-Back",
       "chinese": "边后卫",
@@ -1926,6 +2005,7 @@
     },
     {
       "group": "中后卫",
+      "within_tier_priority": { "34": 1, "39": 1 },
       "phase": "无球",
       "english": "Covering Wide Centre-Back",
       "chinese": "补位型边中卫",
@@ -1949,6 +2029,7 @@
     },
     {
       "group": "中后卫",
+      "within_tier_priority": { "34": 1, "39": 1 },
       "phase": "无球",
       "english": "Wide Centre-Back",
       "chinese": "边中卫",
@@ -1973,6 +2054,7 @@
     },
     {
       "group": "中后卫",
+      "within_tier_priority": { "34": 1, "39": 1 },
       "phase": "无球",
       "english": "Covering Centre-Back",
       "chinese": "补位型中后卫",
@@ -1995,6 +2077,7 @@
     },
     {
       "group": "中后卫",
+      "within_tier_priority": { "34": 1, "39": 1 },
       "phase": "无球",
       "english": "Centre-Back",
       "chinese": "中后卫",
@@ -2018,6 +2101,7 @@
     },
     {
       "group": "中后卫",
+      "within_tier_priority": { "34": 1, "39": 1 },
       "phase": "无球",
       "english": "Stopping Wide Centre-Back",
       "chinese": "上抢型边中卫",
@@ -2042,6 +2126,7 @@
     },
     {
       "group": "中后卫",
+      "within_tier_priority": { "34": 1, "39": 1 },
       "phase": "无球",
       "english": "Stopping Centre-Back",
       "chinese": "上抢型中后卫",
@@ -2064,6 +2149,7 @@
     },
     {
       "group": "门将",
+      "within_tier_priority": { "21": 1, "46": 1 },
       "phase": "无球",
       "english": "Goalkeeper",
       "chinese": "门将",
@@ -2086,6 +2172,7 @@
     },
     {
       "group": "门将",
+      "within_tier_priority": { "21": 1, "46": 1 },
       "phase": "无球",
       "english": "Sweeper Keeper",
       "chinese": "清道夫门将",
@@ -2109,6 +2196,7 @@
     },
     {
       "group": "门将",
+      "within_tier_priority": { "21": 1, "46": 1 },
       "phase": "无球",
       "english": "Line-Holding Goalkeeper",
       "chinese": "门线型门将",

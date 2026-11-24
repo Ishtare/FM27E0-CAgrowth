@@ -23,6 +23,21 @@ v1.1.17：10 个基本方案加 88 个细分角色，共 98 个。先选择位�
 
 来源：[SI 社区角色属性观察](https://community.sports-interactive.com/forums/topic/600770-football-manager-26-roles-attributes/)、[SI 官方战术机制说明（FM26）](https://www.footballmanager.com/fm26/features/possession-out-possession-fm26s-new-tactical-evolution)。成长预算及验证限制见 [成长说明](ca-growth-focus.md)。
 
+## 同档优先级资料
+
+每个角色的 `within_tier_priority` 以属性索引为键。`1` 表示优先，`0` 或省略表示普通。蓝绿仍按原来的 `core` 和 `support` 划分。计费继续使用 `PositionAbility`。
+
+位置组取自 Scout Reporter 的 FM27 位置评分。该评分基于 FM Match Lab Study 13b 的 FM27.0.x 比赛引擎实验。保留评分权重至少为 8 的属性，每组不足两项时补入次高项。门将的灵活和反应也在 FMSuperScout 门将 Meta 表的前两项。后者来自独立的 FM24 门将实验，作为交叉参考。两份来源的原始数值只用于选择优先项，配置统一存 0 或 1。 [Scout Reporter 评分表](https://github.com/SebastianFoder/fm-scoutreporter/blob/5c50b7744d3775c06a24d7542b8c5d172f8ff0ac/packages/core/fm27/benchmarks.ts) · [FM Match Lab Study 13b](https://github.com/caiograco289/Fm-Match-Lab/blob/main/docs/studies/13b-value-by-position-random.md) · [FMSuperScout 门将 Meta](https://github.com/mavarobli/FMSuperScout/blob/main/app/app.js#L1692)
+
+| 位置组 | 优先属性（Scout Reporter 评分权重） |
+|---|---|
+| 门将 | 灵活 10、反应 9。FMSuperScout 对应为灵活 8.0、反应 12.8 |
+| 中后卫 | 弹跳 10、爆发力 6（次高） |
+| 边后卫、翼卫 | 爆发力 10、速度 10 |
+| 后腰、中场 | 爆发力 10、速度 8 |
+| 前腰、边前卫、边锋 | 速度 10、爆发力 9 |
+| 中锋 | 爆发力 10、速度 10、弹跳 9 |
+
 ## v1.1.18 分别选择并综合
 
 有球／无球改为两个独立选择页，支持不同非门将位置及权重；共同需求按综合优先级分配。没有把这份 FM26 角色资料包装成游戏当前战术自动检测。详见 [综合与一键优化](attribute-optimizer.md)。

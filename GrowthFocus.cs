@@ -11,22 +11,28 @@ namespace Fm24Editor
         public readonly string Name;
         public readonly string Group, Phase, English;
         public readonly int[] Core, Supporting;
+        readonly int[] withinTierPriority;
         int[] compositeCosts,compositePriorities;
         public int Scale {get{return compositeCosts==null?1:100;}}
-        internal GrowthProfile(string name, int[] core, int[] supporting, string group = null, string phase = "基本", string english = "")
-        { Name = name; Core = core; Supporting = supporting; Group = group ?? (name=="前锋"?"中锋":name); Phase=phase; English=english; }
+        internal GrowthProfile(string name, int[] core, int[] supporting, string group = null, string phase = "基本",
+            string english = "", int[] withinTierPriority = null)
+        {
+            Name=name; Core=core; Supporting=supporting; Group=group??(name=="前锋"?"中锋":name); Phase=phase; English=english;
+            this.withinTierPriority=withinTierPriority??new int[0];
+        }
+        public int WithinTierPriority(int attribute) { return Array.IndexOf(withinTierPriority,attribute)>=0?1:0; }
         public string DisplayName {get{return Phase=="基本"?Name+"（基本方案）":Name+"（"+Phase+"）";}}
 
         static readonly GrowthProfile[] Basic = {
-            new GrowthProfile("门将", new[]{21,19,11,46,20,17,53,18,12,13}, new[]{14,15,16,7,22,52,39,36,34,37,42}),
-            new GrowthProfile("中后卫", new[]{5,9,20,17,53,39,3,36}, new[]{18,52,43,34,38,7,22,46,42,28}),
-            new GrowthProfile("边后卫", new[]{9,5,20,34,38,37,29,0}, new[]{17,53,18,7,22,1,6,28,42,46}),
-            new GrowthProfile("翼卫", new[]{34,38,37,29,0,1,6}, new[]{9,20,17,18,7,22,28,42,46}),
-            new GrowthProfile("后腰", new[]{9,20,17,18,7,53,28}, new[]{5,36,37,29,22,23,52,10,42,46}),
-            new GrowthProfile("中场", new[]{7,10,18,22,23,28,29}, new[]{17,20,9,37,42,52,53,6,4,34}),
-            new GrowthProfile("前腰", new[]{7,10,22,23,18,6,52}, new[]{1,17,26,4,34,38,42,46,28,37,2}),
-            new GrowthProfile("边锋", new[]{1,34,38,0,6,22,23}, new[]{7,10,18,52,17,2,29,37,42,46}),
-            new GrowthProfile("前锋", new[]{2,6,52,17,22,34,38}, new[]{18,23,1,3,39,36,46,53,42,7,29})
+            GrowthRoleCatalog.Preset("门将", new[]{21,19,11,46,20,17,53,18,12,13}, new[]{14,15,16,7,22,52,39,36,34,37,42}),
+            GrowthRoleCatalog.Preset("中后卫", new[]{5,9,20,17,53,39,3,36}, new[]{18,52,43,34,38,7,22,46,42,28}),
+            GrowthRoleCatalog.Preset("边后卫", new[]{9,5,20,34,38,37,29,0}, new[]{17,53,18,7,22,1,6,28,42,46}),
+            GrowthRoleCatalog.Preset("翼卫", new[]{34,38,37,29,0,1,6}, new[]{9,20,17,18,7,22,28,42,46}),
+            GrowthRoleCatalog.Preset("后腰", new[]{9,20,17,18,7,53,28}, new[]{5,36,37,29,22,23,52,10,42,46}),
+            GrowthRoleCatalog.Preset("中场", new[]{7,10,18,22,23,28,29}, new[]{17,20,9,37,42,52,53,6,4,34}),
+            GrowthRoleCatalog.Preset("前腰", new[]{7,10,22,23,18,6,52}, new[]{1,17,26,4,34,38,42,46,28,37,2}),
+            GrowthRoleCatalog.Preset("边锋", new[]{1,34,38,0,6,22,23}, new[]{7,10,18,52,17,2,29,37,42,46}),
+            GrowthRoleCatalog.Preset("前锋", new[]{2,6,52,17,22,34,38}, new[]{18,23,1,3,39,36,46,53,42,7,29},"中锋")
         };
         public static readonly GrowthProfile[] All = Basic.Concat(GrowthRoleCatalog.Create()).ToArray();
         public static readonly string[] Groups = {"门将","中后卫","边后卫","翼卫","后腰","中场","前腰","边前卫","边锋","中锋"};

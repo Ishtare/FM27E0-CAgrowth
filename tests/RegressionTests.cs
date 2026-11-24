@@ -337,6 +337,7 @@ namespace Fm24Editor
                 ScanDiagnosticsTests.Run(Check);
                 CurrentBuildTests.Run(Check);
                 CurrentFeaturesTests.Run(Check);
+                GrowthRoleCatalogTests.Run(Check);
                 GrowthFocusTests.Run(Check);
                 GrowthSelectionTests.Run(Check);
                 GrowthSupportTests.Run(Check);
