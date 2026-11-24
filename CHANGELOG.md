@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Set a personal CA growth multiplier from 2x to 10x or restore the global rate. Show each player's effective rate in the roster and preserve overrides during global rate changes.
+- Save each player's growth mode, roles, selected attributes and multiplier in `growth-preferences.xml` beside the executable. Restore the plan for matching players after a restart or reattach. Select the growth roster again after connecting.
+- Pass 35,167 offline assertions covering independent rates, PA caps, settings compatibility and the roster display. Exclude personal growth settings from release archives.
+
 ## v1.1.33 (modified release, 2026-11-24)
 
 - Add a dedicated Steam profile for FM27 27.1.1+2511875. Match the engine image and five native signatures covering non-EU status, the game date, retirement, fitness and corporate facilities. Restore club funds, facilities, reputation, stadium capacity, tickets, sponsorship and names, plus condition, match sharpness, morale, injuries and fatigue.

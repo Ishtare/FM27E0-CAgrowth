@@ -23,6 +23,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $gitExe = (Get-Command git.exe -ErrorAction Stop).Source
 $utf8 = [Text.UTF8Encoding]::new($false)
+$growthRuntimePath = '(?i)(^|/)growth-preferences\.xml(?:\.lock|\.[^/]+\.tmp)?(/|$)'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 function Invoke-ReleaseGit([string]$Directory,[string[]]$Arguments) {
@@ -112,7 +113,8 @@ function Get-PackageHashes([string]$Directory,[string]$ExeName) {
     foreach ($file in (Get-SafeFiles $Directory)) {
         $name = $file.FullName.Substring($Directory.Length+1).Replace('\','/')
         if ($name -eq 'SHA256SUMS.txt') { continue }
-        if ($file.Length -le 0 -or $name -match '(?i)(^|/)(names|settings\.txt|\.git)(/|$)|\.(log|fm|pdb)$') {
+        if ($file.Length -le 0 -or $name -match $growthRuntimePath -or
+            $name -match '(?i)(^|/)(names|settings\.txt|\.git)(/|$)|\.(log|fm|pdb)$') {
             throw "Unexpected runtime or empty file in a public package: $name"
         }
         $actual[$name] = (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -132,7 +134,8 @@ $binaryPathPattern = '(?i)[A-Z]:[\\/]+(?:Users|Documents and Settings|Desktop)[\
 function Assert-SourcePrivacy([string]$Directory,[string[]]$Paths) {
     $findings = @()
     foreach ($path in $Paths) {
-        if ($path -match '(?i)(^/|(^|/)\.\.(/|$)|:|(^|/)(\.git|names|\.release-cache)(/|$)|(^|/)(settings\.txt|\.env[^/]*?)$|\.(exe|pdb|log|zip|fm|fmf|user|suo)$)' -or
+        if ($path -match $growthRuntimePath -or
+            $path -match '(?i)(^/|(^|/)\.\.(/|$)|:|(^|/)(\.git|names|\.release-cache)(/|$)|(^|/)(settings\.txt|\.env[^/]*?)$|\.(exe|pdb|log|zip|fm|fmf|user|suo)$)' -or
             ($path -match '(?i)\.dll$' -and $path -ne 'third-party/libzstd.dll')) {
             $findings += "$path (runtime or generated file)"
             continue
@@ -428,8 +431,8 @@ try {
         if ($testExit -ne 0) { throw 'tests\run.ps1 failed.' }
     } finally { Pop-Location }
     $passed = [regex]::Match(($testOutput -join [Environment]::NewLine),'(?m)^PASS:\s*(\d+)\s+assertions\b')
-    if (-not $passed.Success -or [int]$passed.Groups[1].Value -lt 35105) {
-        throw 'Release requires at least 35,105 passing offline assertions.'
+    if (-not $passed.Success -or [int]$passed.Groups[1].Value -lt 35167) {
+        throw 'Release requires at least 35,167 passing offline assertions.'
     }
     $buildExe = Join-Path $snapshot $exeName
     Assert-ReleaseExe $buildExe $Version
