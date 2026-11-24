@@ -1,4 +1,4 @@
-# FM27E0 汉化改版 v1.1.31 完整版
+# FM27E0 汉化改版 v1.1.32 完整版
 
 一键属性优化以蓝 15、绿 14、白 11、末档 10 为基准。有余量时依次冲蓝 17、绿 15、蓝 20、绿 17。白档与末档的硬下限为 8 和 6。降到下限仍超预算时，预览显示差额并阻止应用。
 
@@ -16,7 +16,7 @@ v1.1.29 修复俱乐部转会预算提交，并更新筛选结果、培养名单
 
 完整解压后运行程序，保留 third-party 文件夹。CA 成长支持跨俱乐部勾选和统一查看已选球员，内置姓名库支持中英文搜索。
 
-34,999 项离线断言通过。验收版已通过 FM27 实机抽测。[使用说明](使用说明-1.1.31.md) · [变更记录](CHANGELOG.md)
+34,999 项离线断言通过。验收版已通过 FM27 实机抽测。[使用说明](使用说明-1.1.32.md) · [变更记录](CHANGELOG.md)
 
 分享 ZIP 内附使用说明、对应源码、许可证、来源声明与校验清单。维护者可通过发布脚本分别管理自用 EXE 和对外发布包。[发布与演练说明](https://github.com/Ishtare/FM27E0-CAgrowth/blob/main/docs/release-workflow.md)
 
@@ -26,7 +26,7 @@ v1.1.29 修复俱乐部转会预算提交，并更新筛选结果、培养名单
 
 A free, open-source live editor for **Football Manager 27**. Edit your players, staff, contracts and club finances while the game is running.
 
-> This Chinese-language build extends Anze Alexander's FM27€0 v1.1.0 with CA growth and other editing features. The current executable is `FM27E0-CAgrowth v1.1.31.exe`. The original editor is available on [sortitoutsi.net](https://sortitoutsi.net/content/78059/fm27eur0-v100-live-editor-for-fm27). See [the changelog](CHANGELOG.md) for changes.
+> This Chinese-language build extends Anze Alexander's FM27€0 v1.1.0 with CA growth and other editing features. The current executable is `FM27E0-CAgrowth v1.1.32.exe`. The original editor is available on [sortitoutsi.net](https://sortitoutsi.net/content/78059/fm27eur0-v100-live-editor-for-fm27). See [the changelog](CHANGELOG.md) for changes.
 
 ## What you can do
 

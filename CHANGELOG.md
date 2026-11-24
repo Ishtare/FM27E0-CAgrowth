@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.1.32 (modified release, 2026-11-24)
 
 - Use a 15/14/11/10 baseline for role-based redistribution. With extra budget, raise blue to 17, green to 15, blue to 20, then green to 17. Below the baseline, lower other, white, green, then blue. Keep hard floors of 6 for other attributes and 8 for white. If all floors still exceed the target CA, preview the RCA shortfall and block the change.
 - Use two passes for directed growth and Preserve: blue 15, green 14, white 11 first, then blue 17 and green 15. Retain existing attributes and charge growth to the cumulative RCA budget. The default acceleration mode continues to write CA only.
